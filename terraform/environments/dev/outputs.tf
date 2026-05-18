@@ -1,0 +1,44 @@
+# ── 공통 ──────────────────────────────────────────────────────────────────────
+
+output "project_name" {
+  description = "프로젝트 이름"
+  value       = var.project_name
+}
+
+output "env" {
+  description = "배포 환경"
+  value       = var.env
+}
+
+output "primary_region" {
+  description = "Primary AWS 리전"
+  value       = var.primary_region
+}
+
+# ── 모듈 outputs는 해당 모듈 구현 후 추가한다 ──────────────────────────────────
+#
+# output "dev_app_vpc_id" {
+#   description = "Dev App VPC ID"
+#   value       = module.dev_app_vpc.vpc_id
+# }
+#
+# output "dev_data_vpc_id" {
+#   description = "Dev Data VPC ID"
+#   value       = module.dev_data_vpc.vpc_id
+# }
+#
+# output "transit_gateway_id" {
+#   description = "Transit Gateway ID"
+#   value       = module.transit_gateway.tgw_id
+# }
+#
+# output "dev_eks_cluster_name" {
+#   description = "Dev EKS 클러스터 이름"
+#   value       = module.dev_eks.cluster_name
+# }
+#
+# output "dev_eks_cluster_endpoint" {
+#   description = "Dev EKS 클러스터 API 엔드포인트"
+#   value       = module.dev_eks.cluster_endpoint
+#   sensitive   = true
+# }
