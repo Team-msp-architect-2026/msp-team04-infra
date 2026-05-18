@@ -63,3 +63,5 @@ Thumbs.db
 # 인증서/키
 *.pem
 *.key
+
+echo "tfplan*" >> ../../../.gitignore
