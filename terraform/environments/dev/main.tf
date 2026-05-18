@@ -114,13 +114,16 @@ module "network_vpc" {
 
 # ── ECR ────────────────────────────────────────────────────────────────────────
 # Backend API / AI Service / Batch Job 이미지 리포지토리를 ap-northeast-3에 생성한다.
-#
-# module "ecr" {
-#   source = "../../modules/ecr"
-#
-#   name_prefix = local.name_prefix
-#   tags        = local.common_tags
-# }
+
+module "ecr" {
+  source = "../../modules/ecr"
+
+  repositories         = var.ecr_repositories
+  image_tag_mutability = var.ecr_image_tag_mutability
+  scan_on_push         = var.ecr_scan_on_push
+  encryption_type      = var.ecr_encryption_type
+  tags                 = local.common_tags
+}
 
 # ── ACM (us-east-1) ────────────────────────────────────────────────────────────
 # CloudFront viewer HTTPS용 ACM 인증서는 반드시 us-east-1에 생성해야 한다.

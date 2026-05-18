@@ -60,6 +60,73 @@ msp-team04-terraform/
  
 ---
 
+## ECR Module
+
+`modules/ecr`는 MoMent 서비스 컨테이너 이미지를 저장할 Amazon ECR Repository를 생성한다.
+
+생성 Repository:
+
+- `moment-backend`
+- `moment-ai-service`
+- `moment-batch`
+
+주요 설정:
+
+- Image tag mutability: `IMMUTABLE`
+- Scan on push: enabled
+- Encryption: `AES256`
+- Lifecycle Policy:
+  - untagged image는 1일 후 삭제
+  - tagged image는 최근 10개만 유지
+
+### ECR Docker Push 예시
+
+```bash
+# 1. ECR 로그인
+aws ecr get-login-password --region ap-northeast-3 | docker login --username AWS --password-stdin <account-id>.dkr.ecr.ap-northeast-3.amazonaws.com
+
+# 2. Backend 이미지 빌드
+docker build -t moment-backend .
+
+# 3. ECR Repository 태그 지정
+docker tag moment-backend:latest <account-id>.dkr.ecr.ap-northeast-3.amazonaws.com/moment-backend:latest
+
+# 4. ECR로 이미지 push
+docker push <account-id>.dkr.ecr.ap-northeast-3.amazonaws.com/moment-backend:latest
+```
+
+### Terraform 실행 참고
+
+현재 ECR 모듈은 `terraform/environments/dev/main.tf`에서 호출된다.
+
+```hcl
+module "ecr" {
+  source = "../../modules/ecr"
+
+  repositories         = var.ecr_repositories
+  image_tag_mutability = var.ecr_image_tag_mutability
+  scan_on_push         = var.ecr_scan_on_push
+  encryption_type      = var.ecr_encryption_type
+  tags                 = local.common_tags
+}
+```
+
+검증 명령어:
+
+```bash
+terraform fmt -recursive
+
+cd terraform/environments/dev
+
+terraform init -backend=false
+
+terraform validate
+```
+
+> 실제 `terraform apply` 및 Docker image push 테스트는 S3 Remote Backend와 State Lock 구성이 완료된 이후 진행한다.
+
+---
+
 ## Network VPC Module
 
 `modules/network-vpc`는 Multi-VPC Hub-and-Spoke 구조에서 중앙 네트워크 허브 역할을 하는 Network VPC를 생성한다.
