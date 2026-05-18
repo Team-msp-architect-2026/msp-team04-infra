@@ -1,0 +1,41 @@
+# ── terraform.tfvars.example ───────────────────────────────────────────────────
+# 이 파일을 복사하여 terraform.tfvars를 만들고 실제 값을 채운다.
+# terraform.tfvars는 .gitignore에 의해 커밋되지 않는다.
+#
+#   cp terraform.tfvars.example terraform.tfvars
+
+# ── 프로젝트 공통 ──────────────────────────────────────────────────────────────
+project_name   = "moment"
+env            = "dev"
+primary_region = "ap-northeast-3"
+
+# ── VPC CIDR ───────────────────────────────────────────────────────────────────
+# Single AWS Account 기반 Multi-VPC. CIDR 겹침 없도록 /16 단위로 할당.
+network_vpc_cidr   = "10.0.0.0/16"
+prod_app_vpc_cidr  = "10.10.0.0/16"
+prod_data_vpc_cidr = "10.20.0.0/16"
+dev_app_vpc_cidr   = "10.30.0.0/16"
+dev_data_vpc_cidr  = "10.40.0.0/16"
+
+# ── 가용 영역 ──────────────────────────────────────────────────────────────────
+availability_zones = ["ap-northeast-3a", "ap-northeast-3c"]
+
+# ── EKS ───────────────────────────────────────────────────────────────────────
+eks_cluster_version    = "1.30"
+eks_node_instance_type = "t3.medium"
+eks_node_desired_size  = 2
+eks_node_min_size      = 1
+eks_node_max_size      = 4
+
+# ── RDS ───────────────────────────────────────────────────────────────────────
+rds_instance_class = "db.t3.micro"
+rds_db_name        = "momentdb"
+rds_username       = "CHANGE_ME"   # 실제 값으로 교체
+rds_password       = "CHANGE_ME"   # 실제 값으로 교체 (운영: Secrets Manager 사용)
+
+# ── ElastiCache ────────────────────────────────────────────────────────────────
+redis_node_type = "cache.t3.micro"
+
+# ── OpenSearch ─────────────────────────────────────────────────────────────────
+opensearch_instance_type  = "t3.small.search"
+opensearch_instance_count = 2   # 데모: 2-AZ / 운영: 3-AZ Multi-AZ with Standby
