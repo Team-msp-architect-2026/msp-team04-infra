@@ -151,3 +151,45 @@ variable "enable_nat_gateway" {
   type        = bool
   default     = true
 }
+
+# ── ECR ────────────────────────────────────────────────────────────────────────
+
+variable "ecr_repositories" {
+  description = "ECR Repository 목록."
+  type = map(object({
+    name        = string
+    description = string
+  }))
+  default = {
+    backend = {
+      name        = "moment-backend"
+      description = "MoMent Backend API image repository"
+    }
+    ai-service = {
+      name        = "moment-ai-service"
+      description = "MoMent AI Service image repository"
+    }
+    batch = {
+      name        = "moment-batch"
+      description = "MoMent Batch Job image repository"
+    }
+  }
+}
+
+variable "ecr_image_tag_mutability" {
+  description = "ECR image tag mutability 설정."
+  type        = string
+  default     = "IMMUTABLE"
+}
+
+variable "ecr_scan_on_push" {
+  description = "ECR image scan on push 활성화 여부."
+  type        = bool
+  default     = true
+}
+
+variable "ecr_encryption_type" {
+  description = "ECR Repository 암호화 방식."
+  type        = string
+  default     = "AES256"
+}

@@ -79,3 +79,35 @@ output "network_tgw_attachment_route_table_id" {
   description = "Network VPC TGW Attachment Route Table ID"
   value       = module.network_vpc.tgw_attachment_route_table_id
 }
+
+# ── ECR ────────────────────────────────────────────────────────────────────────
+
+output "ecr_repository_names" {
+  description = "ECR Repository 이름 목록"
+  value       = module.ecr.repository_names
+}
+
+output "ecr_repository_urls" {
+  description = "ECR Repository URL 목록"
+  value       = module.ecr.repository_urls
+}
+
+output "ecr_repository_arns" {
+  description = "ECR Repository ARN 목록"
+  value       = module.ecr.repository_arns
+}
+
+output "backend_repository_url" {
+  description = "Backend API ECR Repository URL"
+  value       = module.ecr.backend_repository_url
+}
+
+output "ai_service_repository_url" {
+  description = "AI Service ECR Repository URL"
+  value       = module.ecr.ai_service_repository_url
+}
+
+output "batch_repository_url" {
+  description = "Batch Job ECR Repository URL"
+  value       = module.ecr.batch_repository_url
+}

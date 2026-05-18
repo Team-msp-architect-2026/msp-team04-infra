@@ -41,3 +41,23 @@ redis_node_type = "cache.t3.micro"
 # ── OpenSearch ─────────────────────────────────────────────────────────────────
 opensearch_instance_type  = "t3.small.search"
 opensearch_instance_count = 2   # 데모: 2-AZ / 운영: 3-AZ Multi-AZ with Standby
+
+# ── ECR ───────────────────────────────────────────────────────────────────────
+ecr_image_tag_mutability = "IMMUTABLE"
+ecr_scan_on_push         = true
+ecr_encryption_type      = "AES256"
+
+ecr_repositories = {
+  backend = {
+    name        = "moment-backend"
+    description = "MoMent Backend API image repository"
+  }
+  ai-service = {
+    name        = "moment-ai-service"
+    description = "MoMent AI Service image repository"
+  }
+  batch = {
+    name        = "moment-batch"
+    description = "MoMent Batch Job image repository"
+  }
+}
