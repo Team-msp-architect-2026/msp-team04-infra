@@ -257,3 +257,30 @@ output "dev_data_tgw_attachment_id" {
   description = "Dev Data VPC TGW Attachment ID"
   value       = module.dev_data_vpc.tgw_attachment_id
 }
+
+# ── Transit Gateway Routing / Network Attachment ──────────────────────────────
+
+output "tgw_default_route_table_id" {
+  description = "Default Transit Gateway Route Table ID"
+  value       = aws_ec2_transit_gateway.this.association_default_route_table_id
+}
+
+output "network_tgw_attachment_id" {
+  description = "Network VPC Transit Gateway Attachment ID"
+  value       = aws_ec2_transit_gateway_vpc_attachment.network.id
+}
+
+output "tgw_prod_route_table_id" {
+  description = "Prod Transit Gateway Route Table ID"
+  value       = aws_ec2_transit_gateway_route_table.prod.id
+}
+
+output "tgw_dev_route_table_id" {
+  description = "Dev Transit Gateway Route Table ID"
+  value       = aws_ec2_transit_gateway_route_table.dev.id
+}
+
+output "tgw_egress_route_table_id" {
+  description = "Egress Transit Gateway Route Table ID"
+  value       = aws_ec2_transit_gateway_route_table.egress.id
+}
