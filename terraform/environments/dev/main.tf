@@ -200,3 +200,41 @@ module "prod_app_vpc" {
     Issue       = "M2-NET-03"
   }
 }
+# ── Prod Data VPC ──────────────────────────────────────────────────────────────
+# RDS PostgreSQL, ElastiCache Redis, OpenSearch를 배치한다.
+# Internet Gateway 없이 Transit Gateway를 통해 Prod App VPC에서만 접근한다.
+
+module "prod_data_vpc" {
+  source = "../../modules/data-vpc"
+
+  name_prefix        = "${local.name_prefix}-prod-data"
+  vpc_cidr           = var.prod_data_vpc_cidr
+  availability_zones = var.availability_zones
+
+  private_db_subnet_cidrs = [
+    "10.20.10.0/24",
+    "10.20.11.0/24"
+  ]
+
+  private_cache_subnet_cidrs = [
+    "10.20.20.0/24",
+    "10.20.21.0/24"
+  ]
+
+  private_search_subnet_cidrs = [
+    "10.20.30.0/24",
+    "10.20.31.0/24"
+  ]
+
+  tgw_attachment_subnet_cidrs = [
+    "10.20.100.0/28",
+    "10.20.100.16/28"
+  ]
+
+  transit_gateway_id = aws_ec2_transit_gateway.this.id
+  app_vpc_cidr       = var.prod_app_vpc_cidr
+
+  tags = merge(local.common_tags, {
+    Issue = "M2-NET-04"
+  })
+}

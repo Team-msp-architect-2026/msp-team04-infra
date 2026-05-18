@@ -142,3 +142,39 @@ output "prod_app_internet_gateway_id" {
 output "prod_app_tgw_attachment_id" {
   value = module.prod_app_vpc.tgw_attachment_id
 }
+# ── Prod Data VPC ──────────────────────────────────────────────────────────────
+
+output "prod_data_vpc_id" {
+  description = "Prod Data VPC ID"
+  value       = module.prod_data_vpc.vpc_id
+}
+
+output "prod_data_private_db_subnet_ids" {
+  description = "Prod Data VPC Private DB Subnet IDs"
+  value       = module.prod_data_vpc.private_db_subnet_ids
+}
+
+output "prod_data_private_cache_subnet_ids" {
+  description = "Prod Data VPC Private Cache Subnet IDs"
+  value       = module.prod_data_vpc.private_cache_subnet_ids
+}
+
+output "prod_data_private_search_subnet_ids" {
+  description = "Prod Data VPC Private Search Subnet IDs"
+  value       = module.prod_data_vpc.private_search_subnet_ids
+}
+
+output "prod_data_tgw_attachment_subnet_ids" {
+  description = "Prod Data VPC TGW Attachment Subnet IDs"
+  value       = module.prod_data_vpc.tgw_attachment_subnet_ids
+}
+
+output "prod_data_private_route_table_id" {
+  description = "Prod Data VPC Private Route Table ID"
+  value       = module.prod_data_vpc.private_route_table_id
+}
+
+output "prod_data_tgw_attachment_id" {
+  description = "Prod Data VPC TGW Attachment ID"
+  value       = module.prod_data_vpc.tgw_attachment_id
+}
