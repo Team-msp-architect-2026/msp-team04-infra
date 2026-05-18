@@ -13,17 +13,18 @@ locals {
 }
 
 # ── Network VPC ────────────────────────────────────────────────────────────────
-# Centralized NAT Gateway, Transit Gateway Attachment, optional Bastion/VPN을 배치한다.
+# Centralized NAT Gateway, Transit Gateway Attachment Subnet을 배치한다.
 # 모든 spoke VPC의 outbound 트래픽은 Transit Gateway → Network VPC NAT Gateway 경로로 처리한다.
-#
-# module "network_vpc" {
-#   source = "../../modules/network-vpc"
-#
-#   name_prefix        = local.name_prefix
-#   vpc_cidr           = var.network_vpc_cidr
-#   availability_zones = var.availability_zones
-#   tags               = local.common_tags
-# }
+
+module "network_vpc" {
+  source = "../../modules/network-vpc"
+
+  name_prefix        = "${local.name_prefix}-network"
+  vpc_cidr           = var.network_vpc_cidr
+  availability_zones = var.availability_zones
+  enable_nat_gateway = var.enable_nat_gateway
+  tags               = local.common_tags
+}
 
 # ── Transit Gateway ────────────────────────────────────────────────────────────
 # prod / dev / egress TGW Route Table을 각각 생성하여 트래픽 경로를 분리한다.

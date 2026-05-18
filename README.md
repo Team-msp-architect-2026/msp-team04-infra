@@ -59,6 +59,27 @@ msp-team04-terraform/
 ```
  
 ---
+
+## Network VPC Module
+
+`modules/network-vpc`는 Multi-VPC Hub-and-Spoke 구조에서 중앙 네트워크 허브 역할을 하는 Network VPC를 생성한다.
+
+생성 리소스:
+
+- Network VPC
+- Internet Gateway
+- Public Subnet 2개
+- TGW Attachment Subnet 2개
+- Public Route Table
+- Elastic IP
+- Centralized NAT Gateway
+- TGW Attachment Subnet Route Table
+
+Network VPC는 이후 Transit Gateway와 연결되어 App VPC / Data VPC의 outbound 트래픽이 중앙 NAT Gateway를 통해 외부 인터넷으로 나갈 수 있도록 구성된다.
+
+> 실제 `terraform apply`는 S3 Remote Backend와 State Lock 구성이 완료된 이후 진행한다.
+
+---
  
 ## Provider 구성
  

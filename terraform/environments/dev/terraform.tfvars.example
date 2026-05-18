@@ -17,6 +17,8 @@ prod_data_vpc_cidr = "10.20.0.0/16"
 dev_app_vpc_cidr   = "10.30.0.0/16"
 dev_data_vpc_cidr  = "10.40.0.0/16"
 
+enable_nat_gateway = true
+
 # ── 가용 영역 ──────────────────────────────────────────────────────────────────
 availability_zones = ["ap-northeast-3a", "ap-northeast-3c"]
 
