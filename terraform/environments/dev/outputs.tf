@@ -43,6 +43,13 @@ output "primary_region" {
 #   sensitive   = true
 # }
 
+# ── Transit Gateway ───────────────────────────────────────────────────────────
+
+output "transit_gateway_id" {
+  description = "Transit Gateway ID"
+  value       = aws_ec2_transit_gateway.this.id
+}
+
 # ── Network VPC ────────────────────────────────────────────────────────────────
 
 output "network_vpc_id" {
@@ -110,4 +117,28 @@ output "ai_service_repository_url" {
 output "batch_repository_url" {
   description = "Batch Job ECR Repository URL"
   value       = module.ecr.batch_repository_url
+}
+
+output "prod_app_vpc_id" {
+  value = module.prod_app_vpc.vpc_id
+}
+
+output "prod_app_public_subnet_ids" {
+  value = module.prod_app_vpc.public_subnet_ids
+}
+
+output "prod_app_private_app_subnet_ids" {
+  value = module.prod_app_vpc.private_app_subnet_ids
+}
+
+output "prod_app_tgw_attachment_subnet_ids" {
+  value = module.prod_app_vpc.tgw_attachment_subnet_ids
+}
+
+output "prod_app_internet_gateway_id" {
+  value = module.prod_app_vpc.internet_gateway_id
+}
+
+output "prod_app_tgw_attachment_id" {
+  value = module.prod_app_vpc.tgw_attachment_id
 }

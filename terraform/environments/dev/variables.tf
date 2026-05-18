@@ -193,3 +193,15 @@ variable "ecr_encryption_type" {
   type        = string
   default     = "AES256"
 }
+
+variable "transit_gateway_id" {
+  description = "Transit Gateway ID for App VPC private route"
+  type        = string
+  default     = ""
+}
+
+variable "data_vpc_cidr" {
+  description = "Prod Data VPC CIDR"
+  type        = string
+  default     = "10.20.0.0/16"
+}
