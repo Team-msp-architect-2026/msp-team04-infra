@@ -42,3 +42,40 @@ output "primary_region" {
 #   value       = module.dev_eks.cluster_endpoint
 #   sensitive   = true
 # }
+
+# ── Network VPC ────────────────────────────────────────────────────────────────
+
+output "network_vpc_id" {
+  description = "Network VPC ID"
+  value       = module.network_vpc.network_vpc_id
+}
+
+output "network_public_subnet_ids" {
+  description = "Network VPC Public Subnet IDs"
+  value       = module.network_vpc.public_subnet_ids
+}
+
+output "network_tgw_attachment_subnet_ids" {
+  description = "Network VPC TGW Attachment Subnet IDs"
+  value       = module.network_vpc.tgw_attachment_subnet_ids
+}
+
+output "network_nat_gateway_id" {
+  description = "Centralized NAT Gateway ID"
+  value       = module.network_vpc.nat_gateway_id
+}
+
+output "network_igw_id" {
+  description = "Network VPC Internet Gateway ID"
+  value       = module.network_vpc.internet_gateway_id
+}
+
+output "network_public_route_table_id" {
+  description = "Network VPC Public Route Table ID"
+  value       = module.network_vpc.public_route_table_id
+}
+
+output "network_tgw_attachment_route_table_id" {
+  description = "Network VPC TGW Attachment Route Table ID"
+  value       = module.network_vpc.tgw_attachment_route_table_id
+}

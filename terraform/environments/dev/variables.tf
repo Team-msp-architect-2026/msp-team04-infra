@@ -23,6 +23,7 @@ variable "primary_region" {
   default     = "ap-northeast-3"
 }
 
+
 # ── VPC CIDR ───────────────────────────────────────────────────────────────────
 # Single AWS Account 기반 Multi-VPC 논리 분리 구조.
 # CIDR 블록은 VPC 간 겹침이 없도록 /16 단위로 할당한다.
@@ -143,4 +144,10 @@ variable "opensearch_instance_count" {
   description = "OpenSearch 데이터 노드 수. 데모: 2 (2-AZ), 운영: 3 (Multi-AZ with Standby)."
   type        = number
   default     = 2
+}
+
+variable "enable_nat_gateway" {
+  description = "Network VPC에 Centralized NAT Gateway를 생성할지 여부."
+  type        = bool
+  default     = true
 }
