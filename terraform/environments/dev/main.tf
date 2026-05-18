@@ -139,3 +139,64 @@ module "ecr" {
 #   domain_name = "moment.com"
 #   tags        = local.common_tags
 # }
+resource "aws_ec2_transit_gateway" "this" {
+  description = "MoMent dev transit gateway"
+
+  default_route_table_association = "enable"
+  default_route_table_propagation = "enable"
+  auto_accept_shared_attachments  = "enable"
+
+  dns_support      = "enable"
+  vpn_ecmp_support = "enable"
+
+  tags = {
+    Name        = "moment-dev-tgw"
+    Project     = "MoMent"
+    Environment = "dev"
+    ManagedBy   = "Terraform"
+    Issue       = "M2-NET-03"
+  }
+}
+
+module "prod_app_vpc" {
+  source = "../../modules/app-vpc"
+
+  name_prefix = "moment-dev-prod-app"
+
+  vpc_cidr = "10.10.0.0/16"
+
+  availability_zones = [
+    "ap-northeast-3a",
+    "ap-northeast-3c"
+  ]
+
+  public_subnet_cidrs = [
+    "10.10.0.0/24",
+    "10.10.1.0/24"
+  ]
+
+  private_app_subnet_cidrs = [
+    "10.10.10.0/24",
+    "10.10.11.0/24"
+  ]
+
+  tgw_attachment_subnet_cidrs = [
+    "10.10.100.0/28",
+    "10.10.100.16/28"
+  ]
+
+  # TGW가 이미 있으면 여기에 실제 TGW ID 넣기
+  transit_gateway_id = aws_ec2_transit_gateway.this.id
+
+  # Prod Data VPC CIDR 예정값
+  data_vpc_cidr = var.data_vpc_cidr
+
+  eks_cluster_name = "moment-dev-eks"
+
+  tags = {
+    Project     = "MoMent"
+    Environment = "dev"
+    ManagedBy   = "Terraform"
+    Issue       = "M2-NET-03"
+  }
+}
