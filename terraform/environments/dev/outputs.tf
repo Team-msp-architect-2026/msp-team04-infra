@@ -178,3 +178,82 @@ output "prod_data_tgw_attachment_id" {
   description = "Prod Data VPC TGW Attachment ID"
   value       = module.prod_data_vpc.tgw_attachment_id
 }
+
+# ── Dev App VPC ────────────────────────────────────────────────────────────────
+
+output "dev_app_vpc_id" {
+  description = "Dev App VPC ID"
+  value       = module.dev_app_vpc.vpc_id
+}
+
+output "dev_app_public_subnet_ids" {
+  description = "Dev App VPC Public Subnet IDs"
+  value       = module.dev_app_vpc.public_subnet_ids
+}
+
+output "dev_app_private_app_subnet_ids" {
+  description = "Dev App VPC Private App Subnet IDs"
+  value       = module.dev_app_vpc.private_app_subnet_ids
+}
+
+output "dev_app_tgw_attachment_subnet_ids" {
+  description = "Dev App VPC TGW Attachment Subnet IDs"
+  value       = module.dev_app_vpc.tgw_attachment_subnet_ids
+}
+
+output "dev_app_public_route_table_id" {
+  description = "Dev App VPC Public Route Table ID"
+  value       = module.dev_app_vpc.public_route_table_id
+}
+
+output "dev_app_private_app_route_table_id" {
+  description = "Dev App VPC Private App Route Table ID"
+  value       = module.dev_app_vpc.private_app_route_table_id
+}
+
+output "dev_app_internet_gateway_id" {
+  description = "Dev App VPC Internet Gateway ID"
+  value       = module.dev_app_vpc.internet_gateway_id
+}
+
+output "dev_app_tgw_attachment_id" {
+  description = "Dev App VPC TGW Attachment ID"
+  value       = module.dev_app_vpc.tgw_attachment_id
+}
+
+# ── Dev Data VPC ───────────────────────────────────────────────────────────────
+
+output "dev_data_vpc_id" {
+  description = "Dev Data VPC ID"
+  value       = module.dev_data_vpc.vpc_id
+}
+
+output "dev_data_private_db_subnet_ids" {
+  description = "Dev Data VPC Private DB Subnet IDs"
+  value       = module.dev_data_vpc.private_db_subnet_ids
+}
+
+output "dev_data_private_cache_subnet_ids" {
+  description = "Dev Data VPC Private Cache Subnet IDs"
+  value       = module.dev_data_vpc.private_cache_subnet_ids
+}
+
+output "dev_data_private_search_subnet_ids" {
+  description = "Dev Data VPC Private Search Subnet IDs"
+  value       = module.dev_data_vpc.private_search_subnet_ids
+}
+
+output "dev_data_tgw_attachment_subnet_ids" {
+  description = "Dev Data VPC TGW Attachment Subnet IDs"
+  value       = module.dev_data_vpc.tgw_attachment_subnet_ids
+}
+
+output "dev_data_private_route_table_id" {
+  description = "Dev Data VPC Private Route Table ID"
+  value       = module.dev_data_vpc.private_route_table_id
+}
+
+output "dev_data_tgw_attachment_id" {
+  description = "Dev Data VPC TGW Attachment ID"
+  value       = module.dev_data_vpc.tgw_attachment_id
+}
