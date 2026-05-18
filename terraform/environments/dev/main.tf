@@ -238,3 +238,77 @@ module "prod_data_vpc" {
     Issue = "M2-NET-04"
   })
 }
+
+# ── Dev App VPC ────────────────────────────────────────────────────────────────
+# 개발 환경 애플리케이션 워크로드가 배치될 Dev App VPC를 구성한다.
+# Public Subnet에는 Dev ALB를 배치할 수 있고, Private App Subnet에는 향후 Dev EKS Worker Node를 배치한다.
+
+module "dev_app_vpc" {
+  source = "../../modules/app-vpc"
+
+  name_prefix        = "${local.name_prefix}-dev-app"
+  vpc_cidr           = var.dev_app_vpc_cidr
+  availability_zones = var.availability_zones
+
+  public_subnet_cidrs = [
+    "10.30.0.0/24",
+    "10.30.1.0/24"
+  ]
+
+  private_app_subnet_cidrs = [
+    "10.30.10.0/24",
+    "10.30.11.0/24"
+  ]
+
+  tgw_attachment_subnet_cidrs = [
+    "10.30.100.0/28",
+    "10.30.100.16/28"
+  ]
+
+  transit_gateway_id = aws_ec2_transit_gateway.this.id
+  data_vpc_cidr      = var.dev_data_vpc_cidr
+  eks_cluster_name   = "moment-dev-eks"
+
+  tags = merge(local.common_tags, {
+    Issue = "M2-NET-05"
+  })
+}
+
+# ── Dev Data VPC ───────────────────────────────────────────────────────────────
+# 개발 환경의 RDS, Redis, OpenSearch 배치 후보 네트워크를 구성한다.
+# Data VPC에는 Internet Gateway를 생성하지 않고, Dev App VPC에서 TGW를 통해서만 접근하도록 구성한다.
+
+module "dev_data_vpc" {
+  source = "../../modules/data-vpc"
+
+  name_prefix        = "${local.name_prefix}-dev-data"
+  vpc_cidr           = var.dev_data_vpc_cidr
+  availability_zones = var.availability_zones
+
+  private_db_subnet_cidrs = [
+    "10.40.10.0/24",
+    "10.40.11.0/24"
+  ]
+
+  private_cache_subnet_cidrs = [
+    "10.40.20.0/24",
+    "10.40.21.0/24"
+  ]
+
+  private_search_subnet_cidrs = [
+    "10.40.30.0/24",
+    "10.40.31.0/24"
+  ]
+
+  tgw_attachment_subnet_cidrs = [
+    "10.40.100.0/28",
+    "10.40.100.16/28"
+  ]
+
+  transit_gateway_id = aws_ec2_transit_gateway.this.id
+  app_vpc_cidr       = var.dev_app_vpc_cidr
+
+  tags = merge(local.common_tags, {
+    Issue = "M2-NET-05"
+  })
+}
