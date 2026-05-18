@@ -42,3 +42,24 @@ terraform.rc
 # Optional: ignore plan files saved before destroying Terraform configuration
 # Uncomment the line below if you want to ignore planout files.
 # planout
+
+# ── 추가 항목 ──────────────────────────────────────────────────────────────────
+
+# tfvars.example은 커밋 허용 (위의 *.tfvars 규칙에서 예외 처리)
+!*.tfvars.example
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# 환경 변수
+.env
+.env.*
+!.env.example
+
+# 인증서/키
+*.pem
+*.key
