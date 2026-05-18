@@ -312,3 +312,130 @@ module "dev_data_vpc" {
     Issue = "M2-NET-05"
   })
 }
+
+# ── Transit Gateway Routing / Network Attachment ──────────────────────────────
+# M2-NET-02에서는 기존 Transit Gateway 본체를 삭제하거나 새로 만들지 않는다.
+# 이미 생성된 aws_ec2_transit_gateway.this를 기준으로 Network VPC Attachment와
+# 중앙 NAT egress 경로를 명시적으로 추가한다.
+
+resource "aws_ec2_transit_gateway_vpc_attachment" "network" {
+  subnet_ids         = module.network_vpc.tgw_attachment_subnet_ids
+  transit_gateway_id = aws_ec2_transit_gateway.this.id
+  vpc_id             = module.network_vpc.network_vpc_id
+
+  transit_gateway_default_route_table_association = false
+  transit_gateway_default_route_table_propagation = false
+
+  tags = merge(local.common_tags, {
+    Name  = "${local.name_prefix}-network-tgw-attachment"
+    Issue = "M2-NET-02"
+  })
+}
+
+# prod / dev / egress TGW Route Table은 향후 명시적 라우팅 분리를 위한 구조다.
+# 기존 App/Data attachment association은 이번 단계에서 변경하지 않아 통신 중단 위험을 줄인다.
+
+resource "aws_ec2_transit_gateway_route_table" "prod" {
+  transit_gateway_id = aws_ec2_transit_gateway.this.id
+
+  tags = merge(local.common_tags, {
+    Name  = "${local.name_prefix}-tgw-rt-prod"
+    Issue = "M2-NET-02"
+  })
+}
+
+resource "aws_ec2_transit_gateway_route_table" "dev" {
+  transit_gateway_id = aws_ec2_transit_gateway.this.id
+
+  tags = merge(local.common_tags, {
+    Name  = "${local.name_prefix}-tgw-rt-dev"
+    Issue = "M2-NET-02"
+  })
+}
+
+resource "aws_ec2_transit_gateway_route_table" "egress" {
+  transit_gateway_id = aws_ec2_transit_gateway.this.id
+
+  tags = merge(local.common_tags, {
+    Name  = "${local.name_prefix}-tgw-rt-egress"
+    Issue = "M2-NET-02"
+  })
+}
+
+# Network VPC Attachment는 egress route table에만 명시적으로 association한다.
+# Network VPC에서 App VPC로 돌아가는 return route는 egress RT에서 App CIDR propagation으로 처리한다.
+
+resource "aws_ec2_transit_gateway_route_table_association" "network_egress" {
+  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.network.id
+  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.egress.id
+}
+
+resource "aws_ec2_transit_gateway_route_table_propagation" "egress_prod_app" {
+  transit_gateway_attachment_id  = module.prod_app_vpc.tgw_attachment_id
+  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.egress.id
+}
+
+resource "aws_ec2_transit_gateway_route_table_propagation" "egress_dev_app" {
+  transit_gateway_attachment_id  = module.dev_app_vpc.tgw_attachment_id
+  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.egress.id
+}
+
+# prod/dev route table은 App/Data CIDR propagation과 egress static route를 준비한다.
+# 단, 기존 App/Data attachment association은 아직 default TGW RT에 유지한다.
+
+resource "aws_ec2_transit_gateway_route_table_propagation" "prod_app" {
+  transit_gateway_attachment_id  = module.prod_app_vpc.tgw_attachment_id
+  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.prod.id
+}
+
+resource "aws_ec2_transit_gateway_route_table_propagation" "prod_data" {
+  transit_gateway_attachment_id  = module.prod_data_vpc.tgw_attachment_id
+  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.prod.id
+}
+
+resource "aws_ec2_transit_gateway_route_table_propagation" "dev_app" {
+  transit_gateway_attachment_id  = module.dev_app_vpc.tgw_attachment_id
+  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.dev.id
+}
+
+resource "aws_ec2_transit_gateway_route_table_propagation" "dev_data" {
+  transit_gateway_attachment_id  = module.dev_data_vpc.tgw_attachment_id
+  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.dev.id
+}
+
+resource "aws_ec2_transit_gateway_route" "default_to_network" {
+  destination_cidr_block         = "0.0.0.0/0"
+  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.network.id
+  transit_gateway_route_table_id = aws_ec2_transit_gateway.this.association_default_route_table_id
+}
+
+resource "aws_ec2_transit_gateway_route" "prod_default_to_network" {
+  destination_cidr_block         = "0.0.0.0/0"
+  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.network.id
+  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.prod.id
+}
+
+resource "aws_ec2_transit_gateway_route" "dev_default_to_network" {
+  destination_cidr_block         = "0.0.0.0/0"
+  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.network.id
+  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.dev.id
+}
+
+# 중앙 NAT Gateway가 있는 Network VPC public subnet route table에
+# App VPC CIDR로 돌아가는 return route를 추가한다.
+
+resource "aws_route" "network_public_to_prod_app_tgw" {
+  route_table_id         = module.network_vpc.public_route_table_id
+  destination_cidr_block = var.prod_app_vpc_cidr
+  transit_gateway_id     = aws_ec2_transit_gateway.this.id
+
+  depends_on = [aws_ec2_transit_gateway_vpc_attachment.network]
+}
+
+resource "aws_route" "network_public_to_dev_app_tgw" {
+  route_table_id         = module.network_vpc.public_route_table_id
+  destination_cidr_block = var.dev_app_vpc_cidr
+  transit_gateway_id     = aws_ec2_transit_gateway.this.id
+
+  depends_on = [aws_ec2_transit_gateway_vpc_attachment.network]
+}
