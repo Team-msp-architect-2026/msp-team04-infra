@@ -1,239 +1,72 @@
-# MoMent Terraform Infrastructure
- 
-단일 AWS 계정 제약을 고려한 Primary Region Multi-VPC 논리 분리 아키텍처를  
-Terraform으로 관리하는 IaC 레포지토리.
- 
----
- 
-## 아키텍처 개요
- 
-| 구분 | 값 |
-|------|-----|
-| Primary Region | `ap-northeast-3` (Osaka) |
-| Secondary Region | `us-east-1` (N. Virginia) — CloudFront ACM 전용 |
-| 계정 구조 | Single AWS Account / Multi-VPC 논리 분리 |
- 
-### VPC 구성
- 
-| VPC | CIDR | 역할 |
-|-----|------|------|
-| Network VPC | `10.0.0.0/16` | Centralized NAT GW, Transit Gateway Attachment, optional Bastion/VPN |
-| Prod App VPC | `10.10.0.0/16` | ALB, EKS (Backend API / AI Service / Batch Job) |
-| Prod Data VPC | `10.20.0.0/16` | RDS PostgreSQL, ElastiCache Redis, OpenSearch |
-| Dev App VPC | `10.30.0.0/16` | Dev ALB, Dev EKS |
-| Dev Data VPC | `10.40.0.0/16` | Dev RDS, Dev Redis, Dev OpenSearch |
- 
-Transit Gateway를 통해 서비스 트래픽, 데이터 접근, 중앙 egress, 관리자 접근 경로를 분리한다.
- 
----
- 
+# MoMent Terraform 인프라
+
+## 개요
+
+MoMent 프로젝트의 AWS 인프라를 Terraform으로 관리합니다.
+Primary Region은 `ap-northeast-3` (Osaka)를 사용합니다.
+
 ## 디렉토리 구조
- 
 ```
-msp-team04-terraform/
-├── terraform/
-│   ├── environments/
-│   │   └── dev/                        # Dev 환경 루트 모듈
-│   │       ├── main.tf                 # 모듈 호출 (구현 진행에 따라 주석 해제)
-│   │       ├── variables.tf            # 공통 변수 정의
-│   │       ├── outputs.tf              # 환경 outputs
-│   │       ├── provider.tf             # AWS provider 설정 (ap-northeast-3 + use1 alias)
-│   │       └── terraform.tfvars.example
-│   │
-│   └── modules/                        # 재사용 가능한 Terraform 모듈
-│       ├── network-vpc/                # Network VPC, NAT GW, Public/Inspection/TGW Subnet
-│       ├── app-vpc/                    # App VPC, ALB, Public/Private App/TGW Subnet
-│       ├── data-vpc/                   # Data VPC, Private DB/Cache/Search/TGW Subnet
-│       ├── transit-gateway/            # Transit Gateway, prod/dev/egress Route Table
-│       ├── ecr/                        # ECR Repository (Backend API / AI Service / Batch Job)
-│       ├── eks/                        # EKS Cluster, Managed Node Group
-│       ├── rds/                        # RDS PostgreSQL
-│       ├── redis/                      # ElastiCache Redis / Valkey
-│       ├── opensearch/                 # OpenSearch Domain
-│       ├── s3/                         # S3 Bucket (Raw Data, Terraform State 등)
-│       ├── security-group/             # Security Group 공통 모듈
-│       └── vpc-endpoint/               # VPC Endpoint (S3, ECR, SSM 등)
+terraform/
+├── environments/
+│   └── dev/
+│       ├── main.tf                  # locals (공통 태그)
+│       ├── provider.tf              # AWS provider 설정
+│       ├── variables.tf             # 공통 변수 정의
+│       ├── outputs.tf               # 출력값
+│       └── terraform.tfvars.example # 변수 예시
 │
-├── .gitignore
-└── README.md
-```
- 
----
-
-## ECR Module
-
-`modules/ecr`는 MoMent 서비스 컨테이너 이미지를 저장할 Amazon ECR Repository를 생성한다.
-
-생성 Repository:
-
-- `moment-backend`
-- `moment-ai-service`
-- `moment-batch`
-
-주요 설정:
-
-- Image tag mutability: `IMMUTABLE`
-- Scan on push: enabled
-- Encryption: `AES256`
-- Lifecycle Policy:
-  - untagged image는 1일 후 삭제
-  - tagged image는 최근 10개만 유지
-
-### ECR Docker Push 예시
-
-```bash
-# 1. ECR 로그인
-aws ecr get-login-password --region ap-northeast-3 | docker login --username AWS --password-stdin <account-id>.dkr.ecr.ap-northeast-3.amazonaws.com
-
-# 2. Backend 이미지 빌드
-docker build -t moment-backend .
-
-# 3. ECR Repository 태그 지정
-docker tag moment-backend:latest <account-id>.dkr.ecr.ap-northeast-3.amazonaws.com/moment-backend:latest
-
-# 4. ECR로 이미지 push
-docker push <account-id>.dkr.ecr.ap-northeast-3.amazonaws.com/moment-backend:latest
+└── modules/
+├── network-vpc/     # Network VPC
+├── prod-vpc/        # Prod VPC
+├── dev-vpc/         # Dev VPC
+├── transit-gateway/
+├── security-group/
+├── vpc-endpoint/
+├── ecr/
+├── eks/
+├── rds/
+├── redis/
+├── opensearch/
+└── s3/
 ```
 
-### Terraform 실행 참고
+## VPC 구조
 
-현재 ECR 모듈은 `terraform/environments/dev/main.tf`에서 호출된다.
+| VPC | CIDR | 용도 |
+|-----|------|------|
+| Network VPC | 10.0.0.0/16 | 공통 네트워크 (NAT, IGW 등) |
+| Prod VPC | 10.10.0.0/16 | 운영 환경 |
+| Dev VPC | 10.20.0.0/16 | 개발 환경 |
 
-```hcl
-module "ecr" {
-  source = "../../modules/ecr"
+## Provider
 
-  repositories         = var.ecr_repositories
-  image_tag_mutability = var.ecr_image_tag_mutability
-  scan_on_push         = var.ecr_scan_on_push
-  encryption_type      = var.ecr_encryption_type
-  tags                 = local.common_tags
-}
-```
+| Provider | Region | 용도 |
+|----------|--------|------|
+| aws (default) | ap-northeast-3 | 기본 리소스 |
+| aws.use1 | us-east-1 | CloudFront ACM 인증서 |
 
-검증 명령어:
+## 공통 태그
 
-```bash
-terraform fmt -recursive
+모든 리소스에 아래 태그가 자동 적용됩니다.
 
-cd terraform/environments/dev
+| Key | Value |
+|-----|-------|
+| Project | moment |
+| Environment | dev / prod |
+| ManagedBy | terraform |
+| Owner | team04 |
 
-terraform init -backend=false
-
-terraform validate
-```
-
-> 실제 `terraform apply` 및 Docker image push 테스트는 S3 Remote Backend와 State Lock 구성이 완료된 이후 진행한다.
-
----
-
-## Network VPC Module
-
-`modules/network-vpc`는 Multi-VPC Hub-and-Spoke 구조에서 중앙 네트워크 허브 역할을 하는 Network VPC를 생성한다.
-
-생성 리소스:
-
-- Network VPC
-- Internet Gateway
-- Public Subnet 2개
-- TGW Attachment Subnet 2개
-- Public Route Table
-- Elastic IP
-- Centralized NAT Gateway
-- TGW Attachment Subnet Route Table
-
-Network VPC는 이후 Transit Gateway와 연결되어 App VPC / Data VPC의 outbound 트래픽이 중앙 NAT Gateway를 통해 외부 인터넷으로 나갈 수 있도록 구성된다.
-
-> 실제 `terraform apply`는 S3 Remote Backend와 State Lock 구성이 완료된 이후 진행한다.
-
----
- 
-## Provider 구성
- 
-```hcl
-# Primary: ap-northeast-3
-provider "aws" {
-  region = var.primary_region   # "ap-northeast-3"
-}
- 
-# Secondary: CloudFront ACM 전용 (us-east-1 필수)
-provider "aws" {
-  alias  = "use1"
-  region = "us-east-1"
-}
-```
- 
-CloudFront viewer HTTPS용 ACM 인증서는 반드시 `us-east-1`에 생성해야 한다.  
-ALB origin HTTPS용 ACM 인증서는 ALB가 위치한 `ap-northeast-3`에 생성한다.
- 
----
- 
 ## 시작하기
- 
-### 1. 사전 요구사항
- 
-- Terraform >= 1.7.0
-- AWS CLI 설정 완료 (`aws configure` 또는 환경 변수)
-- S3 Remote Backend용 버킷 및 DynamoDB 테이블 생성 (또는 S3 native lock 사용)
-### 2. 변수 파일 준비
- 
+
 ```bash
 cd terraform/environments/dev
+
 cp terraform.tfvars.example terraform.tfvars
-# terraform.tfvars 편집: rds_username, rds_password 등 민감 값 입력
-```
- 
-### 3. Backend 설정
- 
-`provider.tf`의 `backend "s3"` 블록 주석을 해제하고 실제 값을 입력하거나,  
-`backend.hcl` 파일을 별도로 작성하여 주입한다.
- 
-```bash
-# backend.hcl 방식 예시
-terraform init -backend-config=backend.hcl
-```
- 
-### 4. 초기화 및 검증
- 
-```bash
+# terraform.tfvars 값 수정 후
+
 terraform init
 terraform fmt -recursive
 terraform validate
+terraform plan
 ```
- 
-### 5. Plan / Apply
- 
-```bash
-terraform plan -out=tfplan
-terraform apply tfplan
-```
- 
----
- 
-## GitHub Actions CI/CD
- 
-인프라 변경은 Pull Request 기반으로 검토한 뒤 GitHub Actions를 통해 plan 및 apply를 수행한다.
- 
-- AWS 자격증명: GitHub OIDC → AWS IAM Role Assume (장기 Access Key 미사용)
-- State 파일: S3 Remote Backend (로컬 저장 금지)
-- State Lock: DynamoDB 또는 S3 native lock
-```
-Pull Request → GitHub Actions → terraform plan (PR 코멘트)
-Merge to main → GitHub Actions → terraform apply
-```
- 
----
- 
-## 네이밍 규칙
- 
-리소스 이름은 `{project_name}-{env}-{resource}` 형식을 사용한다.
- 
-예시: `moment-dev-app-vpc`, `moment-dev-eks`, `moment-prod-rds`
- 
----
- 
-## 참고
- 
-- [AWS Centralized Egress Architecture](https://docs.aws.amazon.com/vpc/latest/tgw/transit-gateway-nat-igw.html)
-- [AWS EKS Best Practices](https://aws.github.io/aws-eks-best-practices/)
-- [Terraform AWS Provider](https://registry.terraform.io/providers/hashicorp/aws/latest/docs)
