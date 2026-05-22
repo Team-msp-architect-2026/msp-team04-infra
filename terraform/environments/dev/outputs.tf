@@ -109,3 +109,63 @@ output "prod_igw_id" {
   description = "Prod Internet Gateway ID."
   value       = module.prod_vpc.prod_igw_id
 }
+
+output "dev_vpc_id" {
+  description = "Dev VPC ID."
+  value       = module.dev_vpc.dev_vpc_id
+}
+
+output "dev_vpc_cidr" {
+  description = "Dev VPC CIDR block."
+  value       = module.dev_vpc.dev_vpc_cidr
+}
+
+output "dev_public_subnet_ids" {
+  description = "Dev public subnet IDs."
+  value       = module.dev_vpc.dev_public_subnet_ids
+}
+
+output "dev_private_app_subnet_ids" {
+  description = "Dev private app subnet IDs."
+  value       = module.dev_vpc.dev_private_app_subnet_ids
+}
+
+output "dev_private_data_subnet_ids" {
+  description = "Dev private data subnet IDs."
+  value       = module.dev_vpc.dev_private_data_subnet_ids
+}
+
+output "dev_reserved_data_subnet_ids" {
+  description = "Dev reserved data subnet IDs."
+  value       = module.dev_vpc.dev_reserved_data_subnet_ids
+}
+
+output "dev_tgw_subnet_ids" {
+  description = "Dev TGW attachment subnet IDs."
+  value       = module.dev_vpc.dev_tgw_subnet_ids
+}
+
+output "dev_igw_id" {
+  description = "Dev Internet Gateway ID."
+  value       = module.dev_vpc.dev_igw_id
+}
+
+output "dev_public_route_table_id" {
+  description = "Dev public route table ID."
+  value       = module.dev_vpc.dev_public_route_table_id
+}
+
+output "dev_private_app_route_table_id" {
+  description = "Dev private app route table ID."
+  value       = module.dev_vpc.dev_private_app_route_table_id
+}
+
+output "dev_private_data_route_table_id" {
+  description = "Dev private data route table ID."
+  value       = module.dev_vpc.dev_private_data_route_table_id
+}
+
+output "dev_tgw_route_table_id" {
+  description = "Dev TGW subnet route table ID."
+  value       = module.dev_vpc.dev_tgw_route_table_id
+}
