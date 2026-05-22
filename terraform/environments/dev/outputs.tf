@@ -44,3 +44,33 @@ output "batch_repository_url" {
   description = "Batch Job ECR Repository URL."
   value       = module.ecr.batch_repository_url
 }
+
+output "network_vpc_id" {
+  description = "Network VPC ID."
+  value       = module.network_vpc.network_vpc_id
+}
+
+output "network_vpc_cidr" {
+  description = "Network VPC CIDR block."
+  value       = module.network_vpc.network_vpc_cidr
+}
+
+output "network_public_subnet_ids" {
+  description = "Network VPC public subnet IDs."
+  value       = module.network_vpc.public_subnet_ids
+}
+
+output "network_tgw_subnet_ids" {
+  description = "Network VPC TGW attachment subnet IDs."
+  value       = module.network_vpc.tgw_subnet_ids
+}
+
+output "network_nat_gateway_id" {
+  description = "Network VPC centralized NAT Gateway ID."
+  value       = module.network_vpc.nat_gateway_id
+}
+
+output "network_igw_id" {
+  description = "Network VPC Internet Gateway ID."
+  value       = module.network_vpc.igw_id
+}

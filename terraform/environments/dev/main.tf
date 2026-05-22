@@ -33,3 +33,29 @@ module "ecr" {
 
   tags = local.common_tags
 }
+
+module "network_vpc" {
+  source = "../../modules/network-vpc"
+
+  project_name = var.project_name
+  env          = var.env
+
+  vpc_cidr = "10.0.0.0/16"
+
+  availability_zones = [
+    "${var.primary_region}a",
+    "${var.primary_region}c"
+  ]
+
+  public_subnet_cidrs = [
+    "10.0.0.0/24",
+    "10.0.1.0/24"
+  ]
+
+  tgw_subnet_cidrs = [
+    "10.0.100.0/28",
+    "10.0.100.16/28"
+  ]
+
+  tags = local.common_tags
+}
