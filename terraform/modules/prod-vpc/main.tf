@@ -4,7 +4,9 @@ resource "aws_vpc" "this" {
   enable_dns_hostnames = true
 
   tags = merge(var.tags, {
-    Name = "${var.name_prefix}-vpc"
+    Name        = "${var.project_name}-${var.env}-vpc"
+    Environment = var.env
+    Role        = "prod-service-vpc"
   })
 }
 
@@ -12,7 +14,8 @@ resource "aws_internet_gateway" "this" {
   vpc_id = aws_vpc.this.id
 
   tags = merge(var.tags, {
-    Name = "${var.name_prefix}-igw"
+    Name        = "${var.project_name}-${var.env}-igw"
+    Environment = var.env
   })
 }
 
@@ -25,35 +28,60 @@ resource "aws_subnet" "public" {
   map_public_ip_on_launch = true
 
   tags = merge(var.tags, {
-    Name                                            = "${var.name_prefix}-public-${count.index + 1}"
-    "kubernetes.io/role/elb"                        = "1"
-    "kubernetes.io/cluster/${var.eks_cluster_name}" = "shared"
+    Name                     = "${var.project_name}-${var.env}-public-${count.index + 1}"
+    Environment              = var.env
+    Tier                     = "public"
+    Role                     = "internet-facing-alb"
+    "kubernetes.io/role/elb" = "1"
   })
 }
 
 resource "aws_subnet" "private_app" {
   count = length(var.private_app_subnet_cidrs)
 
-  vpc_id            = aws_vpc.this.id
-  cidr_block        = var.private_app_subnet_cidrs[count.index]
-  availability_zone = var.availability_zones[count.index]
+  vpc_id                  = aws_vpc.this.id
+  cidr_block              = var.private_app_subnet_cidrs[count.index]
+  availability_zone       = var.availability_zones[count.index]
+  map_public_ip_on_launch = false
 
   tags = merge(var.tags, {
-    Name                                            = "${var.name_prefix}-private-app-${count.index + 1}"
-    "kubernetes.io/role/internal-elb"               = "1"
-    "kubernetes.io/cluster/${var.eks_cluster_name}" = "shared"
+    Name                              = "${var.project_name}-${var.env}-private-app-${count.index + 1}"
+    Environment                       = var.env
+    Tier                              = "private-app"
+    Role                              = "eks-worker-node"
+    "kubernetes.io/role/internal-elb" = "1"
   })
 }
 
-resource "aws_subnet" "tgw_attachment" {
-  count = length(var.tgw_attachment_subnet_cidrs)
+resource "aws_subnet" "private_data" {
+  count = length(var.private_data_subnet_cidrs)
 
-  vpc_id            = aws_vpc.this.id
-  cidr_block        = var.tgw_attachment_subnet_cidrs[count.index]
-  availability_zone = var.availability_zones[count.index]
+  vpc_id                  = aws_vpc.this.id
+  cidr_block              = var.private_data_subnet_cidrs[count.index]
+  availability_zone       = var.availability_zones[count.index]
+  map_public_ip_on_launch = false
 
   tags = merge(var.tags, {
-    Name = "${var.name_prefix}-tgw-attach-${count.index + 1}"
+    Name        = "${var.project_name}-${var.env}-private-data-${count.index + 1}"
+    Environment = var.env
+    Tier        = "private-data"
+    Role        = "rds-redis-opensearch"
+  })
+}
+
+resource "aws_subnet" "tgw" {
+  count = length(var.tgw_subnet_cidrs)
+
+  vpc_id                  = aws_vpc.this.id
+  cidr_block              = var.tgw_subnet_cidrs[count.index]
+  availability_zone       = var.availability_zones[count.index]
+  map_public_ip_on_launch = false
+
+  tags = merge(var.tags, {
+    Name        = "${var.project_name}-${var.env}-tgw-${count.index + 1}"
+    Environment = var.env
+    Tier        = "tgw-attachment"
+    Role        = "transit-gateway-attachment"
   })
 }
 
@@ -61,11 +89,13 @@ resource "aws_route_table" "public" {
   vpc_id = aws_vpc.this.id
 
   tags = merge(var.tags, {
-    Name = "${var.name_prefix}-public-rt"
+    Name        = "${var.project_name}-${var.env}-public-rt"
+    Environment = var.env
+    Tier        = "public"
   })
 }
 
-resource "aws_route" "public_default_to_igw" {
+resource "aws_route" "public_to_igw" {
   route_table_id         = aws_route_table.public.id
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = aws_internet_gateway.this.id
@@ -78,44 +108,30 @@ resource "aws_route_table_association" "public" {
   route_table_id = aws_route_table.public.id
 }
 
-resource "aws_ec2_transit_gateway_vpc_attachment" "this" {
-  count = var.transit_gateway_id != "" ? 1 : 0
-
-  subnet_ids         = aws_subnet.tgw_attachment[*].id
-  transit_gateway_id = var.transit_gateway_id
-  vpc_id             = aws_vpc.this.id
-
-  tags = merge(var.tags, {
-    Name = "${var.name_prefix}-tgw-attachment"
-  })
-}
-
 resource "aws_route_table" "private_app" {
   vpc_id = aws_vpc.this.id
 
   tags = merge(var.tags, {
-    Name = "${var.name_prefix}-private-app-rt"
+    Name        = "${var.project_name}-${var.env}-private-app-rt"
+    Environment = var.env
+    Tier        = "private-app"
   })
 }
 
-resource "aws_route" "private_default_to_tgw" {
-  count = var.transit_gateway_id != "" ? 1 : 0
+resource "aws_route" "private_app_default_to_tgw" {
+  count = var.transit_gateway_id != null ? 1 : 0
 
   route_table_id         = aws_route_table.private_app.id
   destination_cidr_block = "0.0.0.0/0"
   transit_gateway_id     = var.transit_gateway_id
-
-  depends_on = [aws_ec2_transit_gateway_vpc_attachment.this]
 }
 
-resource "aws_route" "private_data_vpc_to_tgw" {
-  count = var.transit_gateway_id != "" ? 1 : 0
+resource "aws_route" "private_app_to_network_vpc" {
+  count = var.transit_gateway_id != null ? 1 : 0
 
   route_table_id         = aws_route_table.private_app.id
-  destination_cidr_block = var.data_vpc_cidr
+  destination_cidr_block = "10.0.0.0/16"
   transit_gateway_id     = var.transit_gateway_id
-
-  depends_on = [aws_ec2_transit_gateway_vpc_attachment.this]
 }
 
 resource "aws_route_table_association" "private_app" {
@@ -123,4 +139,38 @@ resource "aws_route_table_association" "private_app" {
 
   subnet_id      = aws_subnet.private_app[count.index].id
   route_table_id = aws_route_table.private_app.id
+}
+
+resource "aws_route_table" "private_data" {
+  vpc_id = aws_vpc.this.id
+
+  tags = merge(var.tags, {
+    Name        = "${var.project_name}-${var.env}-private-data-rt"
+    Environment = var.env
+    Tier        = "private-data"
+  })
+}
+
+resource "aws_route_table_association" "private_data" {
+  count = length(aws_subnet.private_data)
+
+  subnet_id      = aws_subnet.private_data[count.index].id
+  route_table_id = aws_route_table.private_data.id
+}
+
+resource "aws_route_table" "tgw" {
+  vpc_id = aws_vpc.this.id
+
+  tags = merge(var.tags, {
+    Name        = "${var.project_name}-${var.env}-tgw-rt"
+    Environment = var.env
+    Tier        = "tgw-attachment"
+  })
+}
+
+resource "aws_route_table_association" "tgw" {
+  count = length(aws_subnet.tgw)
+
+  subnet_id      = aws_subnet.tgw[count.index].id
+  route_table_id = aws_route_table.tgw.id
 }

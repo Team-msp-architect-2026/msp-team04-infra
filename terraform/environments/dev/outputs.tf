@@ -74,3 +74,38 @@ output "network_igw_id" {
   description = "Network VPC Internet Gateway ID."
   value       = module.network_vpc.igw_id
 }
+
+output "prod_vpc_id" {
+  description = "Prod VPC ID."
+  value       = module.prod_vpc.prod_vpc_id
+}
+
+output "prod_vpc_cidr" {
+  description = "Prod VPC CIDR block."
+  value       = module.prod_vpc.prod_vpc_cidr
+}
+
+output "prod_public_subnet_ids" {
+  description = "Prod public subnet IDs."
+  value       = module.prod_vpc.prod_public_subnet_ids
+}
+
+output "prod_private_app_subnet_ids" {
+  description = "Prod private app subnet IDs."
+  value       = module.prod_vpc.prod_private_app_subnet_ids
+}
+
+output "prod_private_data_subnet_ids" {
+  description = "Prod private data subnet IDs."
+  value       = module.prod_vpc.prod_private_data_subnet_ids
+}
+
+output "prod_tgw_subnet_ids" {
+  description = "Prod TGW attachment subnet IDs."
+  value       = module.prod_vpc.prod_tgw_subnet_ids
+}
+
+output "prod_igw_id" {
+  description = "Prod Internet Gateway ID."
+  value       = module.prod_vpc.prod_igw_id
+}
