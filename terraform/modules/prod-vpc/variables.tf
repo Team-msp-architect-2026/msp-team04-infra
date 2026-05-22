@@ -1,51 +1,51 @@
-variable "name_prefix" {
-  description = "리소스 이름 prefix"
+variable "project_name" {
+  description = "Project name."
+  type        = string
+}
+
+variable "env" {
+  description = "Workload environment name. Example: prod."
   type        = string
 }
 
 variable "vpc_cidr" {
-  description = "App VPC CIDR"
+  description = "Prod VPC CIDR block."
   type        = string
 }
 
 variable "availability_zones" {
-  description = "사용할 AZ 목록"
+  description = "Availability zones for subnet creation."
   type        = list(string)
 }
 
 variable "public_subnet_cidrs" {
-  description = "Public Subnet CIDR 목록"
+  description = "Public subnet CIDR blocks for internet-facing ALB."
   type        = list(string)
 }
 
 variable "private_app_subnet_cidrs" {
-  description = "Private App Subnet CIDR 목록"
+  description = "Private app subnet CIDR blocks for EKS worker nodes and pods."
   type        = list(string)
 }
 
-variable "tgw_attachment_subnet_cidrs" {
-  description = "TGW Attachment Subnet CIDR 목록"
+variable "private_data_subnet_cidrs" {
+  description = "Private data subnet CIDR blocks for RDS, Redis, and OpenSearch."
+  type        = list(string)
+}
+
+variable "tgw_subnet_cidrs" {
+  description = "TGW attachment subnet CIDR blocks."
   type        = list(string)
 }
 
 variable "transit_gateway_id" {
-  description = "Transit Gateway ID"
+  description = "Transit Gateway ID. If null, TGW routes are not created yet."
   type        = string
-  default     = ""
-}
-
-variable "data_vpc_cidr" {
-  description = "Data VPC CIDR"
-  type        = string
-}
-
-variable "eks_cluster_name" {
-  description = "EKS Cluster Name"
-  type        = string
+  default     = null
 }
 
 variable "tags" {
-  description = "공통 태그"
+  description = "Common tags."
   type        = map(string)
   default     = {}
 }
