@@ -40,7 +40,7 @@ module "network_vpc" {
   project_name = var.project_name
   env          = var.env
 
-  vpc_cidr = "10.0.0.0/16"
+  vpc_cidr = var.network_vpc_cidr
 
   availability_zones = [
     "${var.primary_region}a",
@@ -66,7 +66,7 @@ module "prod_vpc" {
   project_name = var.project_name
   env          = "prod"
 
-  vpc_cidr = "10.10.0.0/16"
+  vpc_cidr = var.prod_vpc_cidr
 
   availability_zones = [
     "${var.primary_region}a",
@@ -93,7 +93,6 @@ module "prod_vpc" {
     "10.10.100.16/28"
   ]
 
-  # TGW 생성 후 후속 이슈에서 연결
   transit_gateway_id = null
 
   tags = local.common_tags
@@ -105,7 +104,7 @@ module "dev_vpc" {
   project_name = var.project_name
   env          = "dev"
 
-  vpc_cidr = "10.20.0.0/16"
+  vpc_cidr = var.dev_vpc_cidr
 
   availability_zones = [
     "${var.primary_region}a",
@@ -132,8 +131,31 @@ module "dev_vpc" {
     "10.20.100.16/28"
   ]
 
-  # TGW 생성 후 후속 이슈에서 연결
   transit_gateway_id = null
+
+  tags = local.common_tags
+}
+
+module "transit_gateway" {
+  source = "../../modules/transit-gateway"
+
+  project_name = var.project_name
+  env          = var.env
+
+  network_vpc_id                = module.network_vpc.network_vpc_id
+  network_vpc_cidr              = module.network_vpc.network_vpc_cidr
+  network_tgw_subnet_ids        = module.network_vpc.tgw_subnet_ids
+  network_public_route_table_id = module.network_vpc.public_route_table_id
+
+  prod_vpc_id                     = module.prod_vpc.prod_vpc_id
+  prod_vpc_cidr                   = module.prod_vpc.prod_vpc_cidr
+  prod_tgw_subnet_ids             = module.prod_vpc.prod_tgw_subnet_ids
+  prod_private_app_route_table_id = module.prod_vpc.prod_private_app_route_table_id
+
+  dev_vpc_id                     = module.dev_vpc.dev_vpc_id
+  dev_vpc_cidr                   = module.dev_vpc.dev_vpc_cidr
+  dev_tgw_subnet_ids             = module.dev_vpc.dev_tgw_subnet_ids
+  dev_private_app_route_table_id = module.dev_vpc.dev_private_app_route_table_id
 
   tags = local.common_tags
 }

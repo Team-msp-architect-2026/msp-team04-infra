@@ -1,0 +1,75 @@
+variable "project_name" {
+  description = "Project name."
+  type        = string
+}
+
+variable "env" {
+  description = "Terraform environment name."
+  type        = string
+}
+
+variable "network_vpc_id" {
+  description = "Network VPC ID."
+  type        = string
+}
+
+variable "network_vpc_cidr" {
+  description = "Network VPC CIDR block."
+  type        = string
+}
+
+variable "network_tgw_subnet_ids" {
+  description = "Network VPC TGW attachment subnet IDs."
+  type        = list(string)
+}
+
+variable "network_public_route_table_id" {
+  description = "Network VPC public route table ID. NAT Gateway public subnet uses this route table."
+  type        = string
+}
+
+variable "prod_vpc_id" {
+  description = "Prod VPC ID."
+  type        = string
+}
+
+variable "prod_vpc_cidr" {
+  description = "Prod VPC CIDR block."
+  type        = string
+}
+
+variable "prod_tgw_subnet_ids" {
+  description = "Prod VPC TGW attachment subnet IDs."
+  type        = list(string)
+}
+
+variable "prod_private_app_route_table_id" {
+  description = "Prod VPC private app route table ID."
+  type        = string
+}
+
+variable "dev_vpc_id" {
+  description = "Dev VPC ID."
+  type        = string
+}
+
+variable "dev_vpc_cidr" {
+  description = "Dev VPC CIDR block."
+  type        = string
+}
+
+variable "dev_tgw_subnet_ids" {
+  description = "Dev VPC TGW attachment subnet IDs."
+  type        = list(string)
+}
+
+variable "dev_private_app_route_table_id" {
+  description = "Dev VPC private app route table ID."
+  type        = string
+}
+
+variable "tags" {
+  description = "Common tags."
+  type        = map(string)
+  default     = {}
+}

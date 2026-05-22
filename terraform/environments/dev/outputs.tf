@@ -45,6 +45,8 @@ output "batch_repository_url" {
   value       = module.ecr.batch_repository_url
 }
 
+# ── Network VPC Outputs ───────────────────────────────────────────────────────
+
 output "network_vpc_id" {
   description = "Network VPC ID."
   value       = module.network_vpc.network_vpc_id
@@ -74,6 +76,18 @@ output "network_igw_id" {
   description = "Network VPC Internet Gateway ID."
   value       = module.network_vpc.igw_id
 }
+
+output "network_public_route_table_id" {
+  description = "Network VPC public route table ID."
+  value       = module.network_vpc.public_route_table_id
+}
+
+output "network_tgw_route_table_id" {
+  description = "Network VPC TGW subnet route table ID."
+  value       = module.network_vpc.tgw_route_table_id
+}
+
+# ── Prod VPC Outputs ──────────────────────────────────────────────────────────
 
 output "prod_vpc_id" {
   description = "Prod VPC ID."
@@ -109,6 +123,28 @@ output "prod_igw_id" {
   description = "Prod Internet Gateway ID."
   value       = module.prod_vpc.prod_igw_id
 }
+
+output "prod_public_route_table_id" {
+  description = "Prod public route table ID."
+  value       = module.prod_vpc.prod_public_route_table_id
+}
+
+output "prod_private_app_route_table_id" {
+  description = "Prod private app route table ID."
+  value       = module.prod_vpc.prod_private_app_route_table_id
+}
+
+output "prod_private_data_route_table_id" {
+  description = "Prod private data route table ID."
+  value       = module.prod_vpc.prod_private_data_route_table_id
+}
+
+output "prod_tgw_route_table_id" {
+  description = "Prod VPC TGW subnet route table ID."
+  value       = module.prod_vpc.prod_tgw_route_table_id
+}
+
+# ── Dev VPC Outputs ───────────────────────────────────────────────────────────
 
 output "dev_vpc_id" {
   description = "Dev VPC ID."
@@ -166,6 +202,53 @@ output "dev_private_data_route_table_id" {
 }
 
 output "dev_tgw_route_table_id" {
-  description = "Dev TGW subnet route table ID."
+  description = "Dev VPC TGW subnet route table ID."
   value       = module.dev_vpc.dev_tgw_route_table_id
+}
+
+# ── Transit Gateway Outputs ───────────────────────────────────────────────────
+
+output "transit_gateway_id" {
+  description = "Transit Gateway ID."
+  value       = module.transit_gateway.transit_gateway_id
+}
+
+output "network_tgw_attachment_id" {
+  description = "Network VPC TGW attachment ID."
+  value       = module.transit_gateway.network_tgw_attachment_id
+}
+
+output "prod_tgw_attachment_id" {
+  description = "Prod VPC TGW attachment ID."
+  value       = module.transit_gateway.prod_tgw_attachment_id
+}
+
+output "dev_tgw_attachment_id" {
+  description = "Dev VPC TGW attachment ID."
+  value       = module.transit_gateway.dev_tgw_attachment_id
+}
+
+output "tgw_network_route_table_id" {
+  description = "Network TGW route table ID."
+  value       = module.transit_gateway.network_tgw_route_table_id
+}
+
+output "tgw_prod_route_table_id" {
+  description = "Prod TGW route table ID."
+  value       = module.transit_gateway.prod_tgw_route_table_id
+}
+
+output "tgw_dev_route_table_id" {
+  description = "Dev TGW route table ID."
+  value       = module.transit_gateway.dev_tgw_route_table_id
+}
+
+output "tgw_attachment_ids" {
+  description = "Transit Gateway attachment IDs by VPC role."
+  value       = module.transit_gateway.tgw_attachment_ids
+}
+
+output "tgw_route_table_ids" {
+  description = "Transit Gateway route table IDs by routing domain."
+  value       = module.transit_gateway.tgw_route_table_ids
 }
