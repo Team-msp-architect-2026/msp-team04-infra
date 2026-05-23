@@ -159,3 +159,52 @@ module "transit_gateway" {
 
   tags = local.common_tags
 }
+
+module "prod_security_group" {
+  source = "../../modules/security-group"
+
+  name_prefix       = "moment-prod"
+  environment       = "prod"
+  vpc_id            = module.prod_vpc.prod_vpc_id
+  create_service_sg = true
+  create_openvpn_sg = false
+
+  app_port          = var.app_port
+  admin_cidr_blocks = var.admin_cidr_blocks
+
+  common_tags = {
+    Project = "MoMent"
+  }
+}
+
+module "dev_security_group" {
+  source = "../../modules/security-group"
+
+  name_prefix       = "moment-dev"
+  environment       = "dev"
+  vpc_id            = module.dev_vpc.dev_vpc_id
+  create_service_sg = true
+  create_openvpn_sg = false
+
+  app_port          = var.app_port
+  admin_cidr_blocks = var.admin_cidr_blocks
+
+  common_tags = {
+    Project = "MoMent"
+  }
+}
+
+module "network_security_group" {
+  source = "../../modules/security-group"
+
+  name_prefix       = "moment-network"
+  environment       = "network"
+  vpc_id            = module.network_vpc.network_vpc_id
+  create_service_sg = false
+  create_openvpn_sg = true
+  admin_cidr_blocks = ["115.138.87.55/32"]
+
+  common_tags = {
+    Project = "MoMent"
+  }
+}

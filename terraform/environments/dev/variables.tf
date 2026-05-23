@@ -33,3 +33,14 @@ variable "dev_vpc_cidr" {
   type        = string
   default     = "10.20.0.0/16"
 }
+variable "admin_cidr_blocks" {
+  description = "Administrator CIDR blocks allowed to access OpenVPN"
+  type        = list(string)
+  default     = []
+}
+
+variable "app_port" {
+  description = "Application port exposed by EKS workload"
+  type        = number
+  default     = 8080
+}

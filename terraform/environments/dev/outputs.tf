@@ -252,3 +252,18 @@ output "tgw_route_table_ids" {
   description = "Transit Gateway route table IDs by routing domain."
   value       = module.transit_gateway.tgw_route_table_ids
 }
+
+output "prod_security_group_ids" {
+  description = "Prod security group IDs"
+  value       = module.prod_security_group.service_security_group_ids
+}
+
+output "dev_security_group_ids" {
+  description = "Dev security group IDs"
+  value       = module.dev_security_group.service_security_group_ids
+}
+
+output "network_openvpn_sg_id" {
+  description = "Network OpenVPN security group ID"
+  value       = module.network_security_group.openvpn_sg_id
+}
