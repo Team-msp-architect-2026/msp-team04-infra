@@ -282,3 +282,95 @@ module "iam" {
 
   common_tags = local.common_tags
 }
+
+module "dev_eks" {
+  count = var.enable_dev_eks ? 1 : 0
+
+  source = "../../modules/eks"
+
+  project_name = var.project_name
+  environment  = "dev"
+
+  cluster_name       = var.dev_eks_cluster_name
+  cluster_role_arn   = module.iam.role_arns.eks_cluster
+  kubernetes_version = var.prod_eks_kubernetes_version
+
+  subnet_ids                 = module.dev_vpc.dev_private_app_subnet_ids
+  cluster_security_group_ids = []
+
+  endpoint_private_access = true
+  endpoint_public_access  = true
+  public_access_cidrs     = var.dev_eks_public_access_cidrs
+
+  authentication_mode                         = "API"
+  bootstrap_cluster_creator_admin_permissions = false
+  cluster_admin_principal_arn                 = var.dev_eks_cluster_admin_principal_arn
+
+  addons = {
+    vpc-cni = {
+      addon_version = "v1.21.1-eksbuild.1"
+    }
+
+    coredns = {
+      addon_version = "v1.13.2-eksbuild.4"
+    }
+
+    kube-proxy = {
+      addon_version = "v1.35.3-eksbuild.2"
+    }
+
+    aws-ebs-csi-driver = {
+      addon_version = "v1.60.0-eksbuild.1"
+    }
+  }
+
+  common_tags = merge(local.common_tags, {
+    Environment = "dev"
+  })
+}
+
+module "prod_eks" {
+  count = var.enable_prod_eks ? 1 : 0
+
+  source = "../../modules/eks"
+
+  project_name = var.project_name
+  environment  = "prod"
+
+  cluster_name       = var.prod_eks_cluster_name
+  cluster_role_arn   = module.iam.role_arns.eks_cluster
+  kubernetes_version = var.prod_eks_kubernetes_version
+
+  subnet_ids                 = module.prod_vpc.prod_private_app_subnet_ids
+  cluster_security_group_ids = []
+
+  endpoint_private_access = true
+  endpoint_public_access  = true
+  public_access_cidrs     = var.prod_eks_public_access_cidrs
+
+  authentication_mode                         = "API"
+  bootstrap_cluster_creator_admin_permissions = false
+  cluster_admin_principal_arn                 = var.prod_eks_cluster_admin_principal_arn
+
+  addons = {
+    vpc-cni = {
+      addon_version = "v1.21.1-eksbuild.1"
+    }
+
+    coredns = {
+      addon_version = "v1.13.2-eksbuild.4"
+    }
+
+    kube-proxy = {
+      addon_version = "v1.35.3-eksbuild.2"
+    }
+
+    aws-ebs-csi-driver = {
+      addon_version = "v1.60.0-eksbuild.1"
+    }
+  }
+
+  common_tags = merge(local.common_tags, {
+    Environment = "prod"
+  })
+}

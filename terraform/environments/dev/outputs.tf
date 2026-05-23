@@ -336,3 +336,127 @@ output "iam_service_account_annotations" {
   description = "Kubernetes ServiceAccount annotations for IRSA"
   value       = module.iam.service_account_annotations
 }
+
+# ── Dev EKS Outputs ───────────────────────────────────────────────────────────
+
+output "dev_eks_enabled" {
+  description = "Whether Dev EKS cluster creation is enabled"
+  value       = var.enable_dev_eks
+}
+
+output "dev_eks_cluster_name" {
+  description = "Dev EKS cluster name"
+  value       = try(module.dev_eks[0].cluster_name, null)
+}
+
+output "dev_eks_cluster_arn" {
+  description = "Dev EKS cluster ARN"
+  value       = try(module.dev_eks[0].cluster_arn, null)
+}
+
+output "dev_eks_cluster_endpoint" {
+  description = "Dev EKS cluster API endpoint"
+  value       = try(module.dev_eks[0].cluster_endpoint, null)
+}
+
+output "dev_eks_cluster_ca_certificate" {
+  description = "Dev EKS cluster certificate authority data"
+  value       = try(module.dev_eks[0].cluster_certificate_authority_data, null)
+}
+
+output "dev_eks_cluster_version" {
+  description = "Dev EKS Kubernetes version"
+  value       = try(module.dev_eks[0].cluster_version, null)
+}
+
+output "dev_eks_cluster_status" {
+  description = "Dev EKS cluster status"
+  value       = try(module.dev_eks[0].cluster_status, null)
+}
+
+output "dev_eks_cluster_security_group_id" {
+  description = "Dev EKS cluster security group ID"
+  value       = try(module.dev_eks[0].cluster_security_group_id, null)
+}
+
+output "dev_eks_oidc_issuer_url" {
+  description = "Dev EKS OIDC issuer URL"
+  value       = try(module.dev_eks[0].cluster_oidc_issuer_url, null)
+}
+
+output "dev_eks_oidc_provider_arn" {
+  description = "Dev EKS IAM OIDC Provider ARN"
+  value       = try(module.dev_eks[0].eks_oidc_provider_arn, null)
+}
+
+output "dev_eks_addon_versions" {
+  description = "Dev EKS managed add-on versions"
+  value       = try(module.dev_eks[0].addon_versions, {})
+}
+
+output "dev_eks_ebs_csi_irsa_role_arn" {
+  description = "Dev EKS EBS CSI IRSA role ARN"
+  value       = try(module.dev_eks[0].ebs_csi_irsa_role_arn, null)
+}
+
+# ── Prod EKS Outputs ──────────────────────────────────────────────────────────
+
+output "prod_eks_enabled" {
+  description = "Whether Prod EKS cluster creation is enabled"
+  value       = var.enable_prod_eks
+}
+
+output "prod_eks_cluster_name" {
+  description = "Prod EKS cluster name"
+  value       = try(module.prod_eks[0].cluster_name, null)
+}
+
+output "prod_eks_cluster_arn" {
+  description = "Prod EKS cluster ARN"
+  value       = try(module.prod_eks[0].cluster_arn, null)
+}
+
+output "prod_eks_cluster_endpoint" {
+  description = "Prod EKS cluster API endpoint"
+  value       = try(module.prod_eks[0].cluster_endpoint, null)
+}
+
+output "prod_eks_cluster_ca_certificate" {
+  description = "Prod EKS cluster certificate authority data"
+  value       = try(module.prod_eks[0].cluster_certificate_authority_data, null)
+}
+
+output "prod_eks_cluster_version" {
+  description = "Prod EKS Kubernetes version"
+  value       = try(module.prod_eks[0].cluster_version, null)
+}
+
+output "prod_eks_cluster_status" {
+  description = "Prod EKS cluster status"
+  value       = try(module.prod_eks[0].cluster_status, null)
+}
+
+output "prod_eks_cluster_security_group_id" {
+  description = "Prod EKS cluster security group ID"
+  value       = try(module.prod_eks[0].cluster_security_group_id, null)
+}
+
+output "prod_eks_oidc_issuer_url" {
+  description = "Prod EKS OIDC issuer URL"
+  value       = try(module.prod_eks[0].cluster_oidc_issuer_url, null)
+}
+
+output "prod_eks_oidc_provider_arn" {
+  description = "Prod EKS IAM OIDC Provider ARN"
+  value       = try(module.prod_eks[0].eks_oidc_provider_arn, null)
+}
+
+output "prod_eks_addon_versions" {
+  description = "Prod EKS managed add-on versions"
+  value       = try(module.prod_eks[0].addon_versions, {})
+}
+
+output "prod_eks_ebs_csi_irsa_role_arn" {
+  description = "Prod EKS EBS CSI IRSA role ARN"
+  value       = try(module.prod_eks[0].ebs_csi_irsa_role_arn, null)
+}

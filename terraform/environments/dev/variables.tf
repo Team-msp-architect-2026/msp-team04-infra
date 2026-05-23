@@ -56,3 +56,57 @@ variable "enable_dev_vpc_endpoints" {
   type        = bool
   default     = true
 }
+
+variable "enable_dev_eks" {
+  description = "Whether to create the Dev EKS cluster by default for practice and validation."
+  type        = bool
+  default     = true
+}
+
+variable "enable_prod_eks" {
+  description = "Whether to create the Prod EKS cluster. Disabled by default for cost saving."
+  type        = bool
+  default     = false
+}
+
+variable "dev_eks_cluster_name" {
+  description = "Dev EKS cluster name for M2-EKS-01"
+  type        = string
+  default     = "moment-dev-eks-cluster"
+}
+
+variable "dev_eks_public_access_cidrs" {
+  description = "CIDR blocks allowed to access the Dev EKS public API endpoint"
+  type        = list(string)
+  default     = ["115.138.87.55/32"]
+}
+
+variable "dev_eks_cluster_admin_principal_arn" {
+  description = "IAM principal ARN granted cluster-admin access to the Dev EKS cluster through EKS Access Entry"
+  type        = string
+  default     = "arn:aws:iam::611058323802:user/student06"
+}
+
+variable "prod_eks_cluster_name" {
+  description = "Prod EKS cluster name for M2-EKS-01. Disabled by default for cost saving."
+  type        = string
+  default     = "moment-prod-eks-cluster"
+}
+
+variable "prod_eks_kubernetes_version" {
+  description = "Kubernetes version for Prod EKS cluster"
+  type        = string
+  default     = "1.35"
+}
+
+variable "prod_eks_public_access_cidrs" {
+  description = "CIDR blocks allowed to access the Prod EKS public API endpoint when Prod EKS is enabled"
+  type        = list(string)
+  default     = ["115.138.87.55/32"]
+}
+
+variable "prod_eks_cluster_admin_principal_arn" {
+  description = "IAM principal ARN granted cluster-admin access through EKS Access Entry"
+  type        = string
+  default     = "arn:aws:iam::611058323802:user/student06"
+}
