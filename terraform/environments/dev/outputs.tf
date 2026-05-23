@@ -289,3 +289,18 @@ output "dev_interface_endpoint_ids" {
   value       = try(module.dev_vpc_endpoint[0].interface_endpoint_ids, {})
 }
 
+
+output "raw_bucket_name" {
+  description = "Raw data S3 bucket name"
+  value       = module.s3_raw_bucket.raw_bucket_name
+}
+
+output "raw_bucket_arn" {
+  description = "Raw data S3 bucket ARN"
+  value       = module.s3_raw_bucket.raw_bucket_arn
+}
+
+output "raw_bucket_access_policy_arn" {
+  description = "IAM policy ARN for Batch and Collector raw bucket access"
+  value       = module.s3_raw_bucket.raw_bucket_access_policy_arn
+}

@@ -243,3 +243,18 @@ module "dev_vpc_endpoint" {
     Project = "MoMent"
   }
 }
+
+module "s3_raw_bucket" {
+  source = "../../modules/s3"
+
+  project_name = var.project_name
+  environment  = var.env
+
+  force_destroy = false
+
+  raw_expiration_days       = 90
+  processed_expiration_days = 180
+  failed_expiration_days    = 30
+
+  common_tags = local.common_tags
+}
