@@ -7,3 +7,6 @@ prod_vpc_cidr    = "10.10.0.0/16"
 dev_vpc_cidr     = "10.20.0.0/16"
 
 admin_cidr_blocks = ["115.138.87.55/32"]
+
+enable_prod_vpc_endpoints = false
+enable_dev_vpc_endpoints  = true

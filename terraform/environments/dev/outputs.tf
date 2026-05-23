@@ -267,3 +267,25 @@ output "network_openvpn_sg_id" {
   description = "Network OpenVPN security group ID"
   value       = module.network_security_group.openvpn_sg_id
 }
+
+
+output "prod_s3_gateway_endpoint_id" {
+  description = "Prod S3 Gateway Endpoint ID"
+  value       = try(module.prod_vpc_endpoint[0].s3_gateway_endpoint_id, null)
+}
+
+output "prod_interface_endpoint_ids" {
+  description = "Prod Interface Endpoint IDs"
+  value       = try(module.prod_vpc_endpoint[0].interface_endpoint_ids, {})
+}
+
+output "dev_s3_gateway_endpoint_id" {
+  description = "Dev S3 Gateway Endpoint ID"
+  value       = try(module.dev_vpc_endpoint[0].s3_gateway_endpoint_id, null)
+}
+
+output "dev_interface_endpoint_ids" {
+  description = "Dev Interface Endpoint IDs"
+  value       = try(module.dev_vpc_endpoint[0].interface_endpoint_ids, {})
+}
+

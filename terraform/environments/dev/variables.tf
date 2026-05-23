@@ -44,3 +44,15 @@ variable "app_port" {
   type        = number
   default     = 8080
 }
+
+variable "enable_prod_vpc_endpoints" {
+  description = "Whether to create Prod VPC Endpoints"
+  type        = bool
+  default     = false
+}
+
+variable "enable_dev_vpc_endpoints" {
+  description = "Whether to create Dev VPC Endpoints"
+  type        = bool
+  default     = true
+}
