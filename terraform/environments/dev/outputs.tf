@@ -304,3 +304,35 @@ output "raw_bucket_access_policy_arn" {
   description = "IAM policy ARN for Batch and Collector raw bucket access"
   value       = module.s3_raw_bucket.raw_bucket_access_policy_arn
 }
+
+# ── IAM / OIDC / IRSA Outputs ─────────────────────────────────────────────────
+
+output "iam_github_oidc_provider_arn" {
+  description = "GitHub Actions OIDC Provider ARN"
+  value       = module.iam.github_oidc_provider_arn
+}
+
+output "iam_eks_oidc_provider_arn" {
+  description = "EKS OIDC Provider ARN when configured"
+  value       = module.iam.eks_oidc_provider_arn
+}
+
+output "iam_role_arns" {
+  description = "IAM role ARNs"
+  value       = module.iam.role_arns
+}
+
+output "iam_policy_arns" {
+  description = "IAM policy ARNs"
+  value       = module.iam.policy_arns
+}
+
+output "iam_irsa_enabled" {
+  description = "Whether IRSA roles are currently enabled"
+  value       = module.iam.irsa_enabled
+}
+
+output "iam_service_account_annotations" {
+  description = "Kubernetes ServiceAccount annotations for IRSA"
+  value       = module.iam.service_account_annotations
+}

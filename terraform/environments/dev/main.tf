@@ -258,3 +258,27 @@ module "s3_raw_bucket" {
 
   common_tags = local.common_tags
 }
+
+module "iam" {
+  source = "../../modules/iam"
+
+  project_name = var.project_name
+  environment  = var.env
+
+  github_repository = "Team-msp-architect-2026/msp-team04-infra"
+
+  github_oidc_allowed_subjects = [
+    "repo:Team-msp-architect-2026/msp-team04-infra:ref:refs/heads/develop"
+  ]
+
+  ecr_repository_arns          = module.ecr.repository_arns
+  raw_bucket_access_policy_arn = module.s3_raw_bucket.raw_bucket_access_policy_arn
+
+  create_github_oidc_provider = false
+  github_oidc_provider_arn    = "arn:aws:iam::611058323802:oidc-provider/token.actions.githubusercontent.com"
+
+  create_eks_oidc_provider = false
+  enable_irsa_roles        = false
+
+  common_tags = local.common_tags
+}
