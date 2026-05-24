@@ -530,3 +530,72 @@ module "prod_redis" {
 
   common_tags = local.common_tags
 }
+
+module "dev_rds" {
+  count = var.enable_dev_rds ? 1 : 0
+
+  source = "../../modules/rds"
+
+  project_name = var.project_name
+  environment  = "dev"
+
+  identifier      = "${var.project_name}-dev-postgres"
+  database_name   = var.rds_database_name
+  master_username = var.rds_master_username
+
+  subnet_ids         = module.dev_vpc.dev_private_data_subnet_ids
+  security_group_ids = [module.dev_security_group.rds_sg_id]
+
+  engine_version         = var.rds_engine_version
+  parameter_group_family = var.rds_parameter_group_family
+  instance_class         = var.rds_instance_class
+
+  allocated_storage     = var.rds_allocated_storage
+  max_allocated_storage = var.rds_max_allocated_storage
+  storage_type          = "gp3"
+  storage_encrypted     = true
+
+  multi_az                = false
+  backup_retention_period = 1
+
+  deletion_protection = false
+  skip_final_snapshot = true
+
+  common_tags = local.common_tags
+}
+
+module "prod_rds" {
+  count = var.enable_prod_rds ? 1 : 0
+
+  source = "../../modules/rds"
+
+  project_name = var.project_name
+  environment  = "prod"
+
+  identifier      = "${var.project_name}-prod-postgres"
+  database_name   = var.rds_database_name
+  master_username = var.rds_master_username
+
+  subnet_ids         = module.prod_vpc.prod_private_data_subnet_ids
+  security_group_ids = [module.prod_security_group.rds_sg_id]
+
+  engine_version         = var.rds_engine_version
+  parameter_group_family = var.rds_parameter_group_family
+  instance_class         = var.rds_instance_class
+
+  allocated_storage     = var.rds_allocated_storage
+  max_allocated_storage = var.rds_max_allocated_storage
+  storage_type          = "gp3"
+  storage_encrypted     = true
+
+  multi_az                = var.prod_rds_multi_az
+  backup_retention_period = var.prod_rds_backup_retention_period
+
+  deletion_protection       = var.prod_rds_deletion_protection
+  skip_final_snapshot       = var.prod_rds_skip_final_snapshot
+  final_snapshot_identifier = coalesce(var.prod_rds_final_snapshot_identifier, "${var.project_name}-prod-postgres-final-snapshot")
+
+  common_tags = merge(local.common_tags, {
+    Environment = "prod"
+  })
+}

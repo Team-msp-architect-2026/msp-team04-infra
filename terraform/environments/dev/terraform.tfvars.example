@@ -10,3 +10,22 @@ admin_cidr_blocks = ["115.138.87.55/32"]
 
 enable_prod_vpc_endpoints = false
 enable_dev_vpc_endpoints  = true
+
+# RDS PostgreSQL
+enable_dev_rds  = true
+enable_prod_rds = false
+
+rds_engine_version         = "17.10"
+rds_parameter_group_family = "postgres17"
+rds_instance_class         = "db.t4g.micro"
+rds_database_name          = "moment"
+rds_master_username        = "moment_admin"
+rds_allocated_storage      = 20
+rds_max_allocated_storage  = 100
+
+# Prod RDS is disabled by default, but when enabled it follows the Prod Multi-AZ data tier design.
+prod_rds_multi_az                 = true
+prod_rds_backup_retention_period  = 7
+prod_rds_deletion_protection      = true
+prod_rds_skip_final_snapshot      = false
+prod_rds_final_snapshot_identifier = "moment-prod-postgres-final-snapshot"

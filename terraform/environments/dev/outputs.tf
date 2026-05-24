@@ -509,3 +509,57 @@ output "prod_redis_port" {
   description = "Prod Redis port."
   value       = var.enable_prod_redis ? module.prod_redis[0].redis_port : null
 }
+
+# ── RDS Outputs ───────────────────────────────────────────────────────────────
+
+output "dev_rds_endpoint" {
+  description = "Dev RDS PostgreSQL endpoint."
+  value       = var.enable_dev_rds ? module.dev_rds[0].db_endpoint : null
+}
+
+output "dev_rds_port" {
+  description = "Dev RDS PostgreSQL port."
+  value       = var.enable_dev_rds ? module.dev_rds[0].db_port : null
+}
+
+output "dev_rds_database_name" {
+  description = "Dev RDS initial database name."
+  value       = var.enable_dev_rds ? module.dev_rds[0].db_name : null
+}
+
+output "dev_rds_subnet_group_name" {
+  description = "Dev RDS subnet group name."
+  value       = var.enable_dev_rds ? module.dev_rds[0].db_subnet_group_name : null
+}
+
+output "dev_rds_master_user_secret_arn" {
+  description = "Dev RDS master user password secret ARN managed by RDS."
+  value       = var.enable_dev_rds ? module.dev_rds[0].master_user_secret_arn : null
+  sensitive   = true
+}
+
+output "prod_rds_endpoint" {
+  description = "Prod RDS PostgreSQL endpoint."
+  value       = var.enable_prod_rds ? module.prod_rds[0].db_endpoint : null
+}
+
+output "prod_rds_port" {
+  description = "Prod RDS PostgreSQL port."
+  value       = var.enable_prod_rds ? module.prod_rds[0].db_port : null
+}
+
+output "prod_rds_database_name" {
+  description = "Prod RDS initial database name."
+  value       = var.enable_prod_rds ? module.prod_rds[0].db_name : null
+}
+
+output "prod_rds_subnet_group_name" {
+  description = "Prod RDS subnet group name."
+  value       = var.enable_prod_rds ? module.prod_rds[0].db_subnet_group_name : null
+}
+
+output "prod_rds_master_user_secret_arn" {
+  description = "Prod RDS master user password secret ARN managed by RDS."
+  value       = var.enable_prod_rds ? module.prod_rds[0].master_user_secret_arn : null
+  sensitive   = true
+}

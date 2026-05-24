@@ -146,3 +146,87 @@ variable "redis_node_type" {
   type        = string
   default     = "cache.t3.micro"
 }
+
+variable "enable_dev_rds" {
+  description = "Whether to create Dev RDS PostgreSQL by default for development validation."
+  type        = bool
+  default     = true
+}
+
+variable "enable_prod_rds" {
+  description = "Whether to create Prod RDS PostgreSQL. Disabled by default for cost saving."
+  type        = bool
+  default     = false
+}
+
+variable "rds_engine_version" {
+  description = "PostgreSQL engine version for RDS."
+  type        = string
+  default     = "17.10"
+}
+
+variable "rds_parameter_group_family" {
+  description = "PostgreSQL parameter group family for RDS."
+  type        = string
+  default     = "postgres17"
+}
+
+variable "rds_instance_class" {
+  description = "RDS instance class for practice and validation."
+  type        = string
+  default     = "db.t4g.micro"
+}
+
+variable "rds_database_name" {
+  description = "Initial PostgreSQL database name."
+  type        = string
+  default     = "moment"
+}
+
+variable "rds_master_username" {
+  description = "PostgreSQL master username."
+  type        = string
+  default     = "moment_admin"
+}
+
+variable "rds_allocated_storage" {
+  description = "Allocated RDS storage size in GiB."
+  type        = number
+  default     = 20
+}
+
+variable "rds_max_allocated_storage" {
+  description = "Maximum RDS storage size in GiB for autoscaling."
+  type        = number
+  default     = 100
+}
+
+variable "prod_rds_multi_az" {
+  description = "Whether Prod RDS PostgreSQL uses Multi-AZ Primary/Standby deployment when Prod RDS is enabled."
+  type        = bool
+  default     = true
+}
+
+variable "prod_rds_backup_retention_period" {
+  description = "Backup retention period in days for Prod RDS PostgreSQL."
+  type        = number
+  default     = 7
+}
+
+variable "prod_rds_deletion_protection" {
+  description = "Whether deletion protection is enabled for Prod RDS PostgreSQL."
+  type        = bool
+  default     = true
+}
+
+variable "prod_rds_skip_final_snapshot" {
+  description = "Whether to skip final snapshot on Prod RDS destroy."
+  type        = bool
+  default     = false
+}
+
+variable "prod_rds_final_snapshot_identifier" {
+  description = "Final snapshot identifier for Prod RDS. If null, a default project-based name is used."
+  type        = string
+  default     = null
+}
