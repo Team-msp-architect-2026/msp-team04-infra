@@ -123,3 +123,9 @@ variable "opensearch_domain_arns" {
   type        = list(string)
   default     = []
 }
+
+variable "attach_lambda_raw_bucket_policy" {
+  description = "Whether to attach the raw bucket access policy to the Lambda collector role."
+  type        = bool
+  default     = false
+}

@@ -460,3 +460,25 @@ output "prod_eks_ebs_csi_irsa_role_arn" {
   description = "Prod EKS EBS CSI IRSA role ARN"
   value       = try(module.prod_eks[0].ebs_csi_irsa_role_arn, null)
 }
+
+# ── Dev EKS NodeGroup Outputs ─────────────────────────────────────────────────
+
+output "dev_eks_node_group_names" {
+  description = "Dev EKS managed node group names."
+  value       = var.enable_dev_eks && var.enable_dev_nodegroups ? module.dev_eks_nodegroups[0].node_group_names : {}
+}
+
+output "dev_eks_node_group_arns" {
+  description = "Dev EKS managed node group ARNs."
+  value       = var.enable_dev_eks && var.enable_dev_nodegroups ? module.dev_eks_nodegroups[0].node_group_arns : {}
+}
+
+output "dev_eks_node_group_statuses" {
+  description = "Dev EKS managed node group statuses."
+  value       = var.enable_dev_eks && var.enable_dev_nodegroups ? module.dev_eks_nodegroups[0].node_group_statuses : {}
+}
+
+output "eks_node_group_role_arn" {
+  description = "IAM role ARN used by EKS managed node groups."
+  value       = module.iam.role_arns.eks_node
+}

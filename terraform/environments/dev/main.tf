@@ -271,8 +271,9 @@ module "iam" {
     "repo:Team-msp-architect-2026/msp-team04-infra:ref:refs/heads/develop"
   ]
 
-  ecr_repository_arns          = module.ecr.repository_arns
-  raw_bucket_access_policy_arn = module.s3_raw_bucket.raw_bucket_access_policy_arn
+  ecr_repository_arns             = module.ecr.repository_arns
+  raw_bucket_access_policy_arn    = module.s3_raw_bucket.raw_bucket_access_policy_arn
+  attach_lambda_raw_bucket_policy = true
 
   create_github_oidc_provider = false
   github_oidc_provider_arn    = "arn:aws:iam::611058323802:oidc-provider/token.actions.githubusercontent.com"
@@ -373,4 +374,112 @@ module "prod_eks" {
   common_tags = merge(local.common_tags, {
     Environment = "prod"
   })
+}
+
+module "dev_eks_nodegroups" {
+  count = var.enable_dev_eks && var.enable_dev_nodegroups ? 1 : 0
+
+  source = "../../modules/eks-nodegroup"
+
+  project_name = var.project_name
+  environment  = "dev"
+
+  cluster_name  = module.dev_eks[0].cluster_name
+  node_role_arn = module.iam.role_arns.eks_node
+  subnet_ids    = module.dev_vpc.dev_private_app_subnet_ids
+
+  node_groups = {
+    core_on_demand = {
+      name           = "${var.project_name}-dev-core-on-demand-ng"
+      capacity_type  = "ON_DEMAND"
+      instance_types = ["t3.medium"]
+      min_size       = 1
+      desired_size   = 1
+      max_size       = 2
+      disk_size      = 20
+
+      labels = {
+        workload = "core"
+        capacity = "on-demand"
+      }
+
+      taints = []
+    }
+
+    batch_spot = {
+      name           = "${var.project_name}-dev-batch-spot-ng"
+      capacity_type  = "SPOT"
+      instance_types = ["t3.small", "t3.medium", "t3a.small", "t3a.medium"]
+      min_size       = 0
+      desired_size   = 0
+      max_size       = 2
+      disk_size      = 20
+
+      labels = {
+        workload = "batch"
+        capacity = "spot"
+      }
+
+      taints = [
+        {
+          key    = "workload"
+          value  = "batch"
+          effect = "NO_SCHEDULE"
+        }
+      ]
+    }
+
+    ai_spot = {
+      name           = "${var.project_name}-dev-ai-spot-ng"
+      capacity_type  = "SPOT"
+      instance_types = ["t3.medium", "t3.large", "t3a.medium", "t3a.large"]
+      min_size       = 0
+      desired_size   = 0
+      max_size       = 2
+      disk_size      = 30
+
+      labels = {
+        workload = "ai"
+        capacity = "spot"
+      }
+
+      taints = [
+        {
+          key    = "workload"
+          value  = "ai"
+          effect = "NO_SCHEDULE"
+        }
+      ]
+    }
+
+    ops_on_demand = {
+      name           = "${var.project_name}-dev-ops-on-demand-ng"
+      capacity_type  = "ON_DEMAND"
+      instance_types = ["t3.medium"]
+      min_size       = 0
+      desired_size   = 0
+      max_size       = 1
+      disk_size      = 20
+
+      labels = {
+        workload = "ops"
+        capacity = "on-demand"
+      }
+
+      taints = [
+        {
+          key    = "workload"
+          value  = "ops"
+          effect = "NO_SCHEDULE"
+        }
+      ]
+    }
+  }
+
+  common_tags = local.common_tags
+
+  depends_on = [
+    module.dev_eks,
+    module.iam
+  ]
 }

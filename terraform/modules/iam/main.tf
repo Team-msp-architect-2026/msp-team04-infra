@@ -508,7 +508,7 @@ resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_raw_bucket" {
-  count = var.raw_bucket_access_policy_arn != null ? 1 : 0
+  count = var.attach_lambda_raw_bucket_policy ? 1 : 0
 
   role       = aws_iam_role.lambda_collector.name
   policy_arn = var.raw_bucket_access_policy_arn
