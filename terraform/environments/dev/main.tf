@@ -483,3 +483,51 @@ module "dev_eks_nodegroups" {
     module.iam
   ]
 }
+
+module "dev_redis" {
+  count = var.enable_dev_redis ? 1 : 0
+
+  source = "../../modules/redis"
+
+  project_name = var.project_name
+  environment  = "dev"
+
+  replication_group_id = "${var.project_name}-dev-redis"
+  description          = "MoMent Dev Redis for distributed lock and recommendation cache"
+
+  subnet_ids         = module.dev_vpc.dev_private_data_subnet_ids
+  security_group_ids = [module.dev_security_group.redis_sg_id]
+
+  engine_version = var.redis_engine_version
+  node_type      = var.redis_node_type
+  port           = 6379
+
+  automatic_failover_enabled = false
+  multi_az_enabled           = false
+
+  common_tags = local.common_tags
+}
+
+module "prod_redis" {
+  count = var.enable_prod_redis ? 1 : 0
+
+  source = "../../modules/redis"
+
+  project_name = var.project_name
+  environment  = "prod"
+
+  replication_group_id = "${var.project_name}-prod-redis"
+  description          = "MoMent Prod Redis for distributed lock and recommendation cache"
+
+  subnet_ids         = module.prod_vpc.prod_private_data_subnet_ids
+  security_group_ids = [module.prod_security_group.redis_sg_id]
+
+  engine_version = var.redis_engine_version
+  node_type      = var.redis_node_type
+  port           = 6379
+
+  automatic_failover_enabled = false
+  multi_az_enabled           = false
+
+  common_tags = local.common_tags
+}

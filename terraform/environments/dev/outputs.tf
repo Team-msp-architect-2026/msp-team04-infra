@@ -482,3 +482,30 @@ output "eks_node_group_role_arn" {
   description = "IAM role ARN used by EKS managed node groups."
   value       = module.iam.role_arns.eks_node
 }
+
+# ── Redis Outputs ─────────────────────────────────────────────────────────────
+
+output "dev_redis_endpoint" {
+  description = "Dev Redis primary endpoint."
+  value       = var.enable_dev_redis ? module.dev_redis[0].redis_primary_endpoint : null
+}
+
+output "dev_redis_port" {
+  description = "Dev Redis port."
+  value       = var.enable_dev_redis ? module.dev_redis[0].redis_port : null
+}
+
+output "dev_redis_subnet_group_name" {
+  description = "Dev Redis subnet group name."
+  value       = var.enable_dev_redis ? module.dev_redis[0].redis_subnet_group_name : null
+}
+
+output "prod_redis_endpoint" {
+  description = "Prod Redis primary endpoint."
+  value       = var.enable_prod_redis ? module.prod_redis[0].redis_primary_endpoint : null
+}
+
+output "prod_redis_port" {
+  description = "Prod Redis port."
+  value       = var.enable_prod_redis ? module.prod_redis[0].redis_port : null
+}
