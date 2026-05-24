@@ -29,3 +29,19 @@ prod_rds_backup_retention_period  = 7
 prod_rds_deletion_protection      = true
 prod_rds_skip_final_snapshot      = false
 prod_rds_final_snapshot_identifier = "moment-prod-postgres-final-snapshot"
+
+# OpenSearch
+enable_dev_opensearch  = true
+enable_prod_opensearch = false
+
+# The OpenSearch service-linked role is account-level.
+# Keep this true only when AWSServiceRoleForAmazonOpenSearchService does not already exist.
+create_opensearch_service_linked_role = true
+
+opensearch_engine_version       = "OpenSearch_2.17"
+dev_opensearch_instance_type    = "t3.small.search"
+prod_opensearch_instance_type   = "t3.small.search"
+prod_opensearch_instance_count  = 2
+opensearch_ebs_volume_type      = "gp3"
+dev_opensearch_ebs_volume_size  = 10
+prod_opensearch_ebs_volume_size = 20

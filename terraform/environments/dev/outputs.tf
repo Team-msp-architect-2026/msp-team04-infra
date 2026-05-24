@@ -563,3 +563,40 @@ output "prod_rds_master_user_secret_arn" {
   value       = var.enable_prod_rds ? module.prod_rds[0].master_user_secret_arn : null
   sensitive   = true
 }
+
+# ── OpenSearch Outputs ────────────────────────────────────────────────────────
+
+output "dev_opensearch_domain_name" {
+  description = "Dev OpenSearch domain name."
+  value       = var.enable_dev_opensearch ? module.dev_opensearch[0].domain_name : null
+}
+
+output "dev_opensearch_domain_arn" {
+  description = "Dev OpenSearch domain ARN."
+  value       = var.enable_dev_opensearch ? module.dev_opensearch[0].domain_arn : null
+}
+
+output "dev_opensearch_endpoint" {
+  description = "Dev OpenSearch VPC endpoint."
+  value       = var.enable_dev_opensearch ? module.dev_opensearch[0].endpoint : null
+}
+
+output "dev_opensearch_dashboard_endpoint" {
+  description = "Dev OpenSearch Dashboards endpoint."
+  value       = var.enable_dev_opensearch ? module.dev_opensearch[0].dashboard_endpoint : null
+}
+
+output "prod_opensearch_domain_name" {
+  description = "Prod OpenSearch domain name."
+  value       = var.enable_prod_opensearch ? module.prod_opensearch[0].domain_name : null
+}
+
+output "prod_opensearch_domain_arn" {
+  description = "Prod OpenSearch domain ARN."
+  value       = var.enable_prod_opensearch ? module.prod_opensearch[0].domain_arn : null
+}
+
+output "prod_opensearch_endpoint" {
+  description = "Prod OpenSearch VPC endpoint."
+  value       = var.enable_prod_opensearch ? module.prod_opensearch[0].endpoint : null
+}
