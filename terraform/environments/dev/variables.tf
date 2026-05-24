@@ -122,3 +122,27 @@ variable "enable_prod_nodegroups" {
   type        = bool
   default     = false
 }
+
+variable "enable_dev_redis" {
+  description = "Whether to create Dev ElastiCache Redis by default for development validation."
+  type        = bool
+  default     = true
+}
+
+variable "enable_prod_redis" {
+  description = "Whether to create Prod ElastiCache Redis. Disabled by default for cost saving."
+  type        = bool
+  default     = false
+}
+
+variable "redis_engine_version" {
+  description = "Redis engine version."
+  type        = string
+  default     = "7.0"
+}
+
+variable "redis_node_type" {
+  description = "Redis node type for practice and validation."
+  type        = string
+  default     = "cache.t3.micro"
+}
