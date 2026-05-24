@@ -275,6 +275,17 @@ module "iam" {
   raw_bucket_access_policy_arn    = module.s3_raw_bucket.raw_bucket_access_policy_arn
   attach_lambda_raw_bucket_policy = true
 
+  opensearch_domain_arns = concat(
+    try([
+      module.dev_opensearch[0].domain_arn,
+      "${module.dev_opensearch[0].domain_arn}/*"
+    ], []),
+    try([
+      module.prod_opensearch[0].domain_arn,
+      "${module.prod_opensearch[0].domain_arn}/*"
+    ], [])
+  )
+
   create_github_oidc_provider = false
   github_oidc_provider_arn    = "arn:aws:iam::611058323802:oidc-provider/token.actions.githubusercontent.com"
 
@@ -594,6 +605,66 @@ module "prod_rds" {
   deletion_protection       = var.prod_rds_deletion_protection
   skip_final_snapshot       = var.prod_rds_skip_final_snapshot
   final_snapshot_identifier = coalesce(var.prod_rds_final_snapshot_identifier, "${var.project_name}-prod-postgres-final-snapshot")
+
+  common_tags = merge(local.common_tags, {
+    Environment = "prod"
+  })
+}
+
+
+module "dev_opensearch" {
+  count = var.enable_dev_opensearch ? 1 : 0
+
+  source = "../../modules/opensearch"
+
+  project_name = var.project_name
+  environment  = "dev"
+
+  domain_name    = "${var.project_name}-dev-opensearch"
+  engine_version = var.opensearch_engine_version
+
+  instance_type  = var.dev_opensearch_instance_type
+  instance_count = 1
+
+  zone_awareness_enabled = false
+
+  ebs_volume_type = var.opensearch_ebs_volume_type
+  ebs_volume_size = var.dev_opensearch_ebs_volume_size
+
+  subnet_ids         = slice(module.dev_vpc.dev_private_data_subnet_ids, 0, 1)
+  security_group_ids = [module.dev_security_group.opensearch_sg_id]
+
+  create_service_linked_role = var.create_opensearch_service_linked_role
+
+  common_tags = merge(local.common_tags, {
+    Environment = "dev"
+  })
+}
+
+module "prod_opensearch" {
+  count = var.enable_prod_opensearch ? 1 : 0
+
+  source = "../../modules/opensearch"
+
+  project_name = var.project_name
+  environment  = "prod"
+
+  domain_name    = "${var.project_name}-prod-opensearch"
+  engine_version = var.opensearch_engine_version
+
+  instance_type  = var.prod_opensearch_instance_type
+  instance_count = var.prod_opensearch_instance_count
+
+  zone_awareness_enabled  = var.prod_opensearch_zone_awareness_enabled
+  availability_zone_count = var.prod_opensearch_availability_zone_count
+
+  ebs_volume_type = var.opensearch_ebs_volume_type
+  ebs_volume_size = var.prod_opensearch_ebs_volume_size
+
+  subnet_ids         = module.prod_vpc.prod_private_data_subnet_ids
+  security_group_ids = [module.prod_security_group.opensearch_sg_id]
+
+  create_service_linked_role = false
 
   common_tags = merge(local.common_tags, {
     Environment = "prod"

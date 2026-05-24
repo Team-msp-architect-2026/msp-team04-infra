@@ -230,3 +230,75 @@ variable "prod_rds_final_snapshot_identifier" {
   type        = string
   default     = null
 }
+
+variable "enable_dev_opensearch" {
+  description = "Whether to create Dev OpenSearch by default for development validation."
+  type        = bool
+  default     = true
+}
+
+variable "enable_prod_opensearch" {
+  description = "Whether to create Prod OpenSearch. Disabled by default for cost saving."
+  type        = bool
+  default     = false
+}
+
+variable "create_opensearch_service_linked_role" {
+  description = "Whether to create the account-level OpenSearch service-linked role. Keep true only when the role does not already exist in the AWS account."
+  type        = bool
+  default     = true
+}
+
+variable "opensearch_engine_version" {
+  description = "OpenSearch engine version."
+  type        = string
+  default     = "OpenSearch_2.17"
+}
+
+variable "dev_opensearch_instance_type" {
+  description = "Dev OpenSearch instance type for cost-optimized validation."
+  type        = string
+  default     = "t3.small.search"
+}
+
+variable "prod_opensearch_instance_type" {
+  description = "Prod OpenSearch instance type used only when Prod OpenSearch is explicitly enabled."
+  type        = string
+  default     = "t3.small.search"
+}
+
+variable "prod_opensearch_instance_count" {
+  description = "Number of Prod OpenSearch data nodes when Prod OpenSearch is enabled."
+  type        = number
+  default     = 2
+}
+
+variable "prod_opensearch_zone_awareness_enabled" {
+  description = "Whether Prod OpenSearch uses zone awareness when explicitly enabled."
+  type        = bool
+  default     = true
+}
+
+variable "prod_opensearch_availability_zone_count" {
+  description = "Availability zone count for Prod OpenSearch zone awareness."
+  type        = number
+  default     = 2
+}
+
+variable "opensearch_ebs_volume_type" {
+  description = "OpenSearch EBS volume type."
+  type        = string
+  default     = "gp3"
+}
+
+variable "dev_opensearch_ebs_volume_size" {
+  description = "Dev OpenSearch EBS volume size in GiB."
+  type        = number
+  default     = 10
+}
+
+variable "prod_opensearch_ebs_volume_size" {
+  description = "Prod OpenSearch EBS volume size in GiB when Prod OpenSearch is enabled."
+  type        = number
+  default     = 20
+}
