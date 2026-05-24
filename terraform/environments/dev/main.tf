@@ -395,7 +395,7 @@ module "dev_eks_nodegroups" {
       instance_types = ["t3.medium"]
       min_size       = 1
       desired_size   = 1
-      max_size       = 2
+      max_size       = 1
       disk_size      = 20
 
       labels = {
@@ -409,7 +409,7 @@ module "dev_eks_nodegroups" {
     batch_spot = {
       name           = "${var.project_name}-dev-batch-spot-ng"
       capacity_type  = "SPOT"
-      instance_types = ["t3.small", "t3.medium", "t3a.small", "t3a.medium"]
+      instance_types = ["t3.medium"]
       min_size       = 0
       desired_size   = 0
       max_size       = 2
@@ -432,7 +432,7 @@ module "dev_eks_nodegroups" {
     ai_spot = {
       name           = "${var.project_name}-dev-ai-spot-ng"
       capacity_type  = "SPOT"
-      instance_types = ["t3.medium", "t3.large", "t3a.medium", "t3a.large"]
+      instance_types = ["t3.medium"]
       min_size       = 0
       desired_size   = 0
       max_size       = 2
@@ -479,7 +479,6 @@ module "dev_eks_nodegroups" {
   common_tags = local.common_tags
 
   depends_on = [
-    module.dev_eks,
     module.iam
   ]
 }
