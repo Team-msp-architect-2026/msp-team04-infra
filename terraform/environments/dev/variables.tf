@@ -110,3 +110,15 @@ variable "prod_eks_cluster_admin_principal_arn" {
   type        = string
   default     = "arn:aws:iam::611058323802:user/student06"
 }
+
+variable "enable_dev_nodegroups" {
+  description = "Whether to create Dev EKS managed node groups."
+  type        = bool
+  default     = true
+}
+
+variable "enable_prod_nodegroups" {
+  description = "Whether to create Prod EKS managed node groups. Disabled by default for cost saving."
+  type        = bool
+  default     = false
+}
