@@ -269,6 +269,43 @@ output "network_openvpn_sg_id" {
 }
 
 
+
+output "network_openvpn_instance_id" {
+  description = "Network OpenVPN EC2 instance ID."
+  value       = try(module.network_openvpn[0].instance_id, null)
+}
+
+output "network_openvpn_private_ip" {
+  description = "Network OpenVPN private IP."
+  value       = try(module.network_openvpn[0].private_ip, null)
+}
+
+output "network_openvpn_public_ip" {
+  description = "Network OpenVPN public IP."
+  value       = try(module.network_openvpn[0].public_ip, null)
+}
+
+output "network_openvpn_public_dns" {
+  description = "Network OpenVPN public DNS."
+  value       = try(module.network_openvpn[0].public_dns, null)
+}
+
+output "network_openvpn_client_config_path" {
+  description = "Generated OpenVPN client profile path on the instance."
+  value       = try(module.network_openvpn[0].client_config_path, null)
+}
+
+
+output "network_openvpn_client_profile_secret_name" {
+  description = "Secrets Manager secret name for generated OpenVPN client profile."
+  value       = try(module.network_openvpn[0].client_profile_secret_name, null)
+}
+
+output "network_openvpn_client_profile_secret_arn" {
+  description = "Secrets Manager secret ARN for generated OpenVPN client profile."
+  value       = try(module.network_openvpn[0].client_profile_secret_arn, null)
+}
+
 output "prod_s3_gateway_endpoint_id" {
   description = "Prod S3 Gateway Endpoint ID"
   value       = try(module.prod_vpc_endpoint[0].s3_gateway_endpoint_id, null)

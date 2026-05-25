@@ -39,6 +39,76 @@ variable "admin_cidr_blocks" {
   default     = []
 }
 
+
+variable "enable_network_openvpn" {
+  description = "Whether to create the Network VPC OpenVPN admin access instance."
+  type        = bool
+  default     = false
+}
+
+
+variable "openvpn_ami_id" {
+  description = "Optional AMI ID for OpenVPN. If empty, the OpenVPN module selects the latest Amazon Linux 2023 x86_64 AMI."
+  type        = string
+  default     = ""
+}
+
+variable "openvpn_instance_type" {
+  description = "OpenVPN EC2 instance type."
+  type        = string
+  default     = "t3.micro"
+}
+
+variable "openvpn_enable_eip" {
+  description = "Whether to allocate an Elastic IP for the OpenVPN instance."
+  type        = bool
+  default     = true
+}
+
+variable "openvpn_port" {
+  description = "OpenVPN port."
+  type        = number
+  default     = 1194
+}
+
+variable "openvpn_protocol" {
+  description = "OpenVPN protocol."
+  type        = string
+  default     = "udp"
+}
+
+variable "openvpn_vpn_cidr" {
+  description = "OpenVPN client tunnel CIDR."
+  type        = string
+  default     = "10.8.0.0/24"
+}
+
+variable "openvpn_client_name" {
+  description = "Default OpenVPN client profile name generated on the instance."
+  type        = string
+  default     = "moment-admin"
+}
+
+
+variable "openvpn_client_profile_secret_name" {
+  description = "Secrets Manager secret name for generated OpenVPN client profile. If empty, a project-based default name is used."
+  type        = string
+  default     = ""
+}
+
+variable "openvpn_client_profile_secret_recovery_window_in_days" {
+  description = "Secrets Manager recovery window in days for OpenVPN client profile. Use 0 for short-lived validation."
+  type        = number
+  default     = 0
+}
+
+variable "openvpn_root_volume_size" {
+  description = "OpenVPN EC2 root volume size in GiB."
+  type        = number
+  default     = 8
+}
+
+
 variable "app_port" {
   description = "Application port exposed by EKS workload"
   type        = number

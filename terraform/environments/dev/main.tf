@@ -202,11 +202,45 @@ module "network_security_group" {
   vpc_id            = module.network_vpc.network_vpc_id
   create_service_sg = false
   create_openvpn_sg = true
-  admin_cidr_blocks = ["115.138.87.55/32"]
+  admin_cidr_blocks = var.admin_cidr_blocks
+  openvpn_port      = var.openvpn_port
+  openvpn_protocol  = var.openvpn_protocol
 
   common_tags = {
     Project = "MoMent"
   }
+}
+
+module "network_openvpn" {
+  count  = var.enable_network_openvpn ? 1 : 0
+  source = "../../modules/openvpn"
+
+  name_prefix = "${var.project_name}-${var.env}-network"
+  environment = "network"
+
+  subnet_id         = module.network_vpc.public_subnet_ids[0]
+  security_group_id = module.network_security_group.openvpn_sg_id
+
+  ami_id        = var.openvpn_ami_id
+  instance_type = var.openvpn_instance_type
+
+  enable_eip                                    = var.openvpn_enable_eip
+  openvpn_port                                  = var.openvpn_port
+  openvpn_protocol                              = var.openvpn_protocol
+  vpn_cidr                                      = var.openvpn_vpn_cidr
+  route_cidrs                                   = [var.dev_vpc_cidr, var.prod_vpc_cidr]
+  client_name                                   = var.openvpn_client_name
+  client_profile_secret_name                    = var.openvpn_client_profile_secret_name
+  client_profile_secret_recovery_window_in_days = var.openvpn_client_profile_secret_recovery_window_in_days
+  root_volume_size                              = var.openvpn_root_volume_size
+
+  common_tags = merge(local.common_tags, {
+    Issue = "M2-NET-05"
+  })
+
+  depends_on = [
+    module.transit_gateway
+  ]
 }
 
 
