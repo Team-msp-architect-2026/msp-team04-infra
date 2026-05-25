@@ -61,6 +61,9 @@ variable "openvpn_protocol" {
   default     = "udp"
 }
 
+
+
+
 variable "common_tags" {
   description = "Common tags applied to all security groups"
   type        = map(string)

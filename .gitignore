@@ -55,3 +55,7 @@ __pycache__/
 
 # Terraform generated Lambda package
 terraform/modules/data-pipeline/*.zip
+.local/
+*.ovpn
+*.crt
+*.p12

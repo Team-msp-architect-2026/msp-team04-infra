@@ -338,6 +338,8 @@ resource "aws_security_group_rule" "openvpn_ingress_from_admin" {
   description = "Allow OpenVPN access from administrator CIDR blocks only"
 }
 
+
+
 resource "aws_security_group_rule" "openvpn_egress_all" {
   count = var.create_openvpn_sg ? 1 : 0
 
