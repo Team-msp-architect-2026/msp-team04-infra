@@ -123,6 +123,67 @@ variable "enable_prod_nodegroups" {
   default     = false
 }
 
+
+variable "enable_dev_sqs" {
+  description = "Whether to create Dev SQS queues for public data pipeline validation."
+  type        = bool
+  default     = true
+}
+
+variable "enable_prod_sqs" {
+  description = "Whether to create Prod SQS queues. Disabled by default for cost saving."
+  type        = bool
+  default     = false
+}
+
+variable "sqs_visibility_timeout_seconds" {
+  description = "Visibility timeout for SQS messages in seconds."
+  type        = number
+  default     = 300
+}
+
+variable "sqs_message_retention_seconds" {
+  description = "Message retention period for the main SQS queue in seconds."
+  type        = number
+  default     = 345600
+}
+
+variable "sqs_dlq_message_retention_seconds" {
+  description = "Message retention period for the SQS dead-letter queue in seconds."
+  type        = number
+  default     = 1209600
+}
+
+variable "sqs_max_receive_count" {
+  description = "Number of receives before moving a message to the DLQ."
+  type        = number
+  default     = 3
+}
+
+variable "sqs_receive_wait_time_seconds" {
+  description = "Long polling wait time for SQS receive calls in seconds."
+  type        = number
+  default     = 10
+}
+
+variable "sqs_delay_seconds" {
+  description = "Delay for new SQS messages in seconds."
+  type        = number
+  default     = 0
+}
+
+variable "sqs_max_message_size" {
+  description = "Maximum SQS message size in bytes."
+  type        = number
+  default     = 262144
+}
+
+variable "sqs_managed_sse_enabled" {
+  description = "Whether SQS managed server-side encryption is enabled."
+  type        = bool
+  default     = true
+}
+
 variable "enable_dev_redis" {
   description = "Whether to create Dev ElastiCache Redis by default for development validation."
   type        = bool
