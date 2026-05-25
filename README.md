@@ -29,7 +29,8 @@ terraform/
 ├── redis/
 ├── opensearch/
 ├── sqs/
-└── s3/
+├── s3/
+└── data-pipeline/
 ```
 
 ## VPC 구조
@@ -63,6 +64,7 @@ terraform/
 | 문서 | 설명 |
 | --- | --- |
 | docs/sqs.md | SQS + DLQ 구성, Dev/Prod 활성화 정책, IAM 연결 기준 |
+| docs/data-pipeline.md | EventBridge Scheduler + Lambda Collector 데이터 파이프라인 구성 및 Dev/Prod 활성화 정책 |
 
 ## 시작하기
 

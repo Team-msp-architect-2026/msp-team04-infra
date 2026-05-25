@@ -546,6 +546,69 @@ output "eks_node_group_role_arn" {
   value       = module.iam.role_arns.eks_node
 }
 
+
+# ── Data Pipeline Outputs ─────────────────────────────────────────────────────
+
+output "dev_data_pipeline_enabled" {
+  description = "Whether Dev data pipeline resources are enabled."
+  value       = var.enable_dev_data_pipeline && var.enable_dev_sqs
+}
+
+output "dev_data_pipeline_lambda_function_name" {
+  description = "Dev Lambda Collector function name."
+  value       = var.enable_dev_data_pipeline && var.enable_dev_sqs ? module.dev_data_pipeline[0].lambda_function_name : null
+}
+
+output "dev_data_pipeline_lambda_function_arn" {
+  description = "Dev Lambda Collector function ARN."
+  value       = var.enable_dev_data_pipeline && var.enable_dev_sqs ? module.dev_data_pipeline[0].lambda_function_arn : null
+}
+
+output "dev_data_pipeline_scheduler_schedule_group_name" {
+  description = "Dev EventBridge Scheduler schedule group name."
+  value       = var.enable_dev_data_pipeline && var.enable_dev_sqs ? module.dev_data_pipeline[0].scheduler_schedule_group_name : null
+}
+
+output "dev_data_pipeline_scheduler_schedule_name" {
+  description = "Dev EventBridge Scheduler schedule name."
+  value       = var.enable_dev_data_pipeline && var.enable_dev_sqs ? module.dev_data_pipeline[0].scheduler_schedule_name : null
+}
+
+output "dev_data_pipeline_scheduler_schedule_arn" {
+  description = "Dev EventBridge Scheduler schedule ARN."
+  value       = var.enable_dev_data_pipeline && var.enable_dev_sqs ? module.dev_data_pipeline[0].scheduler_schedule_arn : null
+}
+
+output "prod_data_pipeline_enabled" {
+  description = "Whether Prod data pipeline resources are enabled."
+  value       = var.enable_prod_data_pipeline && var.enable_prod_sqs
+}
+
+output "prod_data_pipeline_lambda_function_name" {
+  description = "Prod Lambda Collector function name."
+  value       = var.enable_prod_data_pipeline && var.enable_prod_sqs ? module.prod_data_pipeline[0].lambda_function_name : null
+}
+
+output "prod_data_pipeline_lambda_function_arn" {
+  description = "Prod Lambda Collector function ARN."
+  value       = var.enable_prod_data_pipeline && var.enable_prod_sqs ? module.prod_data_pipeline[0].lambda_function_arn : null
+}
+
+output "prod_data_pipeline_scheduler_schedule_group_name" {
+  description = "Prod EventBridge Scheduler schedule group name."
+  value       = var.enable_prod_data_pipeline && var.enable_prod_sqs ? module.prod_data_pipeline[0].scheduler_schedule_group_name : null
+}
+
+output "prod_data_pipeline_scheduler_schedule_name" {
+  description = "Prod EventBridge Scheduler schedule name."
+  value       = var.enable_prod_data_pipeline && var.enable_prod_sqs ? module.prod_data_pipeline[0].scheduler_schedule_name : null
+}
+
+output "prod_data_pipeline_scheduler_schedule_arn" {
+  description = "Prod EventBridge Scheduler schedule ARN."
+  value       = var.enable_prod_data_pipeline && var.enable_prod_sqs ? module.prod_data_pipeline[0].scheduler_schedule_arn : null
+}
+
 # ── Redis Outputs ─────────────────────────────────────────────────────────────
 
 output "dev_redis_endpoint" {

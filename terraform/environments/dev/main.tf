@@ -327,19 +327,21 @@ module "iam" {
   attach_lambda_raw_bucket_policy = true
 
   sqs_queue_arns = concat(
-    try([module.dev_sqs[0].queue_arn], []),
-    try([module.prod_sqs[0].queue_arn], [])
+    var.enable_dev_sqs ? [module.dev_sqs[0].queue_arn] : [],
+    var.enable_prod_sqs ? [module.prod_sqs[0].queue_arn] : []
   )
 
+  enable_sqs_queue_policy_statements = var.enable_dev_sqs || var.enable_prod_sqs
+
   opensearch_domain_arns = concat(
-    try([
+    var.enable_dev_opensearch ? [
       module.dev_opensearch[0].domain_arn,
       "${module.dev_opensearch[0].domain_arn}/*"
-    ], []),
-    try([
+    ] : [],
+    var.enable_prod_opensearch ? [
       module.prod_opensearch[0].domain_arn,
       "${module.prod_opensearch[0].domain_arn}/*"
-    ], [])
+    ] : []
   )
 
   create_github_oidc_provider = false
@@ -349,6 +351,72 @@ module "iam" {
   enable_irsa_roles        = false
 
   common_tags = local.common_tags
+}
+
+module "dev_data_pipeline" {
+  count = var.enable_dev_data_pipeline && var.enable_dev_sqs ? 1 : 0
+
+  source = "../../modules/data-pipeline"
+
+  project_name = var.project_name
+  environment  = "dev"
+
+  lambda_function_name = "${var.project_name}-dev-public-data-collector"
+  lambda_role_arn      = module.iam.lambda_collector_role_arn
+
+  raw_bucket_name     = module.s3_raw_bucket.raw_bucket_name
+  queue_url           = module.dev_sqs[0].queue_url
+  public_data_api_url = var.data_pipeline_public_data_api_url
+
+  schedule_expression = var.data_pipeline_schedule_expression
+  schedule_state      = var.dev_data_pipeline_schedule_state
+
+  lambda_runtime     = var.data_pipeline_lambda_runtime
+  lambda_timeout     = var.data_pipeline_lambda_timeout
+  lambda_memory_size = var.data_pipeline_lambda_memory_size
+  log_retention_days = var.data_pipeline_log_retention_days
+
+  common_tags = merge(local.common_tags, {
+    Environment = "dev"
+  })
+
+  depends_on = [
+    module.s3_raw_bucket,
+    module.dev_sqs
+  ]
+}
+
+module "prod_data_pipeline" {
+  count = var.enable_prod_data_pipeline && var.enable_prod_sqs ? 1 : 0
+
+  source = "../../modules/data-pipeline"
+
+  project_name = var.project_name
+  environment  = "prod"
+
+  lambda_function_name = "${var.project_name}-prod-public-data-collector"
+  lambda_role_arn      = module.iam.lambda_collector_role_arn
+
+  raw_bucket_name     = module.s3_raw_bucket.raw_bucket_name
+  queue_url           = module.prod_sqs[0].queue_url
+  public_data_api_url = var.data_pipeline_public_data_api_url
+
+  schedule_expression = var.data_pipeline_schedule_expression
+  schedule_state      = var.prod_data_pipeline_schedule_state
+
+  lambda_runtime     = var.data_pipeline_lambda_runtime
+  lambda_timeout     = var.data_pipeline_lambda_timeout
+  lambda_memory_size = var.data_pipeline_lambda_memory_size
+  log_retention_days = var.data_pipeline_log_retention_days
+
+  common_tags = merge(local.common_tags, {
+    Environment = "prod"
+  })
+
+  depends_on = [
+    module.s3_raw_bucket,
+    module.prod_sqs
+  ]
 }
 
 module "dev_eks" {

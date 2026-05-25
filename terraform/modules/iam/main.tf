@@ -350,7 +350,7 @@ data "aws_iam_policy_document" "batch_pod" {
   }
 
   dynamic "statement" {
-    for_each = length(var.sqs_queue_arns) > 0 ? [1] : []
+    for_each = var.enable_sqs_queue_policy_statements ? [1] : []
 
     content {
       sid    = "AllowSqsConsume"
@@ -516,7 +516,7 @@ resource "aws_iam_role_policy_attachment" "lambda_raw_bucket" {
 
 data "aws_iam_policy_document" "lambda_collector_extra" {
   dynamic "statement" {
-    for_each = length(var.sqs_queue_arns) > 0 ? [1] : []
+    for_each = var.enable_sqs_queue_policy_statements ? [1] : []
 
     content {
       sid    = "AllowSqsSend"
@@ -533,7 +533,7 @@ data "aws_iam_policy_document" "lambda_collector_extra" {
 }
 
 resource "aws_iam_policy" "lambda_collector_extra" {
-  count = length(var.sqs_queue_arns) > 0 ? 1 : 0
+  count = var.enable_sqs_queue_policy_statements ? 1 : 0
 
   name        = "${local.name_prefix}-lambda-collector-extra-policy"
   description = "Additional IAM policy for Lambda Collector"
@@ -543,7 +543,7 @@ resource "aws_iam_policy" "lambda_collector_extra" {
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_collector_extra" {
-  count = length(var.sqs_queue_arns) > 0 ? 1 : 0
+  count = var.enable_sqs_queue_policy_statements ? 1 : 0
 
   role       = aws_iam_role.lambda_collector.name
   policy_arn = aws_iam_policy.lambda_collector_extra[0].arn
