@@ -112,6 +112,12 @@ variable "raw_bucket_access_policy_arn" {
   default     = null
 }
 
+variable "enable_sqs_queue_policy_statements" {
+  description = "Whether to include SQS queue policy statements for Batch and Lambda Collector. Use a known boolean instead of deriving count from unknown queue ARNs."
+  type        = bool
+  default     = false
+}
+
 variable "sqs_queue_arns" {
   description = "SQS queue ARNs for Batch consume and Lambda send permissions"
   type        = list(string)

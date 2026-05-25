@@ -49,3 +49,9 @@ output "service_account_annotations" {
     }
   }
 }
+
+
+output "lambda_collector_role_arn" {
+  description = "Lambda Collector IAM role ARN."
+  value       = aws_iam_role.lambda_collector.arn
+}

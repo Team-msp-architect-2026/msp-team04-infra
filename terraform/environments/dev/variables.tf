@@ -184,6 +184,67 @@ variable "sqs_managed_sse_enabled" {
   default     = true
 }
 
+
+variable "enable_dev_data_pipeline" {
+  description = "Whether to create Dev EventBridge Scheduler and Lambda Collector for public data pipeline validation."
+  type        = bool
+  default     = true
+}
+
+variable "enable_prod_data_pipeline" {
+  description = "Whether to create Prod EventBridge Scheduler and Lambda Collector. Disabled by default for cost saving."
+  type        = bool
+  default     = false
+}
+
+variable "data_pipeline_public_data_api_url" {
+  description = "Public Data API URL used by Lambda Collector skeleton. Empty value keeps sample payload mode."
+  type        = string
+  default     = ""
+}
+
+variable "data_pipeline_schedule_expression" {
+  description = "EventBridge Scheduler expression for public data collection."
+  type        = string
+  default     = "rate(1 day)"
+}
+
+variable "dev_data_pipeline_schedule_state" {
+  description = "Dev EventBridge Scheduler state. Keep DISABLED unless scheduled execution is intentionally required."
+  type        = string
+  default     = "DISABLED"
+}
+
+variable "prod_data_pipeline_schedule_state" {
+  description = "Prod EventBridge Scheduler state. Keep DISABLED outside final demo or rehearsal."
+  type        = string
+  default     = "DISABLED"
+}
+
+variable "data_pipeline_lambda_runtime" {
+  description = "Lambda Collector runtime."
+  type        = string
+  default     = "python3.12"
+}
+
+variable "data_pipeline_lambda_timeout" {
+  description = "Lambda Collector timeout in seconds."
+  type        = number
+  default     = 30
+}
+
+variable "data_pipeline_lambda_memory_size" {
+  description = "Lambda Collector memory size in MB."
+  type        = number
+  default     = 128
+}
+
+variable "data_pipeline_log_retention_days" {
+  description = "CloudWatch Logs retention days for Lambda Collector."
+  type        = number
+  default     = 14
+}
+
 variable "enable_dev_redis" {
   description = "Whether to create Dev ElastiCache Redis by default for development validation."
   type        = bool

@@ -48,3 +48,10 @@ Thumbs.db
 # Certificates / keys
 *.pem
 *.key
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Terraform generated Lambda package
+terraform/modules/data-pipeline/*.zip
