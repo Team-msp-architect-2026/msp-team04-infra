@@ -92,5 +92,5 @@ metadata:
 
 - M2-EKS-01에서 EKS Cluster 생성 후 EKS OIDC issuer URL을 연결한다.
 - AWS Load Balancer Controller 설치 시 ServiceAccount에 IRSA annotation을 적용한다.
-- SQS 모듈 생성 후 Batch / Lambda Role에 SQS ARN을 연결한다.
+- SQS 모듈을 통해 생성된 Main Queue ARN을 Batch / Lambda Role에 연결한다.
 - OpenSearch 모듈 생성 후 AI Service Role에 OpenSearch Domain ARN을 연결한다.

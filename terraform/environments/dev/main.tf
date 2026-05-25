@@ -259,6 +259,57 @@ module "s3_raw_bucket" {
   common_tags = local.common_tags
 }
 
+
+module "dev_sqs" {
+  count = var.enable_dev_sqs ? 1 : 0
+
+  source = "../../modules/sqs"
+
+  project_name = var.project_name
+  environment  = "dev"
+
+  queue_name = "${var.project_name}-dev-public-data-queue"
+  dlq_name   = "${var.project_name}-dev-public-data-dlq"
+
+  visibility_timeout_seconds    = var.sqs_visibility_timeout_seconds
+  message_retention_seconds     = var.sqs_message_retention_seconds
+  dlq_message_retention_seconds = var.sqs_dlq_message_retention_seconds
+  max_receive_count             = var.sqs_max_receive_count
+  receive_wait_time_seconds     = var.sqs_receive_wait_time_seconds
+  delay_seconds                 = var.sqs_delay_seconds
+  max_message_size              = var.sqs_max_message_size
+  sqs_managed_sse_enabled       = var.sqs_managed_sse_enabled
+
+  common_tags = merge(local.common_tags, {
+    Environment = "dev"
+  })
+}
+
+module "prod_sqs" {
+  count = var.enable_prod_sqs ? 1 : 0
+
+  source = "../../modules/sqs"
+
+  project_name = var.project_name
+  environment  = "prod"
+
+  queue_name = "${var.project_name}-prod-public-data-queue"
+  dlq_name   = "${var.project_name}-prod-public-data-dlq"
+
+  visibility_timeout_seconds    = var.sqs_visibility_timeout_seconds
+  message_retention_seconds     = var.sqs_message_retention_seconds
+  dlq_message_retention_seconds = var.sqs_dlq_message_retention_seconds
+  max_receive_count             = var.sqs_max_receive_count
+  receive_wait_time_seconds     = var.sqs_receive_wait_time_seconds
+  delay_seconds                 = var.sqs_delay_seconds
+  max_message_size              = var.sqs_max_message_size
+  sqs_managed_sse_enabled       = var.sqs_managed_sse_enabled
+
+  common_tags = merge(local.common_tags, {
+    Environment = "prod"
+  })
+}
+
 module "iam" {
   source = "../../modules/iam"
 
@@ -274,6 +325,11 @@ module "iam" {
   ecr_repository_arns             = module.ecr.repository_arns
   raw_bucket_access_policy_arn    = module.s3_raw_bucket.raw_bucket_access_policy_arn
   attach_lambda_raw_bucket_policy = true
+
+  sqs_queue_arns = concat(
+    try([module.dev_sqs[0].queue_arn], []),
+    try([module.prod_sqs[0].queue_arn], [])
+  )
 
   opensearch_domain_arns = concat(
     try([

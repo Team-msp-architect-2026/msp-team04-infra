@@ -305,6 +305,69 @@ output "raw_bucket_access_policy_arn" {
   value       = module.s3_raw_bucket.raw_bucket_access_policy_arn
 }
 
+
+# ── SQS Outputs ───────────────────────────────────────────────────────────────
+
+output "dev_sqs_queue_name" {
+  description = "Dev SQS main queue name."
+  value       = var.enable_dev_sqs ? module.dev_sqs[0].queue_name : null
+}
+
+output "dev_sqs_queue_url" {
+  description = "Dev SQS main queue URL."
+  value       = var.enable_dev_sqs ? module.dev_sqs[0].queue_url : null
+}
+
+output "dev_sqs_queue_arn" {
+  description = "Dev SQS main queue ARN."
+  value       = var.enable_dev_sqs ? module.dev_sqs[0].queue_arn : null
+}
+
+output "dev_sqs_dlq_name" {
+  description = "Dev SQS dead-letter queue name."
+  value       = var.enable_dev_sqs ? module.dev_sqs[0].dlq_name : null
+}
+
+output "dev_sqs_dlq_url" {
+  description = "Dev SQS dead-letter queue URL."
+  value       = var.enable_dev_sqs ? module.dev_sqs[0].dlq_url : null
+}
+
+output "dev_sqs_dlq_arn" {
+  description = "Dev SQS dead-letter queue ARN."
+  value       = var.enable_dev_sqs ? module.dev_sqs[0].dlq_arn : null
+}
+
+output "prod_sqs_queue_name" {
+  description = "Prod SQS main queue name."
+  value       = var.enable_prod_sqs ? module.prod_sqs[0].queue_name : null
+}
+
+output "prod_sqs_queue_url" {
+  description = "Prod SQS main queue URL."
+  value       = var.enable_prod_sqs ? module.prod_sqs[0].queue_url : null
+}
+
+output "prod_sqs_queue_arn" {
+  description = "Prod SQS main queue ARN."
+  value       = var.enable_prod_sqs ? module.prod_sqs[0].queue_arn : null
+}
+
+output "prod_sqs_dlq_name" {
+  description = "Prod SQS dead-letter queue name."
+  value       = var.enable_prod_sqs ? module.prod_sqs[0].dlq_name : null
+}
+
+output "prod_sqs_dlq_url" {
+  description = "Prod SQS dead-letter queue URL."
+  value       = var.enable_prod_sqs ? module.prod_sqs[0].dlq_url : null
+}
+
+output "prod_sqs_dlq_arn" {
+  description = "Prod SQS dead-letter queue ARN."
+  value       = var.enable_prod_sqs ? module.prod_sqs[0].dlq_arn : null
+}
+
 # ── IAM / OIDC / IRSA Outputs ─────────────────────────────────────────────────
 
 output "iam_github_oidc_provider_arn" {

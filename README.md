@@ -28,6 +28,7 @@ terraform/
 ├── rds/
 ├── redis/
 ├── opensearch/
+├── sqs/
 └── s3/
 ```
 
@@ -56,6 +57,12 @@ terraform/
 | Environment | dev / prod |
 | ManagedBy | terraform |
 | Owner | team04 |
+
+## 주요 문서
+
+| 문서 | 설명 |
+| --- | --- |
+| docs/sqs.md | SQS + DLQ 구성, Dev/Prod 활성화 정책, IAM 연결 기준 |
 
 ## 시작하기
 
