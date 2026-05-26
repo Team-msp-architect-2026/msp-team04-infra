@@ -352,3 +352,57 @@ resource "aws_security_group_rule" "openvpn_egress_all" {
 
   description = "Allow OpenVPN outbound traffic"
 }
+
+# ==============================================================
+# EKS Cluster SG (자동생성) -> Data 서비스 접근 허용
+# 원인: EKS 노드 ENI에 실제 붙는 SG는 Terraform SG가 아닌
+#       EKS가 자동 생성한 Cluster SG (sg-04fd7dd77b6fd278e)
+# ==============================================================
+
+variable "eks_cluster_sg_id" {
+  description = "EKS Cluster auto-generated security group ID"
+  type        = string
+  default     = ""
+}
+
+resource "aws_security_group_rule" "rds_ingress_from_eks_cluster_sg" {
+  count = var.create_service_sg && var.eks_cluster_sg_id != "" ? 1 : 0
+
+  type                     = "ingress"
+  security_group_id        = aws_security_group.rds[0].id
+  from_port                = 5432
+  to_port                  = 5432
+  protocol                 = "tcp"
+  source_security_group_id = var.eks_cluster_sg_id
+
+  description = "Allow PostgreSQL from EKS Cluster SG (auto-generated)"
+}
+
+resource "aws_security_group_rule" "redis_ingress_from_eks_cluster_sg" {
+  count = var.create_service_sg && var.eks_cluster_sg_id != "" ? 1 : 0
+
+  type                     = "ingress"
+  security_group_id        = aws_security_group.redis[0].id
+  from_port                = 6379
+  to_port                  = 6379
+  protocol                 = "tcp"
+  source_security_group_id = var.eks_cluster_sg_id
+
+  description = "Allow Redis from EKS Cluster SG (auto-generated)"
+}
+
+resource "aws_security_group_rule" "opensearch_ingress_from_eks_cluster_sg" {
+  count = var.create_service_sg && var.eks_cluster_sg_id != "" ? 1 : 0
+
+  type                     = "ingress"
+  security_group_id        = aws_security_group.opensearch[0].id
+  from_port                = 443
+  to_port                  = 443
+  protocol                 = "tcp"
+  source_security_group_id = var.eks_cluster_sg_id
+
+  description = "Allow OpenSearch HTTPS from EKS Cluster SG (auto-generated)"
+}
+
+# EKS Cluster 자동생성 SG → Data 서비스 접근 허용
+# (노드 ENI에 실제 붙는 SG는 Terraform SG가 아닌 EKS Cluster SG)
