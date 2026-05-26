@@ -57,6 +57,8 @@ locals {
     "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/${local.name_prefix}*",
     "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/${local.name_prefix}*:*"
   ]
+
+  lambda_collector_extra_policy_enabled = var.enable_sqs_queue_policy_statements || var.enable_lambda_collector_secrets_manager_read
 }
 
 # ── GitHub Actions OIDC ───────────────────────────────────────────────────────
@@ -530,10 +532,26 @@ data "aws_iam_policy_document" "lambda_collector_extra" {
       resources = var.sqs_queue_arns
     }
   }
+
+  dynamic "statement" {
+    for_each = var.enable_lambda_collector_secrets_manager_read ? [1] : []
+
+    content {
+      sid    = "AllowLambdaCollectorSecretsManagerRead"
+      effect = "Allow"
+
+      actions = [
+        "secretsmanager:DescribeSecret",
+        "secretsmanager:GetSecretValue"
+      ]
+
+      resources = local.secrets_manager_resource_arns
+    }
+  }
 }
 
 resource "aws_iam_policy" "lambda_collector_extra" {
-  count = var.enable_sqs_queue_policy_statements ? 1 : 0
+  count = local.lambda_collector_extra_policy_enabled ? 1 : 0
 
   name        = "${local.name_prefix}-lambda-collector-extra-policy"
   description = "Additional IAM policy for Lambda Collector"
@@ -543,7 +561,7 @@ resource "aws_iam_policy" "lambda_collector_extra" {
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_collector_extra" {
-  count = var.enable_sqs_queue_policy_statements ? 1 : 0
+  count = local.lambda_collector_extra_policy_enabled ? 1 : 0
 
   role       = aws_iam_role.lambda_collector.name
   policy_arn = aws_iam_policy.lambda_collector_extra[0].arn

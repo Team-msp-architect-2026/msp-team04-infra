@@ -45,7 +45,25 @@ sqs_managed_sse_enabled            = true
 enable_dev_data_pipeline  = true
 enable_prod_data_pipeline = false
 
-data_pipeline_public_data_api_url   = ""
+data_pipeline_public_data_api_url = ""
+
+data_pipeline_public_data_sources_json = <<EOT
+[
+  {
+    "sourceName": "seoul_public_program",
+    "url": "https://example.com/public-data-api",
+    "method": "GET",
+    "contentType": "application/json",
+    "enabled": false,
+    "apiKeySecretName": "moment/dev/public-data/seoul-openapi",
+    "apiKeySecretJsonKey": "apiKey",
+    "apiKeyQueryParam": "KEY"
+  }
+]
+EOT
+
+enable_lambda_collector_secrets_manager_read = true
+
 data_pipeline_schedule_expression   = "rate(1 day)"
 dev_data_pipeline_schedule_state    = "DISABLED"
 prod_data_pipeline_schedule_state   = "DISABLED"

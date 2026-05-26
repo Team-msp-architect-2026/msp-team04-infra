@@ -365,7 +365,8 @@ module "iam" {
     var.enable_prod_sqs ? [module.prod_sqs[0].queue_arn] : []
   )
 
-  enable_sqs_queue_policy_statements = var.enable_dev_sqs || var.enable_prod_sqs
+  enable_sqs_queue_policy_statements           = var.enable_dev_sqs || var.enable_prod_sqs
+  enable_lambda_collector_secrets_manager_read = var.enable_lambda_collector_secrets_manager_read
 
   opensearch_domain_arns = concat(
     var.enable_dev_opensearch ? [
@@ -398,9 +399,11 @@ module "dev_data_pipeline" {
   lambda_function_name = "${var.project_name}-dev-public-data-collector"
   lambda_role_arn      = module.iam.lambda_collector_role_arn
 
-  raw_bucket_name     = module.s3_raw_bucket.raw_bucket_name
-  queue_url           = module.dev_sqs[0].queue_url
-  public_data_api_url = var.data_pipeline_public_data_api_url
+  raw_bucket_name                 = module.s3_raw_bucket.raw_bucket_name
+  queue_url                       = module.dev_sqs[0].queue_url
+  public_data_api_url             = var.data_pipeline_public_data_api_url
+  public_data_sources_json        = var.data_pipeline_public_data_sources_json
+  public_data_sources_secret_name = var.data_pipeline_public_data_sources_secret_name
 
   schedule_expression = var.data_pipeline_schedule_expression
   schedule_state      = var.dev_data_pipeline_schedule_state
@@ -431,9 +434,11 @@ module "prod_data_pipeline" {
   lambda_function_name = "${var.project_name}-prod-public-data-collector"
   lambda_role_arn      = module.iam.lambda_collector_role_arn
 
-  raw_bucket_name     = module.s3_raw_bucket.raw_bucket_name
-  queue_url           = module.prod_sqs[0].queue_url
-  public_data_api_url = var.data_pipeline_public_data_api_url
+  raw_bucket_name                 = module.s3_raw_bucket.raw_bucket_name
+  queue_url                       = module.prod_sqs[0].queue_url
+  public_data_api_url             = var.data_pipeline_public_data_api_url
+  public_data_sources_json        = var.data_pipeline_public_data_sources_json
+  public_data_sources_secret_name = var.data_pipeline_public_data_sources_secret_name
 
   schedule_expression = var.data_pipeline_schedule_expression
   schedule_state      = var.prod_data_pipeline_schedule_state
