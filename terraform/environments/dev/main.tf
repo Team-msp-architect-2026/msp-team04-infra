@@ -193,7 +193,7 @@ module "dev_security_group" {
     Project = "MoMent"
   }
 
-  eks_cluster_sg_id = module.dev_eks[0].cluster_security_group_id 
+  eks_cluster_sg_id = module.dev_eks[0].cluster_security_group_id
 }
 
 module "network_security_group" {
@@ -280,7 +280,6 @@ module "dev_vpc_endpoint" {
   }
 }
 
-<<<<<<< Updated upstream
 
 resource "aws_security_group_rule" "vpc_endpoint_ingress_from_eks_cluster_sg" {
   count = var.enable_dev_vpc_endpoints && var.enable_dev_eks ? 1 : 0
@@ -295,8 +294,6 @@ resource "aws_security_group_rule" "vpc_endpoint_ingress_from_eks_cluster_sg" {
   description = "Allow HTTPS from EKS cluster SG (auto-created) to VPC endpoints"
 }
 
-=======
->>>>>>> Stashed changes
 module "s3_raw_bucket" {
   source = "../../modules/s3"
 
@@ -310,7 +307,6 @@ module "s3_raw_bucket" {
   failed_expiration_days    = 30
 
   common_tags = local.common_tags
-<<<<<<< Updated upstream
 }
 
 
@@ -885,6 +881,4 @@ module "edge" {
     ManagedBy   = "terraform"
     Issue       = "M2-EDGE-01"
   }
-=======
->>>>>>> Stashed changes
 }
