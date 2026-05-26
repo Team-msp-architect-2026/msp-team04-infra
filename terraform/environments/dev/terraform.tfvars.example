@@ -88,3 +88,20 @@ prod_opensearch_instance_count  = 2
 opensearch_ebs_volume_type      = "gp3"
 dev_opensearch_ebs_volume_size  = 10
 prod_opensearch_ebs_volume_size = 20
+
+# Edge Layer
+enable_edge    = true
+enable_waf     = true
+
+# 도메인 없으면 빈 문자열 유지 (CloudFront 기본 도메인 사용)
+edge_domain_name               = ""
+edge_subject_alternative_names = []
+create_route53_hosted_zone     = false
+
+# Prod ALB 미구성 상태 — ALB 완성 후 아래 값 채울 것
+prod_alb_dns_name      = ""
+prod_alb_https_enabled = false
+
+# CloudFront → ALB 헤더 (실제 배포 전 반드시 변경)
+cloudfront_secret_header_value = "moment-cf-secret-change-me"
+cloudfront_price_class         = "PriceClass_All"

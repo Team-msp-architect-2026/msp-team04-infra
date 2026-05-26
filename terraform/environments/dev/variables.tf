@@ -494,3 +494,59 @@ variable "prod_opensearch_ebs_volume_size" {
   type        = number
   default     = 20
 }
+
+# ─── Edge Layer ──────────────────────────────────────────────────────────────
+variable "enable_edge" {
+  description = "Edge 계층(CloudFront/WAF/ACM) 생성 여부"
+  type        = bool
+  default     = false
+}
+
+variable "enable_waf" {
+  description = "WAF Web ACL 생성 여부"
+  type        = bool
+  default     = true
+}
+
+variable "edge_domain_name" {
+  description = "커스텀 도메인명 (없으면 빈 문자열)"
+  type        = string
+  default     = ""
+}
+
+variable "edge_subject_alternative_names" {
+  description = "ACM 추가 도메인 목록"
+  type        = list(string)
+  default     = []
+}
+
+variable "create_route53_hosted_zone" {
+  description = "Route53 Hosted Zone 신규 생성 여부"
+  type        = bool
+  default     = false
+}
+
+variable "prod_alb_dns_name" {
+  description = "Prod ALB DNS명 (CloudFront Origin). Prod ALB 생성 전엔 빈 문자열"
+  type        = string
+  default     = ""
+}
+
+variable "prod_alb_https_enabled" {
+  description = "CloudFront → Prod ALB HTTPS 사용 여부"
+  type        = bool
+  default     = false
+}
+
+variable "cloudfront_secret_header_value" {
+  description = "X-CloudFront-Secret 헤더 값 (ALB 직접 접근 차단용)"
+  type        = string
+  sensitive   = true
+  default     = "moment-cf-secret-change-me"
+}
+
+variable "cloudfront_price_class" {
+  description = "CloudFront 요금제 클래스"
+  type        = string
+  default     = "PriceClass_All"
+}

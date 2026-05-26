@@ -763,3 +763,29 @@ output "prod_opensearch_endpoint" {
   description = "Prod OpenSearch VPC endpoint."
   value       = var.enable_prod_opensearch ? module.prod_opensearch[0].endpoint : null
 }
+
+# ─── Edge Layer ──────────────────────────────────────────────────────────────
+output "cloudfront_domain_name" {
+  description = "CloudFront 도메인명"
+  value       = var.enable_edge ? module.edge[0].cloudfront_domain_name : null
+}
+
+output "cloudfront_distribution_id" {
+  description = "CloudFront 배포 ID"
+  value       = var.enable_edge ? module.edge[0].cloudfront_distribution_id : null
+}
+
+output "waf_web_acl_id" {
+  description = "WAF Web ACL ID"
+  value       = var.enable_edge ? module.edge[0].waf_web_acl_id : null
+}
+
+output "waf_web_acl_arn" {
+  description = "WAF Web ACL ARN"
+  value       = var.enable_edge ? module.edge[0].waf_web_acl_arn : null
+}
+
+output "acm_certificate_arn" {
+  description = "CloudFront용 ACM 인증서 ARN (us-east-1)"
+  value       = var.enable_edge ? module.edge[0].acm_certificate_arn : null
+}
