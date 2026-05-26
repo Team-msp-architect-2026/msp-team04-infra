@@ -6,6 +6,16 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
+
+    helm = {
+      source  = "hashicorp/helm"
+      version = "~> 2.0"
+    }
+
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "~> 2.0"
+    }
   }
 }
 
@@ -18,7 +28,7 @@ provider "aws" {
 }
 
 provider "aws" {
-  alias  = "use1"
+  alias  = "us_east_1"
   region = "us-east-1"
 
   default_tags {

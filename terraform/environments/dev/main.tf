@@ -848,3 +848,35 @@ module "prod_opensearch" {
   })
 }
 
+module "edge" {
+  count  = var.enable_edge ? 1 : 0
+  source = "../../modules/edge"
+
+  providers = {
+    aws           = aws
+    aws.us_east_1 = aws.us_east_1
+  }
+
+  name_prefix = "moment-prod"
+
+  # 도메인 없으면 빈 문자열 유지 → CloudFront 기본 도메인 사용
+  domain_name                = var.edge_domain_name
+  subject_alternative_names  = var.edge_subject_alternative_names
+  create_route53_hosted_zone = var.create_route53_hosted_zone
+
+  # Prod ALB 구성 완료 후 채워 넣을 값
+  # enable_prod_alb 완료 시: module.prod_alb.dns_name
+  alb_dns_name      = var.prod_alb_dns_name
+  alb_https_enabled = var.prod_alb_https_enabled
+
+  enable_waf                     = var.enable_waf
+  cloudfront_secret_header_value = var.cloudfront_secret_header_value
+  price_class                    = var.cloudfront_price_class
+
+  tags = {
+    Project     = "moment"
+    Environment = "prod"
+    ManagedBy   = "terraform"
+    Issue       = "M2-EDGE-01"
+  }
+}
