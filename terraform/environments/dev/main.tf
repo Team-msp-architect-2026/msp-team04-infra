@@ -192,6 +192,8 @@ module "dev_security_group" {
   common_tags = {
     Project = "MoMent"
   }
+
+  eks_cluster_sg_id = module.dev_eks[0].cluster_security_group_id 
 }
 
 module "network_security_group" {

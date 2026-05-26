@@ -123,3 +123,5 @@ prod_alb_https_enabled = false
 # CloudFront → ALB 헤더 (실제 배포 전 반드시 변경)
 cloudfront_secret_header_value = "moment-cf-secret-change-me"
 cloudfront_price_class         = "PriceClass_All"
+
+eks_cluster_sg_id = "sg-04fd7dd77b6fd278e"
