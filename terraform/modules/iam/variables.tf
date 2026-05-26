@@ -124,6 +124,12 @@ variable "sqs_queue_arns" {
   default     = []
 }
 
+variable "enable_lambda_collector_secrets_manager_read" {
+  description = "Whether Lambda Collector can read public data API keys from Secrets Manager."
+  type        = bool
+  default     = false
+}
+
 variable "opensearch_domain_arns" {
   description = "OpenSearch domain ARNs for AI Service access"
   type        = list(string)

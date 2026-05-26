@@ -42,7 +42,7 @@ resource "aws_cloudwatch_log_group" "collector" {
 
 resource "aws_lambda_function" "collector" {
   function_name = var.lambda_function_name
-  description   = "MoMent ${var.environment} public data Lambda Collector skeleton"
+  description   = "MoMent ${var.environment} public data Lambda Collector"
 
   role    = var.lambda_role_arn
   runtime = var.lambda_runtime
@@ -56,13 +56,15 @@ resource "aws_lambda_function" "collector" {
 
   environment {
     variables = {
-      PROJECT_NAME        = var.project_name
-      ENVIRONMENT         = var.environment
-      RAW_BUCKET_NAME     = var.raw_bucket_name
-      QUEUE_URL           = var.queue_url
-      PUBLIC_DATA_API_URL = var.public_data_api_url
-      raw_bucket_name     = var.raw_bucket_name
-      queue_url           = var.queue_url
+      PROJECT_NAME                      = var.project_name
+      ENVIRONMENT                       = var.environment
+      RAW_BUCKET_NAME                   = var.raw_bucket_name
+      QUEUE_URL                         = var.queue_url
+      PUBLIC_DATA_API_URL               = var.public_data_api_url
+      DATA_PIPELINE_SOURCES_JSON        = ""
+      DATA_PIPELINE_SOURCES_SECRET_NAME = var.public_data_sources_secret_name
+      raw_bucket_name                   = var.raw_bucket_name
+      queue_url                         = var.queue_url
     }
   }
 

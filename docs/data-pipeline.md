@@ -14,7 +14,9 @@ EventBridge Scheduler
   -> Spring Batch
   -> RDS / OpenSearch
 
-M2-DATA-01에서는 실제 공공데이터 수집 로직 완성이 아니라, Lambda Collector가 S3 Raw Bucket과 SQS Main Queue로 이어질 수 있는 기본 인프라 골격을 구성한다.
+M2-DATA-01에서는 EventBridge Scheduler, Lambda Collector, S3 Raw Bucket, SQS Main Queue로 이어지는 기본 인프라 골격을 구성했다.
+
+M2-DATA-02에서는 Lambda Collector가 실제 공공데이터 API를 호출하고, 응답 원본을 S3 Raw Bucket에 저장한 뒤 Spring Batch 인계를 위한 SQS 메시지를 발행하도록 확장했다.
 
 ## Dev / Prod 활성화 정책
 
@@ -27,8 +29,8 @@ MoMent Terraform 구성은 Dev-first / Prod-optional 전략을 따른다.
 
 기본 변수는 다음과 같다.
 
-enable_dev_data_pipeline  = true
-enable_prod_data_pipeline = false
+    enable_dev_data_pipeline  = true
+    enable_prod_data_pipeline = false
 
 단, 데이터 파이프라인은 SQS Main Queue URL을 필요로 하므로 다음 조건이 함께 만족되어야 생성된다.
 
@@ -45,13 +47,114 @@ Lambda Collector는 다음 환경변수를 사용한다.
 | ENVIRONMENT | dev 또는 prod |
 | RAW_BUCKET_NAME | S3 Raw Bucket 이름 |
 | QUEUE_URL | SQS Main Queue URL |
-| PUBLIC_DATA_API_URL | 공공데이터 API URL. 비어 있으면 샘플 payload 모드로 동작 |
+| PUBLIC_DATA_API_URL | legacy 단일 API URL. 신규 source config 사용 시 비워둔다. |
+| DATA_PIPELINE_SOURCES_JSON | legacy inline source JSON. 큰 source config는 사용하지 않는다. |
+| DATA_PIPELINE_SOURCES_SECRET_NAME | Secrets Manager에 저장된 public data source config 이름 |
 
-현재 Collector skeleton은 실행 시 JSON payload를 S3 `raw/{environment}/public-data/` prefix 아래에 저장하고, 저장된 S3 object 위치를 SQS 메시지로 발행한다.
+M2-DATA-02 기준 Collector는 다음 기능을 지원한다.
+
+- Secrets Manager에서 source config 조회
+- Secrets Manager에서 공공데이터 API key 조회
+- 서울 열린데이터광장 path-style OpenAPI 페이지네이션
+- data.go.kr query parameter 기반 페이지네이션
+- JSON/XML/CSV/text/binary 응답의 Raw 저장
+- S3 Raw Bucket raw/{sourceName}/{sourceDetail}/yyyy/mm/dd/ prefix 저장
+- Spring Batch 인계를 위한 SQS 메시지 발행
+- 수집 실패 시 failed/{sourceName}/{sourceDetail}/ prefix에 실패 payload 저장
+
+## Source Config 관리
+
+공공데이터 source config는 Lambda 환경변수에 직접 넣지 않고 Secrets Manager에 저장한다.
+
+이유는 Lambda UpdateFunctionConfiguration 요청 크기 제한으로 인해, 여러 source JSON을 환경변수에 직접 넣으면 배포가 실패할 수 있기 때문이다.
+
+Dev 환경 source config Secret 이름은 다음과 같다.
+
+    moment/dev/public-data/source-config
+
+API key Secret 이름은 다음과 같다.
+
+    moment/dev/public-data/seoul-openapi
+    moment/dev/public-data/data-go-kr
+
+Git에는 실제 API key를 저장하지 않는다. Terraform에는 Secret 이름과 구조만 포함한다.
+
+## 현재 수집 Source
+
+M2-DATA-02 검증 기준 source config에는 다음 11개 source가 활성화되어 있다.
+
+| sourceName | sourceDetail | 원천 | 용도 |
+| --- | --- | --- | --- |
+| seoul_public_program | education | 서울 공공서비스예약 교육 | program 후보 |
+| seoul_public_program | culture | 서울 공공서비스예약 문화 | program 후보 |
+| seoul_public_program | sport | 서울 공공서비스예약 체육 | program 후보 |
+| seoul_public_program | medical | 서울 공공서비스예약 진료 | program 후보 |
+| seoul_public_program | institution | 서울 공공서비스예약 기관 | institution 후보 |
+| seoul_care | wooridongne_kium | 우리동네키움센터 | care/institution 후보 |
+| seoul_care | joint_childcare_room | 공동육아방 | care/institution 후보 |
+| seoul_care | local_child_center | 지역아동센터 | care/institution 후보 |
+| seoul_care | joint_childcare_sharing | 공동육아나눔터 | care/institution 후보 |
+| seoul_academy | academy_info | 서울시 학원 교습소정보 | academy/institution/program 후보 |
+| government_benefit | service_list | 대한민국 공공서비스 혜택 정보 | benefit_master 후보 |
+
+## SQS 메시지 스키마
+
+Lambda Collector는 S3 Raw object 저장 후 다음 형태의 메시지를 SQS Main Queue에 발행한다.
+
+    {
+      "schemaVersion": "1.0",
+      "sourceName": "seoul_public_program",
+      "sourceDetail": "education",
+      "rawBucketName": "moment-dev-raw-data-...",
+      "rawObjectKey": "raw/seoul_public_program/education/yyyy/mm/dd/page.json",
+      "collectedAt": "2026-05-26T03:26:50.761430Z",
+      "contentType": "application/json;charset=UTF-8",
+      "recordCount": 403,
+      "totalCount": 403,
+      "environment": "dev",
+      "page": {
+        "pageIndex": 1,
+        "startIndex": 1,
+        "endIndex": 1000,
+        "pageSize": 1000
+      },
+      "contentLength": 8819964
+    }
+
+Spring Batch는 이후 이 메시지의 rawBucketName, rawObjectKey, sourceName, sourceDetail을 기준으로 S3 Raw 데이터를 읽고 정제/적재한다.
+
+## 검증 결과
+
+M2-DATA-02 Dev 검증에서 다음 수집이 성공했다.
+
+| Source | 수집 건수 |
+| --- | ---: |
+| seoul_public_program / education | 403 |
+| seoul_public_program / culture | 1,166 |
+| seoul_public_program / sport | 710 |
+| seoul_public_program / medical | 20 |
+| seoul_public_program / institution | 635 |
+| seoul_care / wooridongne_kium | 276 |
+| seoul_care / joint_childcare_room | 44 |
+| seoul_care / local_child_center | 412 |
+| seoul_care / joint_childcare_sharing | 40 |
+| seoul_academy / academy_info | 25,493 |
+| government_benefit / service_list | 10,955 |
+
+총 수집 검증 건수는 40,154건이다.
+
+검증된 항목은 다음과 같다.
+
+- Lambda invoke StatusCode 200
+- failedCount 0
+- S3 Raw object 저장 확인
+- SQS Main Queue 메시지 발행 확인
+- source config Secret 복구 확인
+- Scheduler는 DISABLED 상태 유지
 
 ## IAM 권한
 
-Lambda Collector 실행 Role은 IAM 모듈의 `lambda_collector` Role을 재사용한다.
+Lambda Collector 실행 Role은 IAM 모듈의 lambda_collector Role을 재사용한다.
 
 부여되는 권한은 다음과 같다.
 
@@ -60,18 +163,19 @@ Lambda Collector 실행 Role은 IAM 모듈의 `lambda_collector` Role을 재사�
 | CloudWatch Logs | Lambda 기본 실행 로그 |
 | S3 Raw Bucket | raw / processed / failed prefix 접근 |
 | SQS Main Queue | SendMessage, GetQueueAttributes |
+| Secrets Manager | DescribeSecret, GetSecretValue |
 
 EventBridge Scheduler는 별도의 invoke role을 사용하여 Lambda Collector를 호출한다.
 
 ## Scheduler 상태
 
-Scheduler state 기본값은 `DISABLED`다.
+Scheduler state 기본값은 DISABLED다.
 
 개발 중 예기치 않은 주기 실행과 비용 발생을 막기 위해, 수동 검증 전까지는 DISABLED 상태를 유지한다.
 
 Dev Scheduler를 실제 주기 실행하려면 다음 값을 명시적으로 변경한다.
 
-dev_data_pipeline_schedule_state = "ENABLED"
+    dev_data_pipeline_schedule_state = "ENABLED"
 
 Prod Scheduler는 최종 데모 또는 리허설 기간 외에는 DISABLED 또는 미생성 상태를 유지한다.
 
@@ -82,4 +186,17 @@ Prod Scheduler는 최종 데모 또는 리허설 기간 외에는 DISABLED 또�
 - S3 Raw Bucket에 보존해야 할 원본 객체가 있는지 확인
 - SQS Main Queue / DLQ에 남은 메시지가 있는지 확인
 - Lambda CloudWatch Logs 보존 필요 여부 확인
+- Secrets Manager에 저장된 source config와 API key 보존 필요 여부 확인
 - Prod 데이터 파이프라인은 활성화 전후로 비용과 데이터 보존 여부를 별도 확인
+
+## 후속 작업
+
+M2-DATA-02는 Raw 수집과 S3/SQS 인계 검증까지 담당한다.
+
+다음 단계는 Backend Spring Batch 영역이다.
+
+- SQS 메시지 소비
+- S3 Raw object 읽기
+- sourceName/sourceDetail 기반 파서 분기
+- institution / program / benefit_master 정제 및 upsert
+- OpenSearch indexing 연계

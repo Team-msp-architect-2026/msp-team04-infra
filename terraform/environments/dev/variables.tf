@@ -268,7 +268,30 @@ variable "enable_prod_data_pipeline" {
 }
 
 variable "data_pipeline_public_data_api_url" {
-  description = "Public Data API URL used by Lambda Collector skeleton. Empty value keeps sample payload mode."
+  description = "Legacy single Public Data API URL. Prefer data_pipeline_public_data_sources_json for M2-DATA-02."
+  type        = string
+  default     = ""
+}
+
+variable "data_pipeline_public_data_sources_json" {
+  description = "JSON array of public data source configs for Lambda Collector."
+  type        = string
+  default     = "[]"
+
+  validation {
+    condition     = can(jsondecode(var.data_pipeline_public_data_sources_json))
+    error_message = "data_pipeline_public_data_sources_json must be valid JSON."
+  }
+}
+
+variable "enable_lambda_collector_secrets_manager_read" {
+  description = "Whether Lambda Collector can read public data API keys from Secrets Manager."
+  type        = bool
+  default     = true
+}
+
+variable "data_pipeline_public_data_sources_secret_name" {
+  description = "Secrets Manager secret name containing public data source configs."
   type        = string
   default     = ""
 }

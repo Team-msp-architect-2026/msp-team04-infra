@@ -29,7 +29,24 @@ variable "queue_url" {
 }
 
 variable "public_data_api_url" {
-  description = "Public Data API URL used by the collector skeleton. Empty value keeps sample payload mode."
+  description = "Legacy single Public Data API URL. Prefer public_data_sources_json for M2-DATA-02."
+  type        = string
+  default     = ""
+}
+
+variable "public_data_sources_json" {
+  description = "Legacy inline JSON array of public data source configs. Prefer public_data_sources_secret_name when source config is large."
+  type        = string
+  default     = "[]"
+
+  validation {
+    condition     = can(jsondecode(var.public_data_sources_json))
+    error_message = "public_data_sources_json must be valid JSON."
+  }
+}
+
+variable "public_data_sources_secret_name" {
+  description = "Secrets Manager secret name containing public data source configs."
   type        = string
   default     = ""
 }
