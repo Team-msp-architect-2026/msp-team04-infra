@@ -278,6 +278,20 @@ module "dev_vpc_endpoint" {
   }
 }
 
+
+resource "aws_security_group_rule" "vpc_endpoint_ingress_from_eks_cluster_sg" {
+  count = var.enable_dev_vpc_endpoints && var.enable_dev_eks ? 1 : 0
+
+  type                     = "ingress"
+  security_group_id        = module.dev_security_group.vpc_endpoint_sg_id
+  from_port                = 443
+  to_port                  = 443
+  protocol                 = "tcp"
+  source_security_group_id = module.dev_eks[0].cluster_security_group_id
+
+  description = "Allow HTTPS from EKS cluster SG (auto-created) to VPC endpoints"
+}
+
 module "s3_raw_bucket" {
   source = "../../modules/s3"
 
@@ -828,3 +842,4 @@ module "prod_opensearch" {
     Environment = "prod"
   })
 }
+

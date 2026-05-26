@@ -154,7 +154,7 @@ variable "dev_eks_public_access_cidrs" {
 variable "dev_eks_cluster_admin_principal_arn" {
   description = "IAM principal ARN granted cluster-admin access to the Dev EKS cluster through EKS Access Entry"
   type        = string
-  default     = "arn:aws:iam::611058323802:user/student06"
+  default     = "arn:aws:iam::611058323802:user/student01"
 }
 
 variable "prod_eks_cluster_name" {
