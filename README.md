@@ -621,3 +621,6 @@ nodeSelector:
 - Prod NodeGroup은 기본 비활성화하여 불필요한 비용 발생 방지
 - Add-on 및 NodeGroup ACTIVE 상태 확인
 - 테스트 Pod를 통해 nodeSelector 기반 배치 검증 완료
+## 운영 Runbook
+
+- [M2-VALID-A App / EKS / Ingress / Endpoint / Edge 검증 및 운영 Runbook](docs/M2-VALID-A-Runbook.md)
