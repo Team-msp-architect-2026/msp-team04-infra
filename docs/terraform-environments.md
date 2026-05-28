@@ -182,7 +182,6 @@ Prod 관련 enable flag는 비용 방지를 위해 기본 false이다.
 
 Prod data pipeline은 shared Lambda role ARN과 shared raw bucket name을 변수로 주입받는 구조를 사용한다.
 
-    shared_lambda_collector_role_arn = ""
     shared_raw_bucket_name           = ""
 
 ## 6. Network / TGW 분리 기준

@@ -26,7 +26,6 @@ enable_edge                = false
 
 # Shared/account-level resources are not duplicated in Prod.
 # Fill these only when Prod data pipeline is explicitly enabled.
-shared_lambda_collector_role_arn = ""
 # shared_raw_bucket_name is deprecated. Prod Raw Bucket is managed in terraform/environments/prod.
 
 # Network/TGW is still shared. Keep null until state handoff or remote-state strategy is approved.

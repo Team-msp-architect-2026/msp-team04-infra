@@ -590,11 +590,6 @@ variable "cloudfront_price_class" {
 # Shared environment dependency inputs
 # ──────────────────────────────────────────────────────────────────────────────
 
-variable "shared_lambda_collector_role_arn" {
-  description = "Lambda Collector IAM role ARN managed by shared environment. If empty, Dev data pipeline looks up the default moment-dev Lambda Collector role by name."
-  type        = string
-  default     = ""
-}
 
 variable "shared_raw_bucket_name" {
   description = "Deprecated. Dev Raw Bucket is now managed by terraform/environments/dev via module.dev_s3_raw_bucket."
@@ -602,17 +597,7 @@ variable "shared_raw_bucket_name" {
   default     = ""
 }
 
-variable "shared_eks_cluster_role_arn" {
-  description = "EKS Cluster IAM role ARN managed by shared environment. Required before enabling Dev EKS apply."
-  type        = string
-  default     = ""
-}
 
-variable "shared_eks_node_role_arn" {
-  description = "EKS Node IAM role ARN managed by shared environment. Required before enabling Dev nodegroups apply."
-  type        = string
-  default     = ""
-}
 
 variable "enable_dev_iam" {
   description = "Whether to manage Dev environment IAM roles and policies from terraform/environments/dev."

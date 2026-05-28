@@ -136,11 +136,6 @@ variable "enable_edge" {
   default     = true
 }
 
-variable "shared_lambda_collector_role_arn" {
-  description = "Shared Lambda Collector IAM role ARN. Prod data pipeline uses shared IAM instead of duplicating account-level IAM."
-  type        = string
-  default     = ""
-}
 
 variable "shared_raw_bucket_name" {
   description = "Deprecated. Prod Raw Bucket is now managed by terraform/environments/prod via module.prod_s3_raw_bucket."
