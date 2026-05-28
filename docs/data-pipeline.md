@@ -85,11 +85,34 @@ M2-DATA-03부터 source config는 수집 방식과 갱신 주기를 명시할 �
 
 | 필드 | 설명 | 기본값 |
 | --- | --- | --- |
-| triggerType | 수집 트리거 유형. 예: SCHEDULED, MANUAL, EVENT | SCHEDULED |
-| updateFrequency | 원천 데이터 갱신 주기. 예: DAILY, WEEKLY, MONTHLY, AD_HOC | UNKNOWN |
+| triggerType | 수집 트리거 유형. 예: SCHEDULED_API, S3_UPLOAD, MANUAL, AD_HOC | SCHEDULED_API |
+| updateFrequency | 원천 데이터 갱신 주기. 예: DAILY, WEEKLY, MONTHLY, YEARLY, AD_HOC | UNKNOWN |
 
 Lambda Collector는 기존 source config와의 호환성을 위해 값이 없으면 기본값을 채운다.
 또한 trigger_type, update_frequency처럼 snake_case로 들어온 값도 각각 triggerType, updateFrequency로 정규화한다.
+
+기존 1차 source config에서 사용하던 SCHEDULED 값은 SCHEDULED_API로 정규화한다.
+EVENT 값은 S3_UPLOAD로, ON_DEMAND 값은 AD_HOC로 정규화하여 기존 표현과의 호환성을 유지한다.
+지원하지 않는 triggerType 값은 조용히 건너뛰지 않고 source config 오류로 처리한다.
+
+## 데이터 성격별 수집 전략
+
+공공데이터 파이프라인은 모든 데이터를 동일한 주기로 수집하지 않고, 데이터의 업데이트 주기와 source별 triggerType에 따라 수집 방식을 분리한다.
+
+| 데이터 성격 | triggerType | updateFrequency 예시 | 수집 경로 |
+| --- | --- | --- | --- |
+| 자주 갱신되는 API 데이터 | SCHEDULED_API | DAILY, WEEKLY | EventBridge Scheduler -> Lambda Collector -> Public Data API -> S3 -> SQS |
+| CSV 파일 또는 장주기 파일 데이터 | S3_UPLOAD | YEARLY, AD_HOC | S3 업로드 또는 수동 업로드 이벤트 기반 |
+| 필요 시점에만 재수집하는 데이터 | MANUAL | MONTHLY, YEARLY, AD_HOC | 운영자 수동 트리거 기반 |
+| 임시 검증 또는 단발성 수집 | AD_HOC | AD_HOC | 필요 시점의 일회성 실행 |
+
+EventBridge Scheduler 기반 Lambda Collector는 SCHEDULED_API source만 정기 수집 대상으로 처리한다.
+S3_UPLOAD, MANUAL, AD_HOC source는 정기 Scheduler 실행에서 API 호출, S3 Raw 저장, SQS 메시지 발행을 수행하지 않고 SKIPPED 결과로 남긴다.
+
+Dev / Prod 분리는 환경 격리와 검증/운영 분리를 위한 구조다.
+source별 수집 전략은 Dev / Prod 여부만으로 결정하지 않고 triggerType과 updateFrequency 기준으로 판단한다.
+
+CSV처럼 갱신 주기가 긴 데이터는 매일 API 수집 대상으로 보지 않고, S3 업로드 이벤트 또는 수동 트리거 기반으로 처리하여 불필요한 파이프라인 실행을 줄인다.
 
 ## 현재 수집 Source
 
@@ -117,7 +140,7 @@ Lambda Collector는 S3 Raw object 저장 후 다음 형태의 메시지를 SQS M
       "schemaVersion": "1.0",
       "sourceName": "seoul_public_program",
       "sourceDetail": "education",
-      "triggerType": "SCHEDULED",
+      "triggerType": "SCHEDULED_API",
       "updateFrequency": "DAILY",
       "rawBucketName": "moment-dev-raw-data-...",
       "rawObjectKey": "raw/seoul_public_program/education/yyyy/mm/dd/page.json",
@@ -137,6 +160,7 @@ Lambda Collector는 S3 Raw object 저장 후 다음 형태의 메시지를 SQS M
 
 Spring Batch는 이후 이 메시지의 rawBucketName, rawObjectKey, sourceName, sourceDetail을 기준으로 S3 Raw 데이터를 읽고 정제/적재한다.
 triggerType과 updateFrequency는 source별 운영 메타데이터로 사용하며, Batch 스케줄 조정이나 원천 데이터 갱신 주기 판단에 활용할 수 있다.
+정기 Scheduler 실행에서 SKIPPED 처리된 source는 S3 Raw object와 SQS 메시지를 생성하지 않는다.
 
 ## 검증 결과
 

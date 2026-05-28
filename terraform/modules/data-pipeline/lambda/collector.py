@@ -43,7 +43,8 @@ def lambda_handler(event, context):
             )
         )
 
-    failed_count = len([item for item in results if item["status"] != "SUCCESS"])
+    failed_count = len([item for item in results if item["status"] == "FAILED"])
+    skipped_count = len([item for item in results if item["status"] == "SKIPPED"])
 
     return {
         "statusCode": 207 if failed_count else 200,
@@ -53,13 +54,24 @@ def lambda_handler(event, context):
             "sourceCount": len(sources),
             "objectCount": len(results),
             "failedCount": failed_count,
+            "skippedCount": skipped_count,
             "results": results,
         },
     }
 
 
-DEFAULT_TRIGGER_TYPE = "SCHEDULED"
+DEFAULT_TRIGGER_TYPE = "SCHEDULED_API"
 DEFAULT_UPDATE_FREQUENCY = "UNKNOWN"
+
+SUPPORTED_TRIGGER_TYPES = {"SCHEDULED_API", "S3_UPLOAD", "MANUAL", "AD_HOC"}
+
+TRIGGER_TYPE_ALIASES = {
+    "SCHEDULED": "SCHEDULED_API",
+    "EVENT": "S3_UPLOAD",
+    "ON_DEMAND": "AD_HOC",
+}
+
+SCHEDULED_COLLECTOR_TRIGGER_TYPES = {"SCHEDULED_API"}
 
 
 def _load_sources():
@@ -111,13 +123,11 @@ def _normalize_sources_payload(parsed, source_label):
             continue
 
         normalized_source = dict(source)
-        normalized_source["triggerType"] = _normalize_operational_metadata(
-            normalized_source.get("triggerType") or normalized_source.get("trigger_type"),
-            DEFAULT_TRIGGER_TYPE,
+        normalized_source["triggerType"] = _normalize_trigger_type(
+            normalized_source.get("triggerType") or normalized_source.get("trigger_type")
         )
-        normalized_source["updateFrequency"] = _normalize_operational_metadata(
-            normalized_source.get("updateFrequency") or normalized_source.get("update_frequency"),
-            DEFAULT_UPDATE_FREQUENCY,
+        normalized_source["updateFrequency"] = _normalize_update_frequency(
+            normalized_source.get("updateFrequency") or normalized_source.get("update_frequency")
         )
         normalized_sources.append(normalized_source)
 
@@ -135,7 +145,68 @@ def _normalize_operational_metadata(value, default_value):
     return normalized_value.upper()
 
 
+def _normalize_trigger_type(value):
+    trigger_type = _normalize_operational_metadata(value, DEFAULT_TRIGGER_TYPE)
+    trigger_type = TRIGGER_TYPE_ALIASES.get(trigger_type, trigger_type)
+
+    if trigger_type not in SUPPORTED_TRIGGER_TYPES:
+        raise ValueError(
+            f"Unsupported triggerType: {trigger_type}. "
+            f"Supported values are: {', '.join(sorted(SUPPORTED_TRIGGER_TYPES))}"
+        )
+
+    return trigger_type
+
+
+def _normalize_update_frequency(value):
+    return _normalize_operational_metadata(value, DEFAULT_UPDATE_FREQUENCY)
+
+
+def _build_skipped_result(source, reason):
+    source_name = _normalize_source_name(source["sourceName"])
+    source_detail = _normalize_source_name(source.get("sourceDetail", ""))
+    trigger_type = _normalize_trigger_type(
+        source.get("triggerType") or source.get("trigger_type")
+    )
+    update_frequency = _normalize_update_frequency(
+        source.get("updateFrequency") or source.get("update_frequency")
+    )
+
+    skipped_result = {
+        "status": "SKIPPED",
+        "sourceName": source_name,
+        "sourceDetail": source_detail,
+        "triggerType": trigger_type,
+        "updateFrequency": update_frequency,
+        "reason": reason,
+    }
+
+    print(
+        json.dumps(
+            {
+                "message": "public data source skipped",
+                **skipped_result,
+            },
+            ensure_ascii=False,
+        )
+    )
+
+    return skipped_result
+
+
 def _collect_source(source, raw_bucket_name, queue_url, environment, project_name, event):
+    trigger_type = _normalize_trigger_type(
+        source.get("triggerType") or source.get("trigger_type")
+    )
+
+    if trigger_type not in SCHEDULED_COLLECTOR_TRIGGER_TYPES:
+        return [
+            _build_skipped_result(
+                source=source,
+                reason="source triggerType is not collected by EventBridge scheduled collector",
+            )
+        ]
+
     pagination = source.get("pagination") or {}
     pagination_type = pagination.get("type", "").strip().lower()
 
@@ -224,13 +295,11 @@ def _collect_one_request(
 ):
     source_name = _normalize_source_name(source["sourceName"])
     source_detail = _normalize_source_name(source.get("sourceDetail", ""))
-    trigger_type = _normalize_operational_metadata(
-        source.get("triggerType") or source.get("trigger_type"),
-        DEFAULT_TRIGGER_TYPE,
+    trigger_type = _normalize_trigger_type(
+        source.get("triggerType") or source.get("trigger_type")
     )
-    update_frequency = _normalize_operational_metadata(
-        source.get("updateFrequency") or source.get("update_frequency"),
-        DEFAULT_UPDATE_FREQUENCY,
+    update_frequency = _normalize_update_frequency(
+        source.get("updateFrequency") or source.get("update_frequency")
     )
 
     collected_at_dt = datetime.now(timezone.utc)
