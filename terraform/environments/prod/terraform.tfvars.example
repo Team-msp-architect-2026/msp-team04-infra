@@ -6,11 +6,63 @@ network_vpc_cidr = "10.0.0.0/16"
 prod_vpc_cidr    = "10.10.0.0/16"
 dev_vpc_cidr     = "10.20.0.0/16"
 
-# M2-OPS-01 skeleton only.
-# Keep all Prod resource wiring disabled by default.
-enable_prod_vpc           = false
-enable_prod_eks           = false
-enable_prod_nodegroups    = false
-enable_prod_data_tier     = false
-enable_prod_data_pipeline = false
-enable_edge               = false
+# M2-OPS-02:
+# Prod resource wiring exists in terraform/environments/prod,
+# but all cost-generating resources remain disabled by default.
+enable_prod_vpc            = false
+enable_prod_vpc_endpoints  = false
+enable_prod_eks            = false
+enable_prod_nodegroups     = false
+enable_prod_data_tier      = false
+enable_prod_rds            = false
+enable_prod_redis          = false
+enable_prod_opensearch     = false
+enable_prod_sqs            = false
+enable_prod_data_pipeline  = false
+enable_edge                = false
+
+# Shared/account-level resources are not duplicated in Prod.
+# Fill these only when Prod data pipeline is explicitly enabled.
+shared_lambda_collector_role_arn = ""
+shared_raw_bucket_name           = ""
+
+# Network/TGW is still shared. Keep null until state handoff or remote-state strategy is approved.
+prod_transit_gateway_id = null
+
+# Prod EKS requires shared IAM role ARNs when enabled.
+prod_eks_cluster_role_arn            = ""
+prod_eks_node_role_arn               = ""
+prod_eks_cluster_admin_principal_arn = ""
+prod_eks_public_access_cidrs         = []
+
+# Prod data pipeline should stay disabled outside final demo/rehearsal.
+prod_data_pipeline_schedule_state = "DISABLED"
+
+# Prod RDS protection defaults.
+prod_rds_instance_class          = "db.t4g.small"
+prod_rds_allocated_storage       = 50
+prod_rds_max_allocated_storage   = 200
+prod_rds_multi_az                = true
+prod_rds_backup_retention_period = 14
+prod_rds_deletion_protection     = true
+prod_rds_skip_final_snapshot     = false
+
+# Prod Redis defaults. HA tuning is finalized in M2-REDIS-02.
+prod_redis_node_type                  = "cache.t3.micro"
+prod_redis_automatic_failover_enabled = false
+prod_redis_multi_az_enabled           = false
+prod_redis_snapshot_retention_limit   = 0
+
+# Prod OpenSearch defaults.
+prod_opensearch_instance_type              = "t3.small.search"
+prod_opensearch_instance_count             = 2
+prod_opensearch_zone_awareness_enabled     = true
+prod_opensearch_availability_zone_count    = 2
+prod_opensearch_ebs_volume_size            = 20
+create_opensearch_service_linked_role      = false
+
+# Edge stays disabled until Prod ALB DNS is ready.
+prod_alb_dns_name      = ""
+prod_alb_https_enabled = false
+enable_waf             = true
+cloudfront_price_class = "PriceClass_All"
