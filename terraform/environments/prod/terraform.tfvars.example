@@ -1,0 +1,16 @@
+project_name   = "moment"
+env            = "prod"
+primary_region = "ap-northeast-3"
+
+network_vpc_cidr = "10.0.0.0/16"
+prod_vpc_cidr    = "10.10.0.0/16"
+dev_vpc_cidr     = "10.20.0.0/16"
+
+# M2-OPS-01 skeleton only.
+# Keep all Prod resource wiring disabled by default.
+enable_prod_vpc           = false
+enable_prod_eks           = false
+enable_prod_nodegroups    = false
+enable_prod_data_tier     = false
+enable_prod_data_pipeline = false
+enable_edge               = false
