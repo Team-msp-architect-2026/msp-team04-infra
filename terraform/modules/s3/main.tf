@@ -25,6 +25,10 @@ resource "aws_s3_bucket" "raw" {
   tags = merge(local.tags, {
     Name = local.raw_bucket_name
   })
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "aws_s3_bucket_public_access_block" "raw" {

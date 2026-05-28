@@ -41,6 +41,10 @@ sqs_max_message_size               = 262144
 sqs_managed_sse_enabled            = true
 
 
+# Environment-specific Raw Bucket
+enable_dev_s3_raw_bucket = true
+dev_raw_bucket_name      = null
+
 # EventBridge Scheduler + Lambda Collector data pipeline
 enable_dev_data_pipeline  = true
 enable_prod_data_pipeline = false

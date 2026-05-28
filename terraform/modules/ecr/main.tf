@@ -26,8 +26,8 @@ resource "aws_ecr_repository" "this" {
 # 최근 tagged image는 일정 개수만 유지하고, untagged image는 자동 정리한다.
 
 resource "aws_ecr_lifecycle_policy" "this" {
-  for_each = aws_ecr_repository.this
+  for_each = var.repositories
 
-  repository = each.value.name
+  repository = aws_ecr_repository.this[each.key].name
   policy     = file("${path.module}/lifecycle-policy.json")
 }

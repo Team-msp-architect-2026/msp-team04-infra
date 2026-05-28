@@ -58,6 +58,10 @@ def lambda_handler(event, context):
     }
 
 
+DEFAULT_TRIGGER_TYPE = "SCHEDULED"
+DEFAULT_UPDATE_FREQUENCY = "UNKNOWN"
+
+
 def _load_sources():
     sources_json = os.environ.get("DATA_PIPELINE_SOURCES_JSON", "").strip()
     sources_secret_name = os.environ.get("DATA_PIPELINE_SOURCES_SECRET_NAME", "").strip()
@@ -84,6 +88,8 @@ def _load_sources():
                 "url": legacy_api_url,
                 "method": "GET",
                 "contentType": "application/json",
+                "triggerType": DEFAULT_TRIGGER_TYPE,
+                "updateFrequency": DEFAULT_UPDATE_FREQUENCY,
                 "enabled": True,
             }
         ]
@@ -98,7 +104,35 @@ def _normalize_sources_payload(parsed, source_label):
     if not isinstance(parsed, list):
         raise ValueError(f"{source_label} must be a JSON array or an object with a sources array.")
 
-    return [source for source in parsed if source.get("enabled", True)]
+    normalized_sources = []
+
+    for source in parsed:
+        if not source.get("enabled", True):
+            continue
+
+        normalized_source = dict(source)
+        normalized_source["triggerType"] = _normalize_operational_metadata(
+            normalized_source.get("triggerType") or normalized_source.get("trigger_type"),
+            DEFAULT_TRIGGER_TYPE,
+        )
+        normalized_source["updateFrequency"] = _normalize_operational_metadata(
+            normalized_source.get("updateFrequency") or normalized_source.get("update_frequency"),
+            DEFAULT_UPDATE_FREQUENCY,
+        )
+        normalized_sources.append(normalized_source)
+
+    return normalized_sources
+
+
+def _normalize_operational_metadata(value, default_value):
+    if value is None:
+        return default_value
+
+    normalized_value = str(value).strip()
+    if not normalized_value:
+        return default_value
+
+    return normalized_value.upper()
 
 
 def _collect_source(source, raw_bucket_name, queue_url, environment, project_name, event):
@@ -190,6 +224,14 @@ def _collect_one_request(
 ):
     source_name = _normalize_source_name(source["sourceName"])
     source_detail = _normalize_source_name(source.get("sourceDetail", ""))
+    trigger_type = _normalize_operational_metadata(
+        source.get("triggerType") or source.get("trigger_type"),
+        DEFAULT_TRIGGER_TYPE,
+    )
+    update_frequency = _normalize_operational_metadata(
+        source.get("updateFrequency") or source.get("update_frequency"),
+        DEFAULT_UPDATE_FREQUENCY,
+    )
 
     collected_at_dt = datetime.now(timezone.utc)
     collected_at = _to_iso_z(collected_at_dt)
@@ -221,6 +263,8 @@ def _collect_one_request(
             Metadata={
                 "source-name": source_name,
                 "source-detail": source_detail or "none",
+                "trigger-type": trigger_type,
+                "update-frequency": update_frequency,
                 "collected-at": collected_at,
                 "page-index": str(page_context.get("pageIndex", 1)),
             },
@@ -230,6 +274,8 @@ def _collect_one_request(
             "schemaVersion": "1.0",
             "sourceName": source_name,
             "sourceDetail": source_detail,
+            "triggerType": trigger_type,
+            "updateFrequency": update_frequency,
             "rawBucketName": raw_bucket_name,
             "rawObjectKey": object_key,
             "collectedAt": collected_at,
@@ -252,6 +298,8 @@ def _collect_one_request(
                     "message": "public data source collected",
                     "sourceName": source_name,
                     "sourceDetail": source_detail,
+                    "triggerType": trigger_type,
+                    "updateFrequency": update_frequency,
                     "rawObjectKey": object_key,
                     "recordCount": record_count,
                     "totalCount": total_count,
@@ -265,6 +313,8 @@ def _collect_one_request(
             "status": "SUCCESS",
             "sourceName": source_name,
             "sourceDetail": source_detail,
+            "triggerType": trigger_type,
+            "updateFrequency": update_frequency,
             "rawObjectKey": object_key,
             "recordCount": record_count,
             "totalCount": total_count,
@@ -287,6 +337,8 @@ def _collect_one_request(
             "environment": environment,
             "sourceName": source_name,
             "sourceDetail": source_detail,
+            "triggerType": trigger_type,
+            "updateFrequency": update_frequency,
             "collectedAt": collected_at,
             "page": page_context,
             "error": str(exc),
@@ -298,6 +350,14 @@ def _collect_one_request(
             Key=failed_key,
             Body=json.dumps(failure_object, ensure_ascii=False).encode("utf-8"),
             ContentType="application/json",
+            Metadata={
+                "source-name": source_name,
+                "source-detail": source_detail or "none",
+                "trigger-type": trigger_type,
+                "update-frequency": update_frequency,
+                "collected-at": collected_at,
+                "page-index": str(page_context.get("pageIndex", 1)),
+            },
         )
 
         print(
@@ -306,6 +366,8 @@ def _collect_one_request(
                     "message": "public data source collection failed",
                     "sourceName": source_name,
                     "sourceDetail": source_detail,
+                    "triggerType": trigger_type,
+                    "updateFrequency": update_frequency,
                     "failedObjectKey": failed_key,
                     "error": str(exc),
                 },
@@ -317,6 +379,8 @@ def _collect_one_request(
             "status": "FAILED",
             "sourceName": source_name,
             "sourceDetail": source_detail,
+            "triggerType": trigger_type,
+            "updateFrequency": update_frequency,
             "failedObjectKey": failed_key,
             "error": str(exc),
             "page": page_context,

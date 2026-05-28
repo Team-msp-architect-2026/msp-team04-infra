@@ -112,6 +112,18 @@ variable "enable_prod_sqs" {
   default     = false
 }
 
+variable "enable_prod_s3_raw_bucket" {
+  description = "Whether to manage Prod S3 Raw Bucket in terraform/environments/prod. Keep false until Prod data pipeline activation is approved."
+  type        = bool
+  default     = false
+}
+
+variable "prod_raw_bucket_name" {
+  description = "Optional explicit Prod S3 Raw Bucket name. Keep null to use the module naming convention."
+  type        = string
+  default     = null
+}
+
 variable "enable_prod_data_pipeline" {
   description = "Whether to create Prod EventBridge Scheduler and Lambda Collector."
   type        = bool
@@ -131,7 +143,7 @@ variable "shared_lambda_collector_role_arn" {
 }
 
 variable "shared_raw_bucket_name" {
-  description = "Shared S3 Raw Bucket name. Prod data pipeline uses the shared raw bucket strategy instead of duplicating S3 blindly."
+  description = "Deprecated. Prod Raw Bucket is now managed by terraform/environments/prod via module.prod_s3_raw_bucket."
   type        = string
   default     = ""
 }

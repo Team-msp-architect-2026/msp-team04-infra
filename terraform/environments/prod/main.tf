@@ -131,8 +131,20 @@ module "prod_sqs" {
   common_tags = local.prod_tags
 }
 
+module "prod_s3_raw_bucket" {
+  count = var.enable_prod_s3_raw_bucket ? 1 : 0
+
+  source = "../../modules/s3"
+
+  project_name = var.project_name
+  environment  = "prod"
+  bucket_name  = var.prod_raw_bucket_name
+
+  common_tags = local.prod_tags
+}
+
 module "prod_data_pipeline" {
-  count = var.enable_prod_data_pipeline && var.enable_prod_sqs && var.shared_lambda_collector_role_arn != "" && var.shared_raw_bucket_name != "" ? 1 : 0
+  count = var.enable_prod_data_pipeline && var.enable_prod_sqs && var.enable_prod_s3_raw_bucket && var.shared_lambda_collector_role_arn != "" ? 1 : 0
 
   source = "../../modules/data-pipeline"
 
@@ -142,7 +154,7 @@ module "prod_data_pipeline" {
   lambda_function_name = "${var.project_name}-prod-public-data-collector"
   lambda_role_arn      = var.shared_lambda_collector_role_arn
 
-  raw_bucket_name                 = var.shared_raw_bucket_name
+  raw_bucket_name                 = module.prod_s3_raw_bucket[0].raw_bucket_name
   queue_url                       = module.prod_sqs[0].queue_url
   public_data_api_url             = var.data_pipeline_public_data_api_url
   public_data_sources_json        = var.data_pipeline_public_data_sources_json
@@ -159,7 +171,8 @@ module "prod_data_pipeline" {
   common_tags = local.prod_tags
 
   depends_on = [
-    module.prod_sqs
+    module.prod_sqs,
+    module.prod_s3_raw_bucket
   ]
 }
 

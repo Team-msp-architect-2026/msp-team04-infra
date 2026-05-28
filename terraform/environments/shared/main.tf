@@ -40,8 +40,9 @@ module "iam" {
   create_eks_oidc_provider = false
   enable_irsa_roles        = false
 
-  ecr_repository_arns          = var.ecr_repository_arns
-  raw_bucket_access_policy_arn = coalesce(try(module.s3_raw_bucket[0].raw_bucket_access_policy_arn, null), var.raw_bucket_access_policy_arn)
+  ecr_repository_arns           = var.ecr_repository_arns
+  raw_bucket_access_policy_arn  = coalesce(try(module.s3_raw_bucket[0].raw_bucket_access_policy_arn, null), var.raw_bucket_access_policy_arn)
+  raw_bucket_access_policy_arns = var.raw_bucket_access_policy_arns
 
   sqs_queue_arns                               = var.sqs_queue_arns
   enable_sqs_queue_policy_statements           = length(var.sqs_queue_arns) > 0

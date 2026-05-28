@@ -255,6 +255,18 @@ variable "sqs_managed_sse_enabled" {
 }
 
 
+variable "enable_dev_s3_raw_bucket" {
+  description = "Whether to manage Dev S3 Raw Bucket in terraform/environments/dev."
+  type        = bool
+  default     = true
+}
+
+variable "dev_raw_bucket_name" {
+  description = "Optional explicit Dev S3 Raw Bucket name. Keep null to use the module naming convention."
+  type        = string
+  default     = null
+}
+
 variable "enable_dev_data_pipeline" {
   description = "Whether to create Dev EventBridge Scheduler and Lambda Collector for public data pipeline validation."
   type        = bool
@@ -579,13 +591,13 @@ variable "cloudfront_price_class" {
 # ──────────────────────────────────────────────────────────────────────────────
 
 variable "shared_lambda_collector_role_arn" {
-  description = "Lambda Collector IAM role ARN managed by shared environment. Required before enabling Dev data pipeline apply."
+  description = "Lambda Collector IAM role ARN managed by shared environment. If empty, Dev data pipeline looks up the default moment-dev Lambda Collector role by name."
   type        = string
   default     = ""
 }
 
 variable "shared_raw_bucket_name" {
-  description = "S3 Raw Bucket name managed by shared environment. Required before enabling Dev data pipeline apply."
+  description = "Deprecated. Dev Raw Bucket is now managed by terraform/environments/dev via module.dev_s3_raw_bucket."
   type        = string
   default     = ""
 }

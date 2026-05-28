@@ -110,9 +110,15 @@ variable "ecr_repository_arns" {
 }
 
 variable "raw_bucket_access_policy_arn" {
-  description = "Existing raw bucket access policy ARN, used when shared S3 module is not enabled."
+  description = "Deprecated single raw bucket access policy ARN. Prefer raw_bucket_access_policy_arns for Dev/Prod bucket separation."
   type        = string
   default     = null
+}
+
+variable "raw_bucket_access_policy_arns" {
+  description = "Raw bucket access policy ARNs for environment-specific Dev/Prod raw buckets."
+  type        = list(string)
+  default     = []
 }
 
 variable "sqs_queue_arns" {
