@@ -247,3 +247,133 @@ kubectl get pods -A
 ```
 
 단, M2-EKS-02 전에는 Managed NodeGroup이 없으므로 node 목록은 비어 있을 수 있다.
+
+---
+
+## Prod Managed NodeGroup 운영 기준 (M2-EKS-04)
+
+### 목적
+
+Prod EKS Cluster 활성화 시 Worker Node가 필요하므로, 워크로드 특성에 따라 NodeGroup을 5종으로 분리하여 운영한다.
+
+핵심 사용자 요청은 On-Demand에 배치하고, 재시도 가능한 Batch/AI 비동기 작업은 Spot으로 분리하여 비용을 최적화한다.
+
+### 기본 활성화 정책
+
+| 항목 | 기본값 | 설명 |
+| --- | --- | --- |
+| `enable_prod_nodegroups` | `false` | Prod NodeGroup은 별도 승인 후 명시적으로 활성화 |
+
+기본 plan/apply에서는 Prod NodeGroup이 생성되지 않아야 한다.
+
+Prod NodeGroup을 활성화하려면 다음 조건이 모두 true여야 한다.
+
+```hcl
+enable_prod_iam        = true
+enable_prod_eks        = true
+enable_prod_nodegroups = true
+```
+
+### NodeGroup 5종 구성
+
+| NodeGroup | Capacity | instance_types | min | desired | max | 용도 |
+| --- | --- | --- | --- | --- | --- | --- |
+| core_on_demand | ON_DEMAND | t3.medium | 2 | 2 | 4 | Backend API, Auth, Payment, Reservation |
+| batch_on_demand | ON_DEMAND | t3.medium | 0 | 1 | 2 | 긴 Batch, 중단 시 영향이 큰 정제 작업 |
+| batch_spot | SPOT | t3.medium, t3.large | 0 | 0 | 3 | 짧고 재시도 가능한 Batch, SQS/DLQ 기반 |
+| ai_spot | SPOT | t3.large, t3.xlarge | 0 | 1 | 3 | AI 비동기 처리, 검색 보조, 재시도 가능 작업 |
+| ops_on_demand | ON_DEMAND | t3.medium | 1 | 1 | 2 | AWS Load Balancer Controller, ArgoCD, 운영 도구 |
+
+### Node Label / Taint / Toleration 기준
+
+#### Label
+
+모든 NodeGroup에는 다음 두 label을 부여한다.
+
+```text
+workload: core | batch | ai | ops
+capacity: on-demand | spot
+```
+
+Kubernetes Deployment에서 `nodeSelector` 또는 `nodeAffinity`로 워크로드를 원하는 NodeGroup에 배치한다.
+
+#### Taint
+
+| NodeGroup | Taint Key | Value | Effect |
+| --- | --- | --- | --- |
+| core_on_demand | 없음 | - | - |
+| batch_on_demand | workload | batch | NO_SCHEDULE |
+| batch_spot | spot | true | NO_SCHEDULE |
+| ai_spot | spot | true | NO_SCHEDULE |
+| ops_on_demand | 없음 | - | - |
+
+`core_on_demand`와 `ops_on_demand`는 taint 없이 일반 스케줄링을 허용한다.
+
+Spot NodeGroup과 batch_on_demand는 taint를 부여하여 의도하지 않은 워크로드 배치를 방지한다.
+
+#### Toleration
+
+Spot 또는 Batch NodeGroup에 배치할 Pod는 다음 toleration을 명시해야 한다.
+
+batch_on_demand에 배치하려는 경우:
+
+```yaml
+tolerations:
+  - key: "workload"
+    value: "batch"
+    effect: "NoSchedule"
+    operator: "Equal"
+```
+
+batch_spot 또는 ai_spot에 배치하려는 경우:
+
+```yaml
+tolerations:
+  - key: "spot"
+    value: "true"
+    effect: "NoSchedule"
+    operator: "Equal"
+```
+
+toleration 없는 Pod는 core_on_demand 또는 ops_on_demand에만 스케줄링된다.
+
+### Spot 중단 가능성과 재시도 정책
+
+Spot Instance는 AWS가 용량 회수 시 2분 전 중단 알림 후 종료된다.
+
+다음 워크로드만 Spot에 배치한다.
+
+- 작업 단위가 짧고 중단 시 재시도 가능한 Batch
+- SQS/DLQ 기반으로 재처리가 보장된 작업
+- AI 비동기 처리 등 실패 허용 워크로드
+
+다음 워크로드는 Spot에 배치하지 않는다.
+
+- 사용자 요청을 직접 처리하는 API 서버
+- 결제, 예약 등 트랜잭션 무결성이 필요한 서비스
+- ArgoCD, ALB Controller 등 운영 도구
+
+SQS 기반 Batch 작업의 재시도 정책은 다음과 같다.
+
+| 항목 | 값 |
+| --- | --- |
+| max_receive_count | 3 |
+| DLQ 보관 기간 | 14일 |
+| Visibility Timeout | 300초 |
+
+Spot 중단으로 작업이 중단되면 메시지가 visibility timeout 후 SQS로 복귀하여 자동 재처리된다.
+
+### Terraform 구성 경로
+
+```text
+terraform/modules/eks-nodegroup
+terraform/environments/prod/main.tf  # module "prod_eks_nodegroups"
+```
+
+### 제외 범위
+
+| 항목 | 담당 이슈 |
+| --- | --- |
+| 실제 애플리케이션 Deployment 배치 변경 | M3 GitOps/Manifest |
+| HPA / Cluster Autoscaler / Karpenter 튜닝 | M4/M5 |
+| Prod 전체 apply | 별도 승인 후 수행 |
