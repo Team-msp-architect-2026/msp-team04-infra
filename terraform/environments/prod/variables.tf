@@ -59,9 +59,9 @@ variable "enable_prod_ecr" {
 }
 
 variable "enable_prod_vpc" {
-  description = "Whether to wire Prod VPC resources in this environment."
+  description = "Whether to preserve/manage existing Prod VPC foundation resources in terraform/environments/prod."
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "enable_prod_vpc_endpoints" {
@@ -131,9 +131,9 @@ variable "enable_prod_data_pipeline" {
 }
 
 variable "enable_edge" {
-  description = "Whether to create Edge Layer resources. Keep false until Prod ALB origin is ready."
+  description = "Whether to preserve/manage existing Prod Edge resources already tracked in terraform/environments/prod."
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "shared_lambda_collector_role_arn" {
@@ -488,4 +488,42 @@ variable "cloudfront_price_class" {
   description = "CloudFront price class."
   type        = string
   default     = "PriceClass_All"
+}
+
+variable "enable_prod_iam" {
+  description = "Whether to manage Prod environment IAM roles and policies from terraform/environments/prod. Keep false until Prod IAM activation is approved."
+  type        = bool
+  default     = false
+}
+
+variable "github_repository" {
+  description = "GitHub repository allowed to assume GitHub Actions role."
+  type        = string
+  default     = "Team-msp-architect-2026/msp-team04-infra"
+}
+
+variable "github_default_branch" {
+  description = "Default branch allowed to assume GitHub Actions role."
+  type        = string
+  default     = "develop"
+}
+
+variable "github_oidc_allowed_subjects" {
+  description = "GitHub OIDC sub conditions allowed to assume the GitHub Actions role."
+  type        = list(string)
+  default = [
+    "repo:Team-msp-architect-2026/msp-team04-infra:ref:refs/heads/develop"
+  ]
+}
+
+variable "github_oidc_provider_arn" {
+  description = "Existing account-level GitHub Actions OIDC Provider ARN."
+  type        = string
+  default     = "arn:aws:iam::611058323802:oidc-provider/token.actions.githubusercontent.com"
+}
+
+variable "enable_lambda_collector_secrets_manager_read" {
+  description = "Whether Prod Lambda Collector can read public data API keys from Secrets Manager."
+  type        = bool
+  default     = false
 }

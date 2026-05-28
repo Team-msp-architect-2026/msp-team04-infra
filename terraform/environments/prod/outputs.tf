@@ -132,3 +132,18 @@ output "prod_batch_repository_url" {
   description = "Prod Batch Job ECR Repository URL."
   value       = var.enable_prod_ecr ? module.prod_ecr[0].batch_repository_url : null
 }
+
+output "prod_lambda_collector_role_arn" {
+  description = "Prod Lambda Collector IAM role ARN."
+  value       = var.enable_prod_iam ? module.prod_iam[0].lambda_collector_role_arn : null
+}
+
+output "prod_eks_cluster_role_arn" {
+  description = "Prod EKS cluster IAM role ARN."
+  value       = var.enable_prod_iam ? module.prod_iam[0].eks_cluster_role_arn : null
+}
+
+output "prod_eks_node_role_arn" {
+  description = "Prod EKS node IAM role ARN."
+  value       = var.enable_prod_iam ? module.prod_iam[0].eks_node_role_arn : null
+}

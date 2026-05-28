@@ -613,3 +613,35 @@ variable "shared_eks_node_role_arn" {
   type        = string
   default     = ""
 }
+
+variable "enable_dev_iam" {
+  description = "Whether to manage Dev environment IAM roles and policies from terraform/environments/dev."
+  type        = bool
+  default     = true
+}
+
+variable "github_repository" {
+  description = "GitHub repository allowed to assume GitHub Actions role."
+  type        = string
+  default     = "Team-msp-architect-2026/msp-team04-infra"
+}
+
+variable "github_default_branch" {
+  description = "Default branch allowed to assume GitHub Actions role."
+  type        = string
+  default     = "develop"
+}
+
+variable "github_oidc_allowed_subjects" {
+  description = "GitHub OIDC sub conditions allowed to assume the GitHub Actions role."
+  type        = list(string)
+  default = [
+    "repo:Team-msp-architect-2026/msp-team04-infra:ref:refs/heads/develop"
+  ]
+}
+
+variable "github_oidc_provider_arn" {
+  description = "Existing account-level GitHub Actions OIDC Provider ARN."
+  type        = string
+  default     = "arn:aws:iam::611058323802:oidc-provider/token.actions.githubusercontent.com"
+}
