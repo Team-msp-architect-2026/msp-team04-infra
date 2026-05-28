@@ -1,0 +1,16 @@
+project_name   = "moment"
+env            = "shared"
+primary_region = "ap-northeast-3"
+
+# Keep false until state migration/import and apply are separately approved.
+enable_s3_raw_bucket = false
+enable_common_iam    = false
+
+# ECR is intentionally not managed by shared.
+# Dev ECR is managed by terraform/environments/dev.
+# Prod ECR is managed by terraform/environments/prod.
+
+
+# Keep "dev" during state migration if existing IAM resources are named moment-dev-*.
+# Changing this to "shared" can force IAM role/policy replacement.
+iam_resource_environment = "dev"

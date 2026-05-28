@@ -9,6 +9,7 @@ dev_vpc_cidr     = "10.20.0.0/16"
 # M2-OPS-02:
 # Prod resource wiring exists in terraform/environments/prod,
 # but all cost-generating resources remain disabled by default.
+enable_prod_ecr = false
 enable_prod_vpc            = false
 enable_prod_vpc_endpoints  = false
 enable_prod_eks            = false

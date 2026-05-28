@@ -87,3 +87,33 @@ output "prod_nodegroups_wiring_deferred_to_m2_eks_04" {
   description = "Prod Managed NodeGroup detailed wiring is intentionally deferred to M2-EKS-04."
   value       = true
 }
+
+output "prod_ecr_repository_names" {
+  description = "Prod ECR Repository names."
+  value       = var.enable_prod_ecr ? module.prod_ecr[0].repository_names : {}
+}
+
+output "prod_ecr_repository_urls" {
+  description = "Prod ECR Repository URLs."
+  value       = var.enable_prod_ecr ? module.prod_ecr[0].repository_urls : {}
+}
+
+output "prod_ecr_repository_arns" {
+  description = "Prod ECR Repository ARNs."
+  value       = var.enable_prod_ecr ? module.prod_ecr[0].repository_arns : {}
+}
+
+output "prod_backend_repository_url" {
+  description = "Prod Backend API ECR Repository URL."
+  value       = var.enable_prod_ecr ? module.prod_ecr[0].backend_repository_url : null
+}
+
+output "prod_ai_service_repository_url" {
+  description = "Prod AI Service ECR Repository URL."
+  value       = var.enable_prod_ecr ? module.prod_ecr[0].ai_service_repository_url : null
+}
+
+output "prod_batch_repository_url" {
+  description = "Prod Batch Job ECR Repository URL."
+  value       = var.enable_prod_ecr ? module.prod_ecr[0].batch_repository_url : null
+}
