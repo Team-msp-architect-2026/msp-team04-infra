@@ -143,8 +143,51 @@ module "prod_s3_raw_bucket" {
   common_tags = local.prod_tags
 }
 
+
+module "prod_iam" {
+  count  = var.enable_prod_iam ? 1 : 0
+  source = "../../modules/iam"
+
+  project_name = var.project_name
+  environment  = "prod"
+
+  github_repository            = var.github_repository
+  github_default_branch        = var.github_default_branch
+  github_oidc_allowed_subjects = var.github_oidc_allowed_subjects
+
+  create_github_oidc_provider = false
+  github_oidc_provider_arn    = var.github_oidc_provider_arn
+
+  create_eks_oidc_provider = false
+  enable_irsa_roles        = false
+
+  ecr_repository_arns = var.enable_prod_ecr ? module.prod_ecr[0].repository_arns : {}
+
+  raw_bucket_access_policy_arns = var.enable_prod_s3_raw_bucket ? [
+    module.prod_s3_raw_bucket[0].raw_bucket_access_policy_arn
+  ] : []
+
+  sqs_queue_arns                     = var.enable_prod_sqs ? [module.prod_sqs[0].queue_arn] : []
+  enable_sqs_queue_policy_statements = var.enable_prod_sqs
+
+  opensearch_domain_arns = var.enable_prod_opensearch ? [
+    module.prod_opensearch[0].domain_arn,
+    "${module.prod_opensearch[0].domain_arn}/*"
+  ] : []
+
+  attach_lambda_raw_bucket_policy              = var.enable_prod_s3_raw_bucket
+  enable_lambda_collector_secrets_manager_read = var.enable_lambda_collector_secrets_manager_read
+
+  common_tags = local.prod_tags
+
+  depends_on = [
+    module.prod_sqs,
+    module.prod_s3_raw_bucket
+  ]
+}
+
 module "prod_data_pipeline" {
-  count = var.enable_prod_data_pipeline && var.enable_prod_sqs && var.enable_prod_s3_raw_bucket && var.shared_lambda_collector_role_arn != "" ? 1 : 0
+  count = var.enable_prod_iam && var.enable_prod_data_pipeline && var.enable_prod_sqs && var.enable_prod_s3_raw_bucket ? 1 : 0
 
   source = "../../modules/data-pipeline"
 
@@ -152,7 +195,7 @@ module "prod_data_pipeline" {
   environment  = "prod"
 
   lambda_function_name = "${var.project_name}-prod-public-data-collector"
-  lambda_role_arn      = var.shared_lambda_collector_role_arn
+  lambda_role_arn      = module.prod_iam[0].lambda_collector_role_arn
 
   raw_bucket_name                 = module.prod_s3_raw_bucket[0].raw_bucket_name
   queue_url                       = module.prod_sqs[0].queue_url
@@ -177,14 +220,14 @@ module "prod_data_pipeline" {
 }
 
 module "prod_eks" {
-  count  = var.enable_prod_vpc && var.enable_prod_eks ? 1 : 0
+  count  = var.enable_prod_iam && var.enable_prod_vpc && var.enable_prod_eks ? 1 : 0
   source = "../../modules/eks"
 
   project_name = var.project_name
   environment  = "prod"
 
   cluster_name       = var.prod_eks_cluster_name
-  cluster_role_arn   = var.prod_eks_cluster_role_arn
+  cluster_role_arn   = module.prod_iam[0].eks_cluster_role_arn
   kubernetes_version = var.prod_eks_kubernetes_version
 
   subnet_ids                 = module.prod_vpc[0].prod_private_app_subnet_ids

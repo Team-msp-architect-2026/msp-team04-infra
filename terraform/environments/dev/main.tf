@@ -161,14 +161,54 @@ module "dev_s3_raw_bucket" {
   })
 }
 
-data "aws_iam_role" "lambda_collector" {
-  count = var.enable_dev_data_pipeline && var.enable_dev_sqs && var.enable_dev_s3_raw_bucket && var.shared_lambda_collector_role_arn == "" ? 1 : 0
 
-  name = "${var.project_name}-dev-lambda-collector-role"
+module "dev_iam" {
+  count  = var.enable_dev_iam ? 1 : 0
+  source = "../../modules/iam"
+
+  project_name = var.project_name
+  environment  = "dev"
+
+  github_repository            = var.github_repository
+  github_default_branch        = var.github_default_branch
+  github_oidc_allowed_subjects = var.github_oidc_allowed_subjects
+
+  create_github_oidc_provider = false
+  github_oidc_provider_arn    = var.github_oidc_provider_arn
+
+  create_eks_oidc_provider = false
+  enable_irsa_roles        = false
+
+  ecr_repository_arns = module.dev_ecr.repository_arns
+
+  raw_bucket_access_policy_arns = var.enable_dev_s3_raw_bucket ? [
+    module.dev_s3_raw_bucket[0].raw_bucket_access_policy_arn
+  ] : []
+
+  sqs_queue_arns                     = var.enable_dev_sqs ? [module.dev_sqs[0].queue_arn] : []
+  enable_sqs_queue_policy_statements = var.enable_dev_sqs
+
+  opensearch_domain_arns = var.enable_dev_opensearch ? [
+    module.dev_opensearch[0].domain_arn,
+    "${module.dev_opensearch[0].domain_arn}/*"
+  ] : []
+
+  attach_lambda_raw_bucket_policy              = var.enable_dev_s3_raw_bucket
+  enable_lambda_collector_secrets_manager_read = var.enable_lambda_collector_secrets_manager_read
+
+  common_tags = merge(local.common_tags, {
+    Environment = "dev"
+  })
+
+  depends_on = [
+    module.dev_sqs,
+    module.dev_s3_raw_bucket
+  ]
 }
 
+
 module "dev_data_pipeline" {
-  count = var.enable_dev_data_pipeline && var.enable_dev_sqs && var.enable_dev_s3_raw_bucket ? 1 : 0
+  count = var.enable_dev_iam && var.enable_dev_data_pipeline && var.enable_dev_sqs && var.enable_dev_s3_raw_bucket ? 1 : 0
 
   source = "../../modules/data-pipeline"
 
@@ -176,7 +216,7 @@ module "dev_data_pipeline" {
   environment  = "dev"
 
   lambda_function_name = "${var.project_name}-dev-public-data-collector"
-  lambda_role_arn      = var.shared_lambda_collector_role_arn != "" ? var.shared_lambda_collector_role_arn : data.aws_iam_role.lambda_collector[0].arn
+  lambda_role_arn      = module.dev_iam[0].lambda_collector_role_arn
 
   raw_bucket_name                 = module.dev_s3_raw_bucket[0].raw_bucket_name
   queue_url                       = module.dev_sqs[0].queue_url
@@ -203,7 +243,7 @@ module "dev_data_pipeline" {
 }
 
 module "dev_eks" {
-  count = var.enable_dev_eks ? 1 : 0
+  count = var.enable_dev_iam && var.enable_dev_eks ? 1 : 0
 
   source = "../../modules/eks"
 
@@ -211,7 +251,7 @@ module "dev_eks" {
   environment  = "dev"
 
   cluster_name       = var.dev_eks_cluster_name
-  cluster_role_arn   = var.shared_eks_cluster_role_arn
+  cluster_role_arn   = module.dev_iam[0].eks_cluster_role_arn
   kubernetes_version = var.prod_eks_kubernetes_version
 
   subnet_ids                 = module.dev_vpc.dev_private_app_subnet_ids
@@ -249,7 +289,7 @@ module "dev_eks" {
 }
 
 module "dev_eks_nodegroups" {
-  count = var.enable_dev_eks && var.enable_dev_nodegroups ? 1 : 0
+  count = var.enable_dev_iam && var.enable_dev_eks && var.enable_dev_nodegroups ? 1 : 0
 
   source = "../../modules/eks-nodegroup"
 
@@ -257,7 +297,7 @@ module "dev_eks_nodegroups" {
   environment  = "dev"
 
   cluster_name  = module.dev_eks[0].cluster_name
-  node_role_arn = var.shared_eks_node_role_arn
+  node_role_arn = module.dev_iam[0].eks_node_role_arn
   subnet_ids    = module.dev_vpc.dev_private_app_subnet_ids
 
   node_groups = {

@@ -123,7 +123,7 @@ output "dev_interface_endpoint_ids" {
 
 output "shared_lambda_collector_role_arn" {
   description = "Lambda Collector IAM role ARN supplied from shared environment."
-  value       = var.shared_lambda_collector_role_arn != "" ? var.shared_lambda_collector_role_arn : null
+  value       = var.enable_dev_iam ? module.dev_iam[0].lambda_collector_role_arn : null
 }
 
 output "dev_raw_bucket_name" {
@@ -143,12 +143,12 @@ output "dev_raw_bucket_access_policy_arn" {
 
 output "shared_eks_cluster_role_arn" {
   description = "EKS Cluster IAM role ARN supplied from shared environment."
-  value       = var.shared_eks_cluster_role_arn != "" ? var.shared_eks_cluster_role_arn : null
+  value       = var.enable_dev_iam ? module.dev_iam[0].eks_cluster_role_arn : null
 }
 
 output "shared_eks_node_role_arn" {
   description = "EKS Node IAM role ARN supplied from shared environment."
-  value       = var.shared_eks_node_role_arn != "" ? var.shared_eks_node_role_arn : null
+  value       = var.enable_dev_iam ? module.dev_iam[0].eks_node_role_arn : null
 }
 
 # ── Dev SQS Outputs ───────────────────────────────────────────────────────────
@@ -262,7 +262,7 @@ output "dev_eks_node_group_statuses" {
 
 output "dev_eks_node_role_arn" {
   description = "IAM role ARN used by Dev EKS managed node groups."
-  value       = var.shared_eks_node_role_arn != "" ? var.shared_eks_node_role_arn : null
+  value       = var.enable_dev_iam ? module.dev_iam[0].eks_node_role_arn : null
 }
 
 # ── Dev Data Pipeline Outputs ─────────────────────────────────────────────────
