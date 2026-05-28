@@ -107,9 +107,15 @@ variable "ecr_repository_arns" {
 }
 
 variable "raw_bucket_access_policy_arn" {
-  description = "IAM policy ARN for raw S3 bucket access"
+  description = "Deprecated single IAM policy ARN for raw S3 bucket access. Prefer raw_bucket_access_policy_arns."
   type        = string
   default     = null
+}
+
+variable "raw_bucket_access_policy_arns" {
+  description = "IAM policy ARNs for environment-specific raw S3 bucket access."
+  type        = list(string)
+  default     = []
 }
 
 variable "enable_sqs_queue_policy_statements" {

@@ -6,6 +6,10 @@ primary_region = "ap-northeast-3"
 enable_s3_raw_bucket = false
 enable_common_iam    = false
 
+# Environment-specific raw bucket policies can be attached to the shared Lambda Collector role.
+# Fill this from dev/prod raw bucket outputs after each environment is planned or migrated.
+raw_bucket_access_policy_arns = []
+
 # ECR is intentionally not managed by shared.
 # Dev ECR is managed by terraform/environments/dev.
 # Prod ECR is managed by terraform/environments/prod.

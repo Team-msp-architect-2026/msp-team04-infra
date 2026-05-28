@@ -147,8 +147,28 @@ module "dev_sqs" {
   })
 }
 
+module "dev_s3_raw_bucket" {
+  count = var.enable_dev_s3_raw_bucket ? 1 : 0
+
+  source = "../../modules/s3"
+
+  project_name = var.project_name
+  environment  = "dev"
+  bucket_name  = var.dev_raw_bucket_name
+
+  common_tags = merge(local.common_tags, {
+    Environment = "dev"
+  })
+}
+
+data "aws_iam_role" "lambda_collector" {
+  count = var.enable_dev_data_pipeline && var.enable_dev_sqs && var.enable_dev_s3_raw_bucket && var.shared_lambda_collector_role_arn == "" ? 1 : 0
+
+  name = "${var.project_name}-dev-lambda-collector-role"
+}
+
 module "dev_data_pipeline" {
-  count = var.enable_dev_data_pipeline && var.enable_dev_sqs ? 1 : 0
+  count = var.enable_dev_data_pipeline && var.enable_dev_sqs && var.enable_dev_s3_raw_bucket ? 1 : 0
 
   source = "../../modules/data-pipeline"
 
@@ -156,9 +176,9 @@ module "dev_data_pipeline" {
   environment  = "dev"
 
   lambda_function_name = "${var.project_name}-dev-public-data-collector"
-  lambda_role_arn      = var.shared_lambda_collector_role_arn
+  lambda_role_arn      = var.shared_lambda_collector_role_arn != "" ? var.shared_lambda_collector_role_arn : data.aws_iam_role.lambda_collector[0].arn
 
-  raw_bucket_name                 = var.shared_raw_bucket_name
+  raw_bucket_name                 = module.dev_s3_raw_bucket[0].raw_bucket_name
   queue_url                       = module.dev_sqs[0].queue_url
   public_data_api_url             = var.data_pipeline_public_data_api_url
   public_data_sources_json        = var.data_pipeline_public_data_sources_json
@@ -177,7 +197,8 @@ module "dev_data_pipeline" {
   })
 
   depends_on = [
-    module.dev_sqs
+    module.dev_sqs,
+    module.dev_s3_raw_bucket
   ]
 }
 

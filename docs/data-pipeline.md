@@ -79,6 +79,18 @@ API key Secret 이름은 다음과 같다.
 
 Git에는 실제 API key를 저장하지 않는다. Terraform에는 Secret 이름과 구조만 포함한다.
 
+## Source 운영 메타데이터
+
+M2-DATA-03부터 source config는 수집 방식과 갱신 주기를 명시할 수 있다.
+
+| 필드 | 설명 | 기본값 |
+| --- | --- | --- |
+| triggerType | 수집 트리거 유형. 예: SCHEDULED, MANUAL, EVENT | SCHEDULED |
+| updateFrequency | 원천 데이터 갱신 주기. 예: DAILY, WEEKLY, MONTHLY, AD_HOC | UNKNOWN |
+
+Lambda Collector는 기존 source config와의 호환성을 위해 값이 없으면 기본값을 채운다.
+또한 trigger_type, update_frequency처럼 snake_case로 들어온 값도 각각 triggerType, updateFrequency로 정규화한다.
+
 ## 현재 수집 Source
 
 M2-DATA-02 검증 기준 source config에는 다음 11개 source가 활성화되어 있다.
@@ -105,6 +117,8 @@ Lambda Collector는 S3 Raw object 저장 후 다음 형태의 메시지를 SQS M
       "schemaVersion": "1.0",
       "sourceName": "seoul_public_program",
       "sourceDetail": "education",
+      "triggerType": "SCHEDULED",
+      "updateFrequency": "DAILY",
       "rawBucketName": "moment-dev-raw-data-...",
       "rawObjectKey": "raw/seoul_public_program/education/yyyy/mm/dd/page.json",
       "collectedAt": "2026-05-26T03:26:50.761430Z",
@@ -122,6 +136,7 @@ Lambda Collector는 S3 Raw object 저장 후 다음 형태의 메시지를 SQS M
     }
 
 Spring Batch는 이후 이 메시지의 rawBucketName, rawObjectKey, sourceName, sourceDetail을 기준으로 S3 Raw 데이터를 읽고 정제/적재한다.
+triggerType과 updateFrequency는 source별 운영 메타데이터로 사용하며, Batch 스케줄 조정이나 원천 데이터 갱신 주기 판단에 활용할 수 있다.
 
 ## 검증 결과
 

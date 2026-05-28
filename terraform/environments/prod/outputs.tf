@@ -48,6 +48,21 @@ output "prod_sqs_queue_arn" {
   value       = try(module.prod_sqs[0].queue_arn, null)
 }
 
+output "prod_raw_bucket_name" {
+  description = "Prod S3 Raw Bucket name."
+  value       = try(module.prod_s3_raw_bucket[0].raw_bucket_name, null)
+}
+
+output "prod_raw_bucket_arn" {
+  description = "Prod S3 Raw Bucket ARN."
+  value       = try(module.prod_s3_raw_bucket[0].raw_bucket_arn, null)
+}
+
+output "prod_raw_bucket_access_policy_arn" {
+  description = "Prod S3 Raw Bucket access policy ARN."
+  value       = try(module.prod_s3_raw_bucket[0].raw_bucket_access_policy_arn, null)
+}
+
 output "prod_data_pipeline_lambda_function_name" {
   description = "Prod Lambda Collector function name."
   value       = try(module.prod_data_pipeline[0].lambda_function_name, null)

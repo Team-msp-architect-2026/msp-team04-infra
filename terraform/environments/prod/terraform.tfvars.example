@@ -18,14 +18,16 @@ enable_prod_data_tier      = false
 enable_prod_rds            = false
 enable_prod_redis          = false
 enable_prod_opensearch     = false
-enable_prod_sqs            = false
+enable_prod_s3_raw_bucket = false
+prod_raw_bucket_name       = null
+enable_prod_sqs           = false
 enable_prod_data_pipeline  = false
 enable_edge                = false
 
 # Shared/account-level resources are not duplicated in Prod.
 # Fill these only when Prod data pipeline is explicitly enabled.
 shared_lambda_collector_role_arn = ""
-shared_raw_bucket_name           = ""
+# shared_raw_bucket_name is deprecated. Prod Raw Bucket is managed in terraform/environments/prod.
 
 # Network/TGW is still shared. Keep null until state handoff or remote-state strategy is approved.
 prod_transit_gateway_id = null

@@ -58,6 +58,17 @@ locals {
     "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/${local.name_prefix}*:*"
   ]
 
+  raw_bucket_access_policy_arns = distinct(compact(concat(
+    var.raw_bucket_access_policy_arn != null ? [var.raw_bucket_access_policy_arn] : [],
+    var.raw_bucket_access_policy_arns
+  )))
+
+  raw_bucket_access_policy_additional_arns = length(local.raw_bucket_access_policy_arns) > 1 ? slice(
+    local.raw_bucket_access_policy_arns,
+    1,
+    length(local.raw_bucket_access_policy_arns)
+  ) : []
+
   lambda_collector_extra_policy_enabled = var.enable_sqs_queue_policy_statements || var.enable_lambda_collector_secrets_manager_read
 }
 
@@ -462,12 +473,21 @@ resource "aws_iam_role_policy_attachment" "irsa_batch_base" {
 }
 
 resource "aws_iam_role_policy_attachment" "irsa_batch_raw_bucket" {
-  for_each = contains(keys(local.enabled_irsa_service_accounts), "batch") && var.raw_bucket_access_policy_arn != null ? {
+  for_each = contains(keys(local.enabled_irsa_service_accounts), "batch") && length(local.raw_bucket_access_policy_arns) > 0 ? {
     batch = local.enabled_irsa_service_accounts["batch"]
   } : {}
 
   role       = aws_iam_role.irsa[each.key].name
-  policy_arn = var.raw_bucket_access_policy_arn
+  policy_arn = local.raw_bucket_access_policy_arns[0]
+}
+
+resource "aws_iam_role_policy_attachment" "irsa_batch_raw_bucket_additional" {
+  for_each = contains(keys(local.enabled_irsa_service_accounts), "batch") ? {
+    for policy_arn in local.raw_bucket_access_policy_additional_arns : policy_arn => policy_arn
+  } : {}
+
+  role       = aws_iam_role.irsa["batch"].name
+  policy_arn = each.value
 }
 
 resource "aws_iam_role_policy_attachment" "irsa_ai_service" {
@@ -510,10 +530,19 @@ resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_raw_bucket" {
-  count = var.attach_lambda_raw_bucket_policy ? 1 : 0
+  count = var.attach_lambda_raw_bucket_policy && length(local.raw_bucket_access_policy_arns) > 0 ? 1 : 0
 
   role       = aws_iam_role.lambda_collector.name
-  policy_arn = var.raw_bucket_access_policy_arn
+  policy_arn = local.raw_bucket_access_policy_arns[0]
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_raw_bucket_additional" {
+  for_each = var.attach_lambda_raw_bucket_policy ? {
+    for policy_arn in local.raw_bucket_access_policy_additional_arns : policy_arn => policy_arn
+  } : {}
+
+  role       = aws_iam_role.lambda_collector.name
+  policy_arn = each.value
 }
 
 data "aws_iam_policy_document" "lambda_collector_extra" {

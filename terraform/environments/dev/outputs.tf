@@ -126,9 +126,19 @@ output "shared_lambda_collector_role_arn" {
   value       = var.shared_lambda_collector_role_arn != "" ? var.shared_lambda_collector_role_arn : null
 }
 
-output "shared_raw_bucket_name" {
-  description = "S3 Raw Bucket name supplied from shared environment."
-  value       = var.shared_raw_bucket_name != "" ? var.shared_raw_bucket_name : null
+output "dev_raw_bucket_name" {
+  description = "Dev S3 Raw Bucket name."
+  value       = try(module.dev_s3_raw_bucket[0].raw_bucket_name, null)
+}
+
+output "dev_raw_bucket_arn" {
+  description = "Dev S3 Raw Bucket ARN."
+  value       = try(module.dev_s3_raw_bucket[0].raw_bucket_arn, null)
+}
+
+output "dev_raw_bucket_access_policy_arn" {
+  description = "Dev S3 Raw Bucket access policy ARN."
+  value       = try(module.dev_s3_raw_bucket[0].raw_bucket_access_policy_arn, null)
 }
 
 output "shared_eks_cluster_role_arn" {
