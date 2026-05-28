@@ -573,3 +573,31 @@ variable "cloudfront_price_class" {
   type        = string
   default     = "PriceClass_All"
 }
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Shared environment dependency inputs
+# ──────────────────────────────────────────────────────────────────────────────
+
+variable "shared_lambda_collector_role_arn" {
+  description = "Lambda Collector IAM role ARN managed by shared environment. Required before enabling Dev data pipeline apply."
+  type        = string
+  default     = ""
+}
+
+variable "shared_raw_bucket_name" {
+  description = "S3 Raw Bucket name managed by shared environment. Required before enabling Dev data pipeline apply."
+  type        = string
+  default     = ""
+}
+
+variable "shared_eks_cluster_role_arn" {
+  description = "EKS Cluster IAM role ARN managed by shared environment. Required before enabling Dev EKS apply."
+  type        = string
+  default     = ""
+}
+
+variable "shared_eks_node_role_arn" {
+  description = "EKS Node IAM role ARN managed by shared environment. Required before enabling Dev nodegroups apply."
+  type        = string
+  default     = ""
+}

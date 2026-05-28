@@ -11,6 +11,34 @@ locals {
   })
 }
 
+module "prod_ecr" {
+  count  = var.enable_prod_ecr ? 1 : 0
+  source = "../../modules/ecr"
+
+  repositories = {
+    backend = {
+      name        = "${var.project_name}-prod-backend-api"
+      description = "Prod Backend API container image repository"
+    }
+
+    ai-service = {
+      name        = "${var.project_name}-prod-ai-service"
+      description = "Prod AI Service container image repository"
+    }
+
+    batch = {
+      name        = "${var.project_name}-prod-batch-job"
+      description = "Prod Batch Job container image repository"
+    }
+  }
+
+  image_tag_mutability = "IMMUTABLE"
+  scan_on_push         = true
+  encryption_type      = "AES256"
+
+  tags = local.prod_tags
+}
+
 module "prod_vpc" {
   count  = var.enable_prod_vpc ? 1 : 0
   source = "../../modules/prod-vpc"

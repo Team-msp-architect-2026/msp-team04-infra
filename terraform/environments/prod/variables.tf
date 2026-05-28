@@ -52,6 +52,12 @@ variable "prod_transit_gateway_id" {
   default     = null
 }
 
+variable "enable_prod_ecr" {
+  description = "Whether to create Prod ECR repositories. Disabled by default for cost saving and migration safety."
+  type        = bool
+  default     = false
+}
+
 variable "enable_prod_vpc" {
   description = "Whether to wire Prod VPC resources in this environment."
   type        = bool
