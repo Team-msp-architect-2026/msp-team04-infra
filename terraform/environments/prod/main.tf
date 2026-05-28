@@ -346,6 +346,108 @@ module "prod_opensearch" {
   common_tags = local.prod_tags
 }
 
+module "prod_eks_nodegroups" {
+  count  = var.enable_prod_iam && var.enable_prod_eks && var.enable_prod_nodegroups ? 1 : 0
+  source = "../../modules/eks-nodegroup"
+
+  project_name  = var.project_name
+  environment   = "prod"
+  cluster_name  = module.prod_eks[0].cluster_name
+  node_role_arn = module.prod_iam[0].eks_node_role_arn
+  subnet_ids    = module.prod_vpc[0].prod_private_app_subnet_ids
+
+  node_groups = {
+    core_on_demand = {
+      name           = "${var.project_name}-prod-core-on-demand-ng"
+      capacity_type  = "ON_DEMAND"
+      instance_types = ["t3.medium"]
+      min_size       = 2
+      desired_size   = 2
+      max_size       = 4
+      disk_size      = 30
+      labels = {
+        workload = "core"
+        capacity = "on-demand"
+      }
+      taints = []
+    }
+
+    batch_on_demand = {
+      name           = "${var.project_name}-prod-batch-on-demand-ng"
+      capacity_type  = "ON_DEMAND"
+      instance_types = ["t3.medium"]
+      min_size       = 0
+      desired_size   = 1
+      max_size       = 2
+      disk_size      = 30
+      labels = {
+        workload = "batch"
+        capacity = "on-demand"
+      }
+      taints = [{
+        key    = "workload"
+        value  = "batch"
+        effect = "NO_SCHEDULE"
+      }]
+    }
+
+    batch_spot = {
+      name           = "${var.project_name}-prod-batch-spot-ng"
+      capacity_type  = "SPOT"
+      instance_types = ["t3.medium", "t3.large"]
+      min_size       = 0
+      desired_size   = 0
+      max_size       = 3
+      disk_size      = 30
+      labels = {
+        workload = "batch"
+        capacity = "spot"
+      }
+      taints = [{
+        key    = "spot"
+        value  = "true"
+        effect = "NO_SCHEDULE"
+      }]
+    }
+
+    ai_spot = {
+      name           = "${var.project_name}-prod-ai-spot-ng"
+      capacity_type  = "SPOT"
+      instance_types = ["t3.large", "t3.xlarge"]
+      min_size       = 0
+      desired_size   = 1
+      max_size       = 3
+      disk_size      = 30
+      labels = {
+        workload = "ai"
+        capacity = "spot"
+      }
+      taints = [{
+        key    = "spot"
+        value  = "true"
+        effect = "NO_SCHEDULE"
+      }]
+    }
+
+    ops_on_demand = {
+      name           = "${var.project_name}-prod-ops-on-demand-ng"
+      capacity_type  = "ON_DEMAND"
+      instance_types = ["t3.medium"]
+      min_size       = 1
+      desired_size   = 1
+      max_size       = 2
+      disk_size      = 30
+      labels = {
+        workload = "ops"
+        capacity = "on-demand"
+      }
+      taints = []
+    }
+  }
+
+  common_tags = local.prod_tags
+}
+
 module "edge" {
   count  = var.enable_edge ? 1 : 0
   source = "../../modules/edge"
