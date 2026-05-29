@@ -465,7 +465,9 @@ module "dev_opensearch" {
   instance_type  = var.dev_opensearch_instance_type
   instance_count = 1
 
-  zone_awareness_enabled = false
+  dedicated_master_enabled      = false
+  zone_awareness_enabled        = false
+  multi_az_with_standby_enabled = false
 
   ebs_volume_type = var.opensearch_ebs_volume_type
   ebs_volume_size = var.dev_opensearch_ebs_volume_size

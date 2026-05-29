@@ -515,13 +515,31 @@ variable "dev_opensearch_instance_type" {
 variable "prod_opensearch_instance_type" {
   description = "Prod OpenSearch instance type used only when Prod OpenSearch is explicitly enabled."
   type        = string
-  default     = "t3.small.search"
+  default     = "t3.medium.search"
 }
 
 variable "prod_opensearch_instance_count" {
   description = "Number of Prod OpenSearch data nodes when Prod OpenSearch is enabled."
   type        = number
   default     = 2
+}
+
+variable "prod_opensearch_dedicated_master_enabled" {
+  description = "Whether Prod OpenSearch dedicated master nodes are enabled when Prod OpenSearch is explicitly enabled."
+  type        = bool
+  default     = true
+}
+
+variable "prod_opensearch_dedicated_master_type" {
+  description = "Prod OpenSearch dedicated master node instance type."
+  type        = string
+  default     = "t3.small.search"
+}
+
+variable "prod_opensearch_dedicated_master_count" {
+  description = "Number of Prod OpenSearch dedicated master nodes."
+  type        = number
+  default     = 3
 }
 
 variable "prod_opensearch_zone_awareness_enabled" {
@@ -534,6 +552,12 @@ variable "prod_opensearch_availability_zone_count" {
   description = "Availability zone count for Prod OpenSearch zone awareness."
   type        = number
   default     = 2
+}
+
+variable "prod_opensearch_multi_az_with_standby_enabled" {
+  description = "Whether Prod OpenSearch Multi-AZ with Standby is enabled. Keep false for the current 2-AZ Prod VPC design."
+  type        = bool
+  default     = false
 }
 
 variable "opensearch_ebs_volume_type" {
@@ -551,7 +575,7 @@ variable "dev_opensearch_ebs_volume_size" {
 variable "prod_opensearch_ebs_volume_size" {
   description = "Prod OpenSearch EBS volume size in GiB when Prod OpenSearch is enabled."
   type        = number
-  default     = 20
+  default     = 50
 }
 
 # ─── Edge Layer ──────────────────────────────────────────────────────────────

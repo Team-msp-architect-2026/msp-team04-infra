@@ -67,6 +67,7 @@ terraform/
 | docs/alb-controller.md | AWS Load Balancer Controller 설치, Dev 검증, Prod 활성화 절차 |
 | docs/data-pipeline.md | EventBridge Scheduler + Lambda Collector 데이터 파이프라인 구성 및 Dev/Prod 활성화 정책 |
 | docs/rds.md | RDS PostgreSQL Dev/Prod 스펙 분리 및 Prod 보호 옵션 기준 |
+| docs/opensearch.md | OpenSearch Dev/Prod 스펙 분리 및 Prod HA 옵션 기준 |
 | docs/terraform-environments.md | Dev/Prod Terraform environment 및 state 분리 전략 |
 | docs/m2-close-checklist.md | M2 Infra Bootstrap 최종 완료 체크리스트 및 M3 인수인계 기준 |
 | docs/m2-valid-b-runbook.md | Network / TGW / Data / IAM / Destroy 검증 및 운영 Runbook |

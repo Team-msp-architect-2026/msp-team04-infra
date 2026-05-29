@@ -55,10 +55,13 @@ resource "aws_opensearch_domain" "this" {
   engine_version = var.engine_version
 
   cluster_config {
-    instance_type            = var.instance_type
-    instance_count           = var.instance_count
-    dedicated_master_enabled = false
-    zone_awareness_enabled   = var.zone_awareness_enabled
+    instance_type                 = var.instance_type
+    instance_count                = var.instance_count
+    dedicated_master_enabled      = var.dedicated_master_enabled
+    dedicated_master_type         = var.dedicated_master_enabled ? var.dedicated_master_type : null
+    dedicated_master_count        = var.dedicated_master_enabled ? var.dedicated_master_count : null
+    zone_awareness_enabled        = var.zone_awareness_enabled
+    multi_az_with_standby_enabled = var.multi_az_with_standby_enabled
 
     dynamic "zone_awareness_config" {
       for_each = var.zone_awareness_enabled ? [1] : []
@@ -106,4 +109,36 @@ resource "aws_opensearch_domain" "this" {
     Name = var.domain_name
     Role = "opensearch-domain"
   })
+
+  lifecycle {
+    precondition {
+      condition     = !var.zone_awareness_enabled || length(var.subnet_ids) == var.availability_zone_count
+      error_message = "When zone awareness is enabled, subnet_ids count must match availability_zone_count."
+    }
+
+    precondition {
+      condition     = !var.zone_awareness_enabled || var.instance_count >= var.availability_zone_count
+      error_message = "When zone awareness is enabled, instance_count must be greater than or equal to availability_zone_count."
+    }
+
+    precondition {
+      condition     = !var.dedicated_master_enabled || contains([3, 5], var.dedicated_master_count)
+      error_message = "When dedicated master is enabled, dedicated_master_count must be 3 or 5. Use 3 for the default production HA baseline."
+    }
+
+    precondition {
+      condition = (
+        !var.multi_az_with_standby_enabled ||
+        (
+          var.zone_awareness_enabled &&
+          var.availability_zone_count == 3 &&
+          length(var.subnet_ids) == 3 &&
+          var.dedicated_master_enabled &&
+          var.dedicated_master_count == 3 &&
+          var.instance_count % 3 == 0
+        )
+      )
+      error_message = "Multi-AZ with Standby requires 3 AZ subnets, zone awareness, 3 dedicated master nodes, and data node count as a multiple of 3."
+    }
+  }
 }
