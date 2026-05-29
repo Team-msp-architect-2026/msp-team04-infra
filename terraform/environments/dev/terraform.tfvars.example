@@ -27,19 +27,17 @@ enable_prod_vpc_endpoints = false
 enable_dev_vpc_endpoints  = true
 
 
-# SQS + DLQ
-enable_dev_sqs  = true
-enable_prod_sqs = false
+# Dev SQS + DLQ
+enable_dev_sqs = true
 
-sqs_visibility_timeout_seconds     = 300
-sqs_message_retention_seconds      = 345600
-sqs_dlq_message_retention_seconds  = 1209600
-sqs_max_receive_count              = 3
-sqs_receive_wait_time_seconds      = 10
-sqs_delay_seconds                  = 0
-sqs_max_message_size               = 262144
-sqs_managed_sse_enabled            = true
-
+dev_sqs_visibility_timeout_seconds     = 300
+dev_sqs_message_retention_seconds      = 86400
+dev_sqs_dlq_message_retention_seconds  = 345600
+dev_sqs_max_receive_count              = 3
+dev_sqs_receive_wait_time_seconds      = 10
+dev_sqs_delay_seconds                  = 0
+dev_sqs_max_message_size               = 262144
+dev_sqs_managed_sse_enabled            = true
 
 # Environment-specific Raw Bucket
 enable_dev_s3_raw_bucket = true
