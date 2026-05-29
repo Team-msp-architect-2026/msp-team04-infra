@@ -133,6 +133,10 @@ cloudfront_price_class         = "PriceClass_All"
 
 eks_cluster_sg_id = "sg-04fd7dd77b6fd278e"
 
+# Fresh apply에서는 EKS Cluster SG ID가 아직 unknown이므로 false 유지
+# EKS 생성 후 cluster SG ID를 확인한 뒤 필요 시 true로 변경
+enable_dev_eks_cluster_sg_ingress_rules = false
+
 # Redis
 enable_dev_redis             = true
 dev_redis_node_type          = "cache.t3.micro"

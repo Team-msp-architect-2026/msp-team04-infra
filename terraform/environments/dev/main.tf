@@ -88,7 +88,8 @@ module "dev_security_group" {
     Project = "MoMent"
   }
 
-  eks_cluster_sg_id = try(module.dev_eks[0].cluster_security_group_id, null)
+  create_eks_cluster_sg_ingress_rules = var.enable_dev_eks_cluster_sg_ingress_rules
+  eks_cluster_sg_id                   = var.eks_cluster_sg_id
 }
 
 module "dev_vpc_endpoint" {
@@ -181,9 +182,9 @@ module "dev_iam" {
 
   ecr_repository_arns = module.dev_ecr.repository_arns
 
-  raw_bucket_access_policy_arns = var.enable_dev_s3_raw_bucket ? [
-    module.dev_s3_raw_bucket[0].raw_bucket_access_policy_arn
-  ] : []
+  raw_bucket_access_policy_arn_map = var.enable_dev_s3_raw_bucket ? {
+    raw = module.dev_s3_raw_bucket[0].raw_bucket_access_policy_arn
+  } : {}
 
   sqs_queue_arns                     = var.enable_dev_sqs ? [module.dev_sqs[0].queue_arn] : []
   enable_sqs_queue_policy_statements = var.enable_dev_sqs
