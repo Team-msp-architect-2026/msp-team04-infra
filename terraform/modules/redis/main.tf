@@ -35,7 +35,7 @@ resource "aws_elasticache_replication_group" "this" {
   subnet_group_name  = aws_elasticache_subnet_group.this.name
   security_group_ids = var.security_group_ids
 
-  num_cache_clusters         = 1
+  num_cache_clusters         = var.num_cache_clusters
   automatic_failover_enabled = var.automatic_failover_enabled
   multi_az_enabled           = var.multi_az_enabled
 

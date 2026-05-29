@@ -275,9 +275,10 @@ module "prod_redis" {
   subnet_ids         = module.prod_vpc[0].prod_private_data_subnet_ids
   security_group_ids = [module.prod_security_group[0].redis_sg_id]
 
-  engine_version = var.redis_engine_version
-  node_type      = var.prod_redis_node_type
-  port           = 6379
+  engine_version     = var.redis_engine_version
+  node_type          = var.prod_redis_node_type
+  num_cache_clusters = var.prod_redis_num_cache_clusters
+  port               = 6379
 
   automatic_failover_enabled = var.prod_redis_automatic_failover_enabled
   multi_az_enabled           = var.prod_redis_multi_az_enabled

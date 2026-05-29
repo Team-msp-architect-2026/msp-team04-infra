@@ -76,6 +76,12 @@ variable "transit_encryption_enabled" {
   default     = false
 }
 
+variable "num_cache_clusters" {
+  description = "Number of cache clusters (nodes) in the replication group. Set to 2+ for HA with automatic failover."
+  type        = number
+  default     = 1
+}
+
 variable "snapshot_retention_limit" {
   description = "Number of days to retain Redis snapshots."
   type        = number

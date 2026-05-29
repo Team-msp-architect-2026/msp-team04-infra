@@ -128,3 +128,8 @@ cloudfront_secret_header_value = "moment-cf-secret-change-me"
 cloudfront_price_class         = "PriceClass_All"
 
 eks_cluster_sg_id = "sg-04fd7dd77b6fd278e"
+
+# Redis
+enable_dev_redis             = true
+dev_redis_node_type          = "cache.t3.micro"
+dev_redis_num_cache_clusters = 1
