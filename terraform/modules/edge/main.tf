@@ -267,7 +267,16 @@ resource "aws_cloudfront_distribution" "main" {
   tags = merge(var.tags, {
     Name = "${var.name_prefix}-cloudfront"
   })
+
+  lifecycle {
+    precondition {
+      condition     = var.alb_dns_name != null && var.alb_dns_name != ""
+      error_message = "alb_dns_name이 비어 있습니다. Prod ALB 구성 완료 후 prod_alb_dns_name 변수를 설정하세요. ALB Controller/Ingress 준비 전에는 Edge 실제 연결 검증이 제한됩니다."
+    }
+  }
 }
+
+
 
 ##############################################
 # Route53 Alias → CloudFront (도메인 있을 때만)
