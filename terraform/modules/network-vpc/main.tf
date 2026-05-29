@@ -48,19 +48,23 @@ resource "aws_subnet" "tgw" {
 }
 
 resource "aws_eip" "nat" {
+  count = length(var.public_subnet_cidrs)
+
   domain = "vpc"
 
   tags = merge(var.tags, {
-    Name = "${var.project_name}-${var.env}-network-nat-eip"
+    Name = "${var.project_name}-${var.env}-network-nat-eip-${count.index + 1}"
   })
 }
 
 resource "aws_nat_gateway" "this" {
-  allocation_id = aws_eip.nat.id
-  subnet_id     = aws_subnet.public[0].id
+  count = length(var.public_subnet_cidrs)
+
+  allocation_id = aws_eip.nat[count.index].id
+  subnet_id     = aws_subnet.public[count.index].id
 
   tags = merge(var.tags, {
-    Name = "${var.project_name}-${var.env}-centralized-nat-gw"
+    Name = "${var.project_name}-${var.env}-centralized-nat-gw-${count.index + 1}"
   })
 
   depends_on = [aws_internet_gateway.this]
@@ -88,22 +92,46 @@ resource "aws_route_table_association" "public" {
 }
 
 resource "aws_route_table" "tgw" {
+  count = length(var.tgw_subnet_cidrs)
+
   vpc_id = aws_vpc.this.id
 
   tags = merge(var.tags, {
-    Name = "${var.project_name}-${var.env}-network-tgw-rt"
+    Name = "${var.project_name}-${var.env}-network-tgw-rt-${count.index + 1}"
   })
 }
 
 resource "aws_route" "tgw_to_nat" {
-  route_table_id         = aws_route_table.tgw.id
+  count = length(var.tgw_subnet_cidrs)
+
+  route_table_id         = aws_route_table.tgw[count.index].id
   destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = aws_nat_gateway.this.id
+  nat_gateway_id         = aws_nat_gateway.this[count.index].id
 }
 
 resource "aws_route_table_association" "tgw" {
   count = length(aws_subnet.tgw)
 
   subnet_id      = aws_subnet.tgw[count.index].id
-  route_table_id = aws_route_table.tgw.id
+  route_table_id = aws_route_table.tgw[count.index].id
+}
+
+moved {
+  from = aws_eip.nat
+  to   = aws_eip.nat[0]
+}
+
+moved {
+  from = aws_nat_gateway.this
+  to   = aws_nat_gateway.this[0]
+}
+
+moved {
+  from = aws_route_table.tgw
+  to   = aws_route_table.tgw[0]
+}
+
+moved {
+  from = aws_route.tgw_to_nat
+  to   = aws_route.tgw_to_nat[0]
 }

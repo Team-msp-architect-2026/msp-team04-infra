@@ -19,13 +19,31 @@ output "tgw_subnet_ids" {
 }
 
 output "nat_gateway_id" {
-  description = "NAT Gateway ID."
-  value       = aws_nat_gateway.this.id
+  description = "First NAT Gateway ID kept for backward compatibility. Prefer nat_gateway_ids or nat_gateway_id_map."
+  value       = aws_nat_gateway.this[0].id
+}
+
+output "nat_gateway_ids" {
+  description = "NAT Gateway IDs by public subnet index."
+  value       = aws_nat_gateway.this[*].id
+}
+
+output "nat_gateway_id_map" {
+  description = "NAT Gateway IDs keyed by Availability Zone."
+  value = {
+    for index, subnet in aws_subnet.public :
+    subnet.availability_zone => aws_nat_gateway.this[index].id
+  }
 }
 
 output "nat_eip_id" {
-  description = "NAT Gateway Elastic IP ID."
-  value       = aws_eip.nat.id
+  description = "First NAT Gateway Elastic IP ID kept for backward compatibility. Prefer nat_eip_ids."
+  value       = aws_eip.nat[0].id
+}
+
+output "nat_eip_ids" {
+  description = "NAT Gateway Elastic IP IDs by public subnet index."
+  value       = aws_eip.nat[*].id
 }
 
 output "igw_id" {
@@ -39,6 +57,19 @@ output "public_route_table_id" {
 }
 
 output "tgw_route_table_id" {
-  description = "TGW subnet route table ID."
-  value       = aws_route_table.tgw.id
+  description = "First TGW subnet route table ID kept for backward compatibility. Prefer tgw_route_table_ids or tgw_route_table_id_map."
+  value       = aws_route_table.tgw[0].id
+}
+
+output "tgw_route_table_ids" {
+  description = "TGW subnet route table IDs by TGW subnet index."
+  value       = aws_route_table.tgw[*].id
+}
+
+output "tgw_route_table_id_map" {
+  description = "TGW subnet route table IDs keyed by Availability Zone."
+  value = {
+    for index, subnet in aws_subnet.tgw :
+    subnet.availability_zone => aws_route_table.tgw[index].id
+  }
 }

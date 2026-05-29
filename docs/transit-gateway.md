@@ -103,3 +103,17 @@ Dev RT: 10.10.0.0/16 blackhole
 현재 구조에서는 Prod VPC와 Dev VPC가 같은 Transit Gateway에 연결되어 있지만, 서로 직접 통신하지 않는다.
 
 환경 간 통신 제어는 Transit Gateway Route Table에서 수행하며, Network VPC만 운영 접근 및 중앙 NAT 허브 역할을 담당한다.
+
+
+## M2-NET-08 Network VPC NAT Egress 정합성
+
+Transit Gateway를 통해 Network VPC로 전달된 Dev / Prod Private App Subnet의 외부 egress 트래픽은 Network VPC 내부에서 AZ별 NAT Gateway를 통해 처리한다.
+
+Network VPC의 TGW Attachment Subnet Route Table은 단일 Route Table을 공유하지 않고 AZ별로 분리한다.
+
+| Network TGW Subnet | Default Route | 목적 |
+| --- | --- | --- |
+| AZ-A TGW Subnet | `0.0.0.0/0 -> AZ-A NAT Gateway` | 동일 AZ NAT egress |
+| AZ-C TGW Subnet | `0.0.0.0/0 -> AZ-C NAT Gateway` | 동일 AZ NAT egress |
+
+이 구조는 단일 NAT Gateway에 egress가 몰리는 구성을 제거하고, 최종 Multi-AZ Network VPC 설계와 Terraform 구현을 일치시키기 위한 기준이다.
