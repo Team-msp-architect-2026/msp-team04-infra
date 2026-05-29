@@ -432,18 +432,21 @@ module "dev_rds" {
 
   engine_version         = var.rds_engine_version
   parameter_group_family = var.rds_parameter_group_family
-  instance_class         = var.rds_instance_class
+  instance_class         = var.dev_rds_instance_class
 
-  allocated_storage     = var.rds_allocated_storage
-  max_allocated_storage = var.rds_max_allocated_storage
+  allocated_storage     = var.dev_rds_allocated_storage
+  max_allocated_storage = var.dev_rds_max_allocated_storage
   storage_type          = "gp3"
   storage_encrypted     = true
 
-  multi_az                = false
-  backup_retention_period = 1
+  multi_az                = var.dev_rds_multi_az
+  backup_retention_period = var.dev_rds_backup_retention_period
+  backup_window           = var.dev_rds_backup_window
+  maintenance_window      = var.dev_rds_maintenance_window
 
-  deletion_protection = false
-  skip_final_snapshot = true
+  deletion_protection       = var.dev_rds_deletion_protection
+  skip_final_snapshot       = var.dev_rds_skip_final_snapshot
+  final_snapshot_identifier = var.dev_rds_skip_final_snapshot ? null : coalesce(var.dev_rds_final_snapshot_identifier, "${var.project_name}-dev-postgres-final-snapshot")
 
   common_tags = local.common_tags
 }
