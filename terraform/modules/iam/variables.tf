@@ -118,6 +118,12 @@ variable "raw_bucket_access_policy_arns" {
   default     = []
 }
 
+variable "raw_bucket_access_policy_arn_map" {
+  description = "Static-key IAM policy ARN map for environment-specific raw S3 bucket access. Keys must be known at plan time; values may be known after apply."
+  type        = map(string)
+  default     = {}
+}
+
 variable "enable_sqs_queue_policy_statements" {
   description = "Whether to include SQS queue policy statements for Batch and Lambda Collector. Use a known boolean instead of deriving count from unknown queue ARNs."
   type        = bool

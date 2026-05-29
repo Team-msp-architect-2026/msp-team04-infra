@@ -365,8 +365,14 @@ variable "eks_cluster_sg_id" {
   default     = ""
 }
 
+variable "create_eks_cluster_sg_ingress_rules" {
+  description = "Whether to create ingress rules from the EKS cluster auto-generated security group. Keep false for fresh apply until the cluster SG ID is known."
+  type        = bool
+  default     = false
+}
+
 resource "aws_security_group_rule" "rds_ingress_from_eks_cluster_sg" {
-  count = var.create_service_sg && var.eks_cluster_sg_id != "" ? 1 : 0
+  count = var.create_service_sg && var.create_eks_cluster_sg_ingress_rules ? 1 : 0
 
   type                     = "ingress"
   security_group_id        = aws_security_group.rds[0].id
@@ -379,7 +385,7 @@ resource "aws_security_group_rule" "rds_ingress_from_eks_cluster_sg" {
 }
 
 resource "aws_security_group_rule" "redis_ingress_from_eks_cluster_sg" {
-  count = var.create_service_sg && var.eks_cluster_sg_id != "" ? 1 : 0
+  count = var.create_service_sg && var.create_eks_cluster_sg_ingress_rules ? 1 : 0
 
   type                     = "ingress"
   security_group_id        = aws_security_group.redis[0].id
@@ -392,7 +398,7 @@ resource "aws_security_group_rule" "redis_ingress_from_eks_cluster_sg" {
 }
 
 resource "aws_security_group_rule" "opensearch_ingress_from_eks_cluster_sg" {
-  count = var.create_service_sg && var.eks_cluster_sg_id != "" ? 1 : 0
+  count = var.create_service_sg && var.create_eks_cluster_sg_ingress_rules ? 1 : 0
 
   type                     = "ingress"
   security_group_id        = aws_security_group.opensearch[0].id

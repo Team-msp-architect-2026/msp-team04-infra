@@ -150,7 +150,19 @@ variable "dev_eks_public_access_cidrs" {
 variable "dev_eks_cluster_admin_principal_arn" {
   description = "IAM principal ARN granted cluster-admin access to the Dev EKS cluster through EKS Access Entry"
   type        = string
-  default     = "arn:aws:iam::611058323802:user/student01"
+  default     = "arn:aws:iam::611058323802:user/student06"
+}
+
+variable "enable_dev_eks_cluster_sg_ingress_rules" {
+  description = "Whether to create Dev Data Tier ingress rules from the EKS cluster auto-generated security group. Keep false for fresh apply until eks_cluster_sg_id is known."
+  type        = bool
+  default     = false
+}
+
+variable "eks_cluster_sg_id" {
+  description = "Existing Dev EKS cluster auto-generated security group ID. Set after EKS cluster creation when enabling cluster SG ingress rules."
+  type        = string
+  default     = ""
 }
 
 variable "prod_eks_cluster_name" {

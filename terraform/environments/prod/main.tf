@@ -163,9 +163,9 @@ module "prod_iam" {
 
   ecr_repository_arns = var.enable_prod_ecr ? module.prod_ecr[0].repository_arns : {}
 
-  raw_bucket_access_policy_arns = var.enable_prod_s3_raw_bucket ? [
-    module.prod_s3_raw_bucket[0].raw_bucket_access_policy_arn
-  ] : []
+  raw_bucket_access_policy_arn_map = var.enable_prod_s3_raw_bucket ? {
+    raw = module.prod_s3_raw_bucket[0].raw_bucket_access_policy_arn
+  } : {}
 
   sqs_queue_arns                     = var.enable_prod_sqs ? [module.prod_sqs[0].queue_arn] : []
   enable_sqs_queue_policy_statements = var.enable_prod_sqs
