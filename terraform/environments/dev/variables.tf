@@ -392,11 +392,6 @@ variable "enable_dev_rds" {
   default     = true
 }
 
-variable "enable_prod_rds" {
-  description = "Whether to create Prod RDS PostgreSQL. Disabled by default for cost saving."
-  type        = bool
-  default     = false
-}
 
 variable "rds_engine_version" {
   description = "PostgreSQL engine version for RDS."
@@ -410,8 +405,8 @@ variable "rds_parameter_group_family" {
   default     = "postgres17"
 }
 
-variable "rds_instance_class" {
-  description = "RDS instance class for practice and validation."
+variable "dev_rds_instance_class" {
+  description = "Dev RDS instance class for practice and validation."
   type        = string
   default     = "db.t4g.micro"
 }
@@ -428,47 +423,64 @@ variable "rds_master_username" {
   default     = "moment_admin"
 }
 
-variable "rds_allocated_storage" {
-  description = "Allocated RDS storage size in GiB."
+variable "dev_rds_allocated_storage" {
+  description = "Allocated Dev RDS storage size in GiB."
   type        = number
   default     = 20
 }
 
-variable "rds_max_allocated_storage" {
-  description = "Maximum RDS storage size in GiB for autoscaling."
+variable "dev_rds_max_allocated_storage" {
+  description = "Maximum Dev RDS storage size in GiB for autoscaling."
   type        = number
   default     = 100
 }
 
-variable "prod_rds_multi_az" {
-  description = "Whether Prod RDS PostgreSQL uses Multi-AZ Primary/Standby deployment when Prod RDS is enabled."
-  type        = bool
-  default     = true
-}
-
-variable "prod_rds_backup_retention_period" {
-  description = "Backup retention period in days for Prod RDS PostgreSQL."
-  type        = number
-  default     = 7
-}
-
-variable "prod_rds_deletion_protection" {
-  description = "Whether deletion protection is enabled for Prod RDS PostgreSQL."
-  type        = bool
-  default     = true
-}
-
-variable "prod_rds_skip_final_snapshot" {
-  description = "Whether to skip final snapshot on Prod RDS destroy."
+variable "dev_rds_multi_az" {
+  description = "Whether Dev RDS PostgreSQL uses Multi-AZ deployment. Disabled by default for cost saving."
   type        = bool
   default     = false
 }
 
-variable "prod_rds_final_snapshot_identifier" {
-  description = "Final snapshot identifier for Prod RDS. If null, a default project-based name is used."
+variable "dev_rds_backup_retention_period" {
+  description = "Backup retention period in days for Dev RDS PostgreSQL."
+  type        = number
+  default     = 1
+}
+
+variable "dev_rds_backup_window" {
+  description = "Preferred backup window for Dev RDS PostgreSQL."
+  type        = string
+  default     = "18:00-19:00"
+}
+
+variable "dev_rds_maintenance_window" {
+  description = "Preferred maintenance window for Dev RDS PostgreSQL."
+  type        = string
+  default     = "sun:19:00-sun:20:00"
+}
+
+variable "dev_rds_deletion_protection" {
+  description = "Whether deletion protection is enabled for Dev RDS PostgreSQL."
+  type        = bool
+  default     = false
+}
+
+variable "dev_rds_skip_final_snapshot" {
+  description = "Whether to skip final snapshot on Dev RDS destroy."
+  type        = bool
+  default     = true
+}
+
+variable "dev_rds_final_snapshot_identifier" {
+  description = "Final snapshot identifier for Dev RDS. Used only when dev_rds_skip_final_snapshot is false."
   type        = string
   default     = null
 }
+
+
+
+
+
 
 variable "enable_dev_opensearch" {
   description = "Whether to create Dev OpenSearch by default for development validation."

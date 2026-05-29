@@ -78,22 +78,21 @@ data_pipeline_log_retention_days    = 14
 
 # RDS PostgreSQL
 enable_dev_rds  = true
-enable_prod_rds = false
 
 rds_engine_version         = "17.10"
 rds_parameter_group_family = "postgres17"
-rds_instance_class         = "db.t4g.micro"
+dev_rds_instance_class         = "db.t4g.micro"
 rds_database_name          = "moment"
 rds_master_username        = "moment_admin"
-rds_allocated_storage      = 20
-rds_max_allocated_storage  = 100
+dev_rds_allocated_storage      = 20
+dev_rds_max_allocated_storage  = 100
+dev_rds_multi_az                = false
+dev_rds_backup_retention_period = 1
+dev_rds_backup_window           = "18:00-19:00"
+dev_rds_maintenance_window      = "sun:19:00-sun:20:00"
+dev_rds_deletion_protection     = false
+dev_rds_skip_final_snapshot     = true
 
-# Prod RDS is disabled by default, but when enabled it follows the Prod Multi-AZ data tier design.
-prod_rds_multi_az                 = true
-prod_rds_backup_retention_period  = 7
-prod_rds_deletion_protection      = true
-prod_rds_skip_final_snapshot      = false
-prod_rds_final_snapshot_identifier = "moment-prod-postgres-final-snapshot"
 
 # OpenSearch
 enable_dev_opensearch  = true
@@ -130,6 +129,7 @@ cloudfront_price_class         = "PriceClass_All"
 
 eks_cluster_sg_id = "sg-04fd7dd77b6fd278e"
 
+# Redis
 enable_dev_redis             = true
 dev_redis_node_type          = "cache.t3.micro"
 dev_redis_num_cache_clusters = 1

@@ -16,6 +16,7 @@ enable_prod_eks            = false
 enable_prod_nodegroups     = false
 enable_prod_data_tier      = false
 enable_prod_rds            = false
+enable_prod_rds_read_replica = false
 enable_prod_redis          = false
 enable_prod_opensearch     = false
 enable_prod_s3_raw_bucket = false
@@ -47,6 +48,8 @@ prod_rds_allocated_storage       = 50
 prod_rds_max_allocated_storage   = 200
 prod_rds_multi_az                = true
 prod_rds_backup_retention_period = 14
+prod_rds_backup_window           = "18:00-19:00"
+prod_rds_maintenance_window      = "sun:19:00-sun:20:00"
 prod_rds_deletion_protection     = true
 prod_rds_skip_final_snapshot     = false
 

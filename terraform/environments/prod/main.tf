@@ -312,6 +312,8 @@ module "prod_rds" {
 
   multi_az                = var.prod_rds_multi_az
   backup_retention_period = var.prod_rds_backup_retention_period
+  backup_window           = var.prod_rds_backup_window
+  maintenance_window      = var.prod_rds_maintenance_window
 
   deletion_protection       = var.prod_rds_deletion_protection
   skip_final_snapshot       = var.prod_rds_skip_final_snapshot
