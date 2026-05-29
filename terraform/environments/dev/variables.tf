@@ -374,6 +374,18 @@ variable "redis_node_type" {
   default     = "cache.t3.micro"
 }
 
+variable "dev_redis_node_type" {
+  description = "Dev Redis node type for cost-optimized validation."
+  type        = string
+  default     = "cache.t3.micro"
+}
+
+variable "dev_redis_num_cache_clusters" {
+  description = "Number of cache clusters for Dev Redis. Minimum 1 for single-node dev setup."
+  type        = number
+  default     = 1
+}
+
 variable "enable_dev_rds" {
   description = "Whether to create Dev RDS PostgreSQL by default for development validation."
   type        = bool

@@ -300,26 +300,35 @@ variable "redis_engine_version" {
 variable "prod_redis_node_type" {
   description = "Prod Redis node type."
   type        = string
-  default     = "cache.t3.micro"
+  default     = "cache.t3.small"
 }
 
-variable "prod_redis_automatic_failover_enabled" {
-  description = "Whether Prod Redis automatic failover is enabled."
-  type        = bool
-  default     = false
+variable "prod_redis_num_cache_clusters" {
+  description = "Number of cache clusters for Prod Redis HA. Primary 1 + Replica 1 = 2."
+  type        = number
+  default     = 2
 }
 
 variable "prod_redis_multi_az_enabled" {
   description = "Whether Prod Redis Multi-AZ is enabled."
   type        = bool
-  default     = false
+  default     = true # false → true
 }
 
 variable "prod_redis_snapshot_retention_limit" {
   description = "Number of days to retain Prod Redis snapshots."
   type        = number
-  default     = 0
+  default     = 3 # 0 → 3
 }
+
+variable "prod_redis_automatic_failover_enabled" {
+  description = "Whether Prod Redis automatic failover is enabled."
+  type        = bool
+  default     = true
+}
+
+
+
 
 variable "rds_engine_version" {
   description = "PostgreSQL engine version for RDS."
