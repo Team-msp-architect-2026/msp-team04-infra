@@ -335,8 +335,13 @@ module "prod_opensearch" {
   instance_type  = var.prod_opensearch_instance_type
   instance_count = var.prod_opensearch_instance_count
 
-  zone_awareness_enabled  = var.prod_opensearch_zone_awareness_enabled
-  availability_zone_count = var.prod_opensearch_availability_zone_count
+  dedicated_master_enabled = var.prod_opensearch_dedicated_master_enabled
+  dedicated_master_type    = var.prod_opensearch_dedicated_master_type
+  dedicated_master_count   = var.prod_opensearch_dedicated_master_count
+
+  zone_awareness_enabled        = var.prod_opensearch_zone_awareness_enabled
+  availability_zone_count       = var.prod_opensearch_availability_zone_count
+  multi_az_with_standby_enabled = var.prod_opensearch_multi_az_with_standby_enabled
 
   ebs_volume_type = var.opensearch_ebs_volume_type
   ebs_volume_size = var.prod_opensearch_ebs_volume_size

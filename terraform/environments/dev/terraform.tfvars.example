@@ -102,13 +102,19 @@ enable_prod_opensearch = false
 # Keep this true only when AWSServiceRoleForAmazonOpenSearchService does not already exist.
 create_opensearch_service_linked_role = true
 
-opensearch_engine_version       = "OpenSearch_2.17"
-dev_opensearch_instance_type    = "t3.small.search"
-prod_opensearch_instance_type   = "t3.small.search"
-prod_opensearch_instance_count  = 2
-opensearch_ebs_volume_type      = "gp3"
-dev_opensearch_ebs_volume_size  = 10
-prod_opensearch_ebs_volume_size = 20
+opensearch_engine_version                         = "OpenSearch_2.17"
+dev_opensearch_instance_type                      = "t3.small.search"
+prod_opensearch_instance_type                     = "t3.medium.search"
+prod_opensearch_instance_count                    = 2
+prod_opensearch_dedicated_master_enabled          = true
+prod_opensearch_dedicated_master_type             = "t3.small.search"
+prod_opensearch_dedicated_master_count            = 3
+prod_opensearch_zone_awareness_enabled            = true
+prod_opensearch_availability_zone_count           = 2
+prod_opensearch_multi_az_with_standby_enabled     = false
+opensearch_ebs_volume_type                        = "gp3"
+dev_opensearch_ebs_volume_size                    = 10
+prod_opensearch_ebs_volume_size                   = 50
 
 # Edge Layer
 enable_edge    = true

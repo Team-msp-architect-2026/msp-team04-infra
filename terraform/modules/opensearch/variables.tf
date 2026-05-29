@@ -29,6 +29,34 @@ variable "instance_count" {
   description = "Number of OpenSearch data nodes."
   type        = number
   default     = 1
+
+  validation {
+    condition     = var.instance_count >= 1
+    error_message = "instance_count must be greater than or equal to 1."
+  }
+}
+
+variable "dedicated_master_enabled" {
+  description = "Whether dedicated master nodes are enabled for OpenSearch cluster stability."
+  type        = bool
+  default     = false
+}
+
+variable "dedicated_master_type" {
+  description = "OpenSearch dedicated master node instance type."
+  type        = string
+  default     = "t3.small.search"
+}
+
+variable "dedicated_master_count" {
+  description = "Number of OpenSearch dedicated master nodes."
+  type        = number
+  default     = 3
+
+  validation {
+    condition     = contains([3, 5], var.dedicated_master_count)
+    error_message = "dedicated_master_count must be 3 or 5."
+  }
 }
 
 variable "zone_awareness_enabled" {
@@ -41,6 +69,17 @@ variable "availability_zone_count" {
   description = "Number of availability zones when zone awareness is enabled."
   type        = number
   default     = 2
+
+  validation {
+    condition     = contains([2, 3], var.availability_zone_count)
+    error_message = "availability_zone_count must be 2 or 3."
+  }
+}
+
+variable "multi_az_with_standby_enabled" {
+  description = "Whether OpenSearch Multi-AZ with Standby is enabled. Requires 3 AZs and 3 dedicated master nodes."
+  type        = bool
+  default     = false
 }
 
 variable "ebs_volume_type" {
@@ -53,6 +92,11 @@ variable "ebs_volume_size" {
   description = "EBS volume size in GiB for OpenSearch data nodes."
   type        = number
   default     = 10
+
+  validation {
+    condition     = var.ebs_volume_size >= 10
+    error_message = "ebs_volume_size must be greater than or equal to 10 GiB."
+  }
 }
 
 variable "subnet_ids" {

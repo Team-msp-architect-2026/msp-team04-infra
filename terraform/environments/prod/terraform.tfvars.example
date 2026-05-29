@@ -60,12 +60,16 @@ prod_redis_multi_az_enabled           = false
 prod_redis_snapshot_retention_limit   = 0
 
 # Prod OpenSearch defaults.
-prod_opensearch_instance_type              = "t3.small.search"
-prod_opensearch_instance_count             = 2
-prod_opensearch_zone_awareness_enabled     = true
-prod_opensearch_availability_zone_count    = 2
-prod_opensearch_ebs_volume_size            = 20
-create_opensearch_service_linked_role      = false
+prod_opensearch_instance_type                  = "t3.medium.search"
+prod_opensearch_instance_count                 = 2
+prod_opensearch_dedicated_master_enabled       = true
+prod_opensearch_dedicated_master_type          = "t3.small.search"
+prod_opensearch_dedicated_master_count         = 3
+prod_opensearch_zone_awareness_enabled         = true
+prod_opensearch_availability_zone_count        = 2
+prod_opensearch_multi_az_with_standby_enabled  = false
+prod_opensearch_ebs_volume_size                = 50
+create_opensearch_service_linked_role          = false
 
 # Edge stays disabled until Prod ALB DNS is ready.
 prod_alb_dns_name      = ""
