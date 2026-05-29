@@ -13,21 +13,6 @@ output "shared_state_key" {
   value       = "shared/terraform.tfstate"
 }
 
-output "raw_bucket_name" {
-  description = "Shared S3 Raw Bucket name."
-  value       = try(module.s3_raw_bucket[0].raw_bucket_name, null)
-}
-
-output "raw_bucket_arn" {
-  description = "Shared S3 Raw Bucket ARN."
-  value       = try(module.s3_raw_bucket[0].raw_bucket_arn, null)
-}
-
-output "raw_bucket_access_policy_arn" {
-  description = "Shared S3 Raw Bucket access policy ARN."
-  value       = try(module.s3_raw_bucket[0].raw_bucket_access_policy_arn, null)
-}
-
 output "iam_github_oidc_provider_arn" {
   description = "GitHub Actions OIDC Provider ARN."
   value       = try(module.iam[0].github_oidc_provider_arn, null)

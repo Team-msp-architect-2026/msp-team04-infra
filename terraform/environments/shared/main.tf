@@ -7,22 +7,6 @@ locals {
   }
 }
 
-module "s3_raw_bucket" {
-  count  = var.enable_s3_raw_bucket ? 1 : 0
-  source = "../../modules/s3"
-
-  project_name = var.project_name
-  environment  = var.raw_bucket_environment
-  bucket_name  = var.raw_bucket_name
-
-  force_destroy             = var.raw_bucket_force_destroy
-  raw_expiration_days       = var.raw_expiration_days
-  processed_expiration_days = var.processed_expiration_days
-  failed_expiration_days    = var.failed_expiration_days
-
-  common_tags = local.common_tags
-}
-
 module "iam" {
   count  = var.enable_common_iam ? 1 : 0
   source = "../../modules/iam"
@@ -41,7 +25,6 @@ module "iam" {
   enable_irsa_roles        = false
 
   ecr_repository_arns           = var.ecr_repository_arns
-  raw_bucket_access_policy_arn  = coalesce(try(module.s3_raw_bucket[0].raw_bucket_access_policy_arn, null), var.raw_bucket_access_policy_arn)
   raw_bucket_access_policy_arns = var.raw_bucket_access_policy_arns
 
   sqs_queue_arns                               = var.sqs_queue_arns

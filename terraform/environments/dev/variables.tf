@@ -39,13 +39,11 @@ variable "admin_cidr_blocks" {
   default     = []
 }
 
-
 variable "enable_network_openvpn" {
   description = "Whether to create the Network VPC OpenVPN admin access instance."
   type        = bool
   default     = false
 }
-
 
 variable "openvpn_ami_id" {
   description = "Optional AMI ID for OpenVPN. If empty, the OpenVPN module selects the latest Amazon Linux 2023 x86_64 AMI."
@@ -89,7 +87,6 @@ variable "openvpn_client_name" {
   default     = "moment-admin"
 }
 
-
 variable "openvpn_client_profile_secret_name" {
   description = "Secrets Manager secret name for generated OpenVPN client profile. If empty, a project-based default name is used."
   type        = string
@@ -107,7 +104,6 @@ variable "openvpn_root_volume_size" {
   type        = number
   default     = 8
 }
-
 
 variable "app_port" {
   description = "Application port exposed by EKS workload"
@@ -192,7 +188,6 @@ variable "enable_prod_nodegroups" {
   type        = bool
   default     = false
 }
-
 
 variable "enable_dev_sqs" {
   description = "Whether to create Dev SQS queues for public data pipeline validation."
@@ -385,7 +380,6 @@ variable "enable_dev_rds" {
   default     = true
 }
 
-
 variable "rds_engine_version" {
   description = "PostgreSQL engine version for RDS."
   type        = string
@@ -469,11 +463,6 @@ variable "dev_rds_final_snapshot_identifier" {
   type        = string
   default     = null
 }
-
-
-
-
-
 
 variable "enable_dev_opensearch" {
   description = "Whether to create Dev OpenSearch by default for development validation."
@@ -633,12 +622,6 @@ variable "cloudfront_price_class" {
 
 variable "shared_lambda_collector_role_arn" {
   description = "Lambda Collector IAM role ARN managed by shared environment. If empty, Dev data pipeline looks up the default moment-dev Lambda Collector role by name."
-  type        = string
-  default     = ""
-}
-
-variable "shared_raw_bucket_name" {
-  description = "Deprecated. Dev Raw Bucket is now managed by terraform/environments/dev via module.dev_s3_raw_bucket."
   type        = string
   default     = ""
 }

@@ -32,10 +32,28 @@ MoMent Terraform 구성은 Dev-first / Prod-optional 전략을 따른다.
     enable_dev_data_pipeline  = true
     enable_prod_data_pipeline = false
 
-단, 데이터 파이프라인은 SQS Main Queue URL을 필요로 하므로 다음 조건이 함께 만족되어야 생성된다.
+단, 데이터 파이프라인은 SQS Main Queue URL과 S3 Raw Bucket 이름을 필요로 하므로 다음 조건이 함께 만족되어야 생성된다.
 
-- Dev: enable_dev_data_pipeline && enable_dev_sqs
-- Prod: enable_prod_data_pipeline && enable_prod_sqs
+- Dev: enable_dev_data_pipeline && enable_dev_sqs && enable_dev_s3_raw_bucket
+- Prod: enable_prod_data_pipeline && enable_prod_sqs && enable_prod_s3_raw_bucket
+
+## S3 Raw Bucket 분리 기준
+
+Raw Bucket은 Dev/Prod 환경별로 분리한다.
+
+| Environment | Terraform module | 기본 활성화 | 용도 |
+| --- | --- | --- | --- |
+| dev | module.dev_s3_raw_bucket | enabled | 개발 및 수집 검증용 Raw 저장소 |
+| prod | module.prod_s3_raw_bucket | disabled | 최종 데모 또는 리허설 시점의 운영 후보 Raw 저장소 |
+| shared | 제거됨 | 미사용 | 신규 수집 경로에서는 사용하지 않음 |
+
+신규 데이터 수집 경로에서는 Shared Raw Bucket을 사용하지 않는다.
+
+Lambda Collector는 각 환경의 RAW_BUCKET_NAME 환경변수로 전달된 bucket에 원본 응답을 저장한다.
+Spring Batch는 SQS 메시지의 rawBucketName과 rawObjectKey를 기준으로 S3 Raw object를 읽는다.
+
+Shared Raw Bucket은 현재 AWS 실제 리소스와 Terraform state에 존재하지 않으며, shared environment의 Terraform 코드에서도 생성 경로를 제거한다.
+Shared Raw Bucket을 실제로 생성하거나 import하거나 state 이동하지 않는다.
 
 ## Lambda Collector
 
