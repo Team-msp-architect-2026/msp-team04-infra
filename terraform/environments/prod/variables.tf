@@ -190,50 +190,50 @@ variable "prod_eks_cluster_admin_principal_arn" {
   default     = ""
 }
 
-variable "sqs_visibility_timeout_seconds" {
-  description = "Visibility timeout for SQS messages in seconds."
+variable "prod_sqs_visibility_timeout_seconds" {
+  description = "Prod SQS visibility timeout in seconds for public data Batch processing."
   type        = number
-  default     = 300
+  default     = 900
 }
 
-variable "sqs_message_retention_seconds" {
-  description = "Message retention period for the main SQS queue in seconds."
+variable "prod_sqs_message_retention_seconds" {
+  description = "Prod SQS main queue message retention in seconds for operational replay and failure analysis."
   type        = number
-  default     = 345600
+  default     = 604800
 }
 
-variable "sqs_dlq_message_retention_seconds" {
-  description = "Message retention period for the SQS dead-letter queue in seconds."
+variable "prod_sqs_dlq_message_retention_seconds" {
+  description = "Prod SQS DLQ message retention in seconds for incident evidence and reprocessing."
   type        = number
   default     = 1209600
 }
 
-variable "sqs_max_receive_count" {
-  description = "Number of receives before moving a message to the DLQ."
+variable "prod_sqs_max_receive_count" {
+  description = "Prod SQS receive attempts before moving a message to the DLQ."
   type        = number
-  default     = 3
+  default     = 5
 }
 
-variable "sqs_receive_wait_time_seconds" {
-  description = "Long polling wait time for SQS receive calls in seconds."
+variable "prod_sqs_receive_wait_time_seconds" {
+  description = "Prod SQS long polling wait time in seconds."
   type        = number
-  default     = 10
+  default     = 20
 }
 
-variable "sqs_delay_seconds" {
-  description = "Delay for new SQS messages in seconds."
+variable "prod_sqs_delay_seconds" {
+  description = "Prod SQS delay for new messages in seconds."
   type        = number
   default     = 0
 }
 
-variable "sqs_max_message_size" {
-  description = "Maximum SQS message size in bytes."
+variable "prod_sqs_max_message_size" {
+  description = "Prod SQS maximum message size in bytes."
   type        = number
   default     = 262144
 }
 
-variable "sqs_managed_sse_enabled" {
-  description = "Whether SQS managed server-side encryption is enabled."
+variable "prod_sqs_managed_sse_enabled" {
+  description = "Whether Prod SQS managed server-side encryption is enabled."
   type        = bool
   default     = true
 }

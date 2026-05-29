@@ -22,6 +22,17 @@ enable_prod_opensearch     = false
 enable_prod_s3_raw_bucket = false
 prod_raw_bucket_name       = null
 enable_prod_sqs           = false
+
+# Prod SQS + DLQ
+prod_sqs_visibility_timeout_seconds     = 900
+prod_sqs_message_retention_seconds      = 604800
+prod_sqs_dlq_message_retention_seconds  = 1209600
+prod_sqs_max_receive_count              = 5
+prod_sqs_receive_wait_time_seconds      = 20
+prod_sqs_delay_seconds                  = 0
+prod_sqs_max_message_size               = 262144
+prod_sqs_managed_sse_enabled            = true
+
 enable_prod_data_pipeline  = false
 enable_edge                = false
 

@@ -200,60 +200,53 @@ variable "enable_dev_sqs" {
   default     = true
 }
 
-variable "enable_prod_sqs" {
-  description = "Whether to create Prod SQS queues. Disabled by default for cost saving."
-  type        = bool
-  default     = false
-}
-
-variable "sqs_visibility_timeout_seconds" {
-  description = "Visibility timeout for SQS messages in seconds."
+variable "dev_sqs_visibility_timeout_seconds" {
+  description = "Dev SQS visibility timeout in seconds for public data Batch validation."
   type        = number
   default     = 300
 }
 
-variable "sqs_message_retention_seconds" {
-  description = "Message retention period for the main SQS queue in seconds."
+variable "dev_sqs_message_retention_seconds" {
+  description = "Dev SQS main queue message retention in seconds for short-cycle validation."
+  type        = number
+  default     = 86400
+}
+
+variable "dev_sqs_dlq_message_retention_seconds" {
+  description = "Dev SQS DLQ message retention in seconds for failure inspection during development."
   type        = number
   default     = 345600
 }
 
-variable "sqs_dlq_message_retention_seconds" {
-  description = "Message retention period for the SQS dead-letter queue in seconds."
-  type        = number
-  default     = 1209600
-}
-
-variable "sqs_max_receive_count" {
-  description = "Number of receives before moving a message to the DLQ."
+variable "dev_sqs_max_receive_count" {
+  description = "Dev SQS receive attempts before moving a message to the DLQ."
   type        = number
   default     = 3
 }
 
-variable "sqs_receive_wait_time_seconds" {
-  description = "Long polling wait time for SQS receive calls in seconds."
+variable "dev_sqs_receive_wait_time_seconds" {
+  description = "Dev SQS long polling wait time in seconds."
   type        = number
   default     = 10
 }
 
-variable "sqs_delay_seconds" {
-  description = "Delay for new SQS messages in seconds."
+variable "dev_sqs_delay_seconds" {
+  description = "Dev SQS delay for new messages in seconds."
   type        = number
   default     = 0
 }
 
-variable "sqs_max_message_size" {
-  description = "Maximum SQS message size in bytes."
+variable "dev_sqs_max_message_size" {
+  description = "Dev SQS maximum message size in bytes."
   type        = number
   default     = 262144
 }
 
-variable "sqs_managed_sse_enabled" {
-  description = "Whether SQS managed server-side encryption is enabled."
+variable "dev_sqs_managed_sse_enabled" {
+  description = "Whether Dev SQS managed server-side encryption is enabled."
   type        = bool
   default     = true
 }
-
 
 variable "enable_dev_s3_raw_bucket" {
   description = "Whether to manage Dev S3 Raw Bucket in terraform/environments/dev."

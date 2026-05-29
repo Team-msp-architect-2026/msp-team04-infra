@@ -133,14 +133,14 @@ module "dev_sqs" {
   queue_name = "${var.project_name}-dev-public-data-queue"
   dlq_name   = "${var.project_name}-dev-public-data-dlq"
 
-  visibility_timeout_seconds    = var.sqs_visibility_timeout_seconds
-  message_retention_seconds     = var.sqs_message_retention_seconds
-  dlq_message_retention_seconds = var.sqs_dlq_message_retention_seconds
-  max_receive_count             = var.sqs_max_receive_count
-  receive_wait_time_seconds     = var.sqs_receive_wait_time_seconds
-  delay_seconds                 = var.sqs_delay_seconds
-  max_message_size              = var.sqs_max_message_size
-  sqs_managed_sse_enabled       = var.sqs_managed_sse_enabled
+  visibility_timeout_seconds    = var.dev_sqs_visibility_timeout_seconds
+  message_retention_seconds     = var.dev_sqs_message_retention_seconds
+  dlq_message_retention_seconds = var.dev_sqs_dlq_message_retention_seconds
+  max_receive_count             = var.dev_sqs_max_receive_count
+  receive_wait_time_seconds     = var.dev_sqs_receive_wait_time_seconds
+  delay_seconds                 = var.dev_sqs_delay_seconds
+  max_message_size              = var.dev_sqs_max_message_size
+  sqs_managed_sse_enabled       = var.dev_sqs_managed_sse_enabled
 
   common_tags = merge(local.common_tags, {
     Environment = "dev"
