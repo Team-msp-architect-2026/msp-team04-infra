@@ -39,13 +39,33 @@ output "network_public_route_table_id" {
 }
 
 output "network_tgw_route_table_id" {
-  description = "Network TGW subnet route table ID."
+  description = "First Network TGW subnet route table ID kept for backward compatibility."
   value       = try(module.network_vpc[0].tgw_route_table_id, null)
 }
 
+output "network_tgw_route_table_ids" {
+  description = "Network TGW subnet route table IDs by TGW subnet index."
+  value       = try(module.network_vpc[0].tgw_route_table_ids, [])
+}
+
+output "network_tgw_route_table_id_map" {
+  description = "Network TGW subnet route table IDs keyed by Availability Zone."
+  value       = try(module.network_vpc[0].tgw_route_table_id_map, {})
+}
+
 output "network_nat_gateway_id" {
-  description = "Network centralized NAT Gateway ID."
+  description = "First Network NAT Gateway ID kept for backward compatibility."
   value       = try(module.network_vpc[0].nat_gateway_id, null)
+}
+
+output "network_nat_gateway_ids" {
+  description = "Network NAT Gateway IDs by public subnet index."
+  value       = try(module.network_vpc[0].nat_gateway_ids, [])
+}
+
+output "network_nat_gateway_id_map" {
+  description = "Network NAT Gateway IDs keyed by Availability Zone."
+  value       = try(module.network_vpc[0].nat_gateway_id_map, {})
 }
 
 output "network_openvpn_sg_id" {
