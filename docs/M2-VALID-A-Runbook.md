@@ -83,9 +83,9 @@ aws ecr describe-repositories \
 
 | Repository | 용도 |
 | --- | --- |
-| moment-backend-api | Backend API 이미지 |
-| moment-ai-service | AI Service 이미지 |
-| moment-batch-job | Batch Job 이미지 |
+| moment-dev-backend-api | Dev Backend API 이미지 |
+| moment-dev-ai-service | Dev AI Service 이미지 |
+| moment-dev-batch-job | Dev Batch Job 이미지 |
 
 이미지 push 테스트 예시는 다음과 같다.
 
@@ -95,10 +95,10 @@ docker login --username AWS --password-stdin 611058323802.dkr.ecr.ap-northeast-3
 ```
 
 ```bash
-docker tag moment-ai-service:test-v1 \
-611058323802.dkr.ecr.ap-northeast-3.amazonaws.com/moment-ai-service:test-v1
+docker tag moment-dev-ai-service:test-v1 \
+611058323802.dkr.ecr.ap-northeast-3.amazonaws.com/moment-dev-ai-service:test-v1
 
-docker push 611058323802.dkr.ecr.ap-northeast-3.amazonaws.com/moment-ai-service:test-v1
+docker push 611058323802.dkr.ecr.ap-northeast-3.amazonaws.com/moment-dev-ai-service:test-v1
 ```
 
 이미지 push 결과 확인:
@@ -106,7 +106,7 @@ docker push 611058323802.dkr.ecr.ap-northeast-3.amazonaws.com/moment-ai-service:
 ```bash
 aws ecr describe-images \
   --region ap-northeast-3 \
-  --repository-name moment-ai-service \
+  --repository-name moment-dev-ai-service \
   --query 'imageDetails[*].{Tags:imageTags,PushedAt:imagePushedAt}' \
   --output table
 ```
@@ -126,7 +126,7 @@ ECR은 애플리케이션 이미지 저장소이므로, destroy 전 다음 기�
 ```bash
 aws ecr describe-images \
   --region ap-northeast-3 \
-  --repository-name moment-ai-service \
+  --repository-name moment-dev-ai-service \
   --query 'imageDetails[*].{Tags:imageTags,Size:imageSizeInBytes,PushedAt:imagePushedAt}' \
   --output table
 ```
