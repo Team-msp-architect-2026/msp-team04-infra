@@ -94,6 +94,12 @@ variable "enable_prod_rds" {
   default     = false
 }
 
+variable "enable_prod_rds_read_replica" {
+  description = "Whether to create a Prod RDS read replica. Disabled by default and reserved for future scaling."
+  type        = bool
+  default     = false
+}
+
 variable "enable_prod_redis" {
   description = "Whether to create Prod ElastiCache Redis."
   type        = bool
@@ -373,6 +379,18 @@ variable "prod_rds_backup_retention_period" {
   description = "Backup retention period in days for Prod RDS PostgreSQL."
   type        = number
   default     = 14
+}
+
+variable "prod_rds_backup_window" {
+  description = "Preferred backup window for Prod RDS PostgreSQL."
+  type        = string
+  default     = "18:00-19:00"
+}
+
+variable "prod_rds_maintenance_window" {
+  description = "Preferred maintenance window for Prod RDS PostgreSQL."
+  type        = string
+  default     = "sun:19:00-sun:20:00"
 }
 
 variable "prod_rds_deletion_protection" {
