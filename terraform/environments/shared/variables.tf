@@ -16,54 +16,11 @@ variable "primary_region" {
   default     = "ap-northeast-3"
 }
 
-variable "enable_s3_raw_bucket" {
-  description = "Whether to manage shared S3 Raw Bucket from this environment. Keep false until migration is approved."
-  type        = bool
-  default     = false
-}
-
 variable "enable_common_iam" {
   description = "Whether to manage common IAM roles and policies from this environment. Keep false until migration is approved."
   type        = bool
   default     = false
 }
-
-variable "raw_bucket_environment" {
-  description = "Environment name passed to S3 raw bucket module."
-  type        = string
-  default     = "shared"
-}
-
-variable "raw_bucket_name" {
-  description = "Optional explicit S3 raw bucket name."
-  type        = string
-  default     = null
-}
-
-variable "raw_bucket_force_destroy" {
-  description = "Whether to force destroy raw bucket even if objects exist."
-  type        = bool
-  default     = false
-}
-
-variable "raw_expiration_days" {
-  description = "Expiration days for raw data."
-  type        = number
-  default     = 90
-}
-
-variable "processed_expiration_days" {
-  description = "Expiration days for processed data."
-  type        = number
-  default     = 180
-}
-
-variable "failed_expiration_days" {
-  description = "Expiration days for failed data."
-  type        = number
-  default     = 30
-}
-
 
 variable "iam_resource_environment" {
   description = "Environment name passed to IAM module resource naming. Keep dev during migration to avoid replacing existing moment-dev-* IAM resources."
@@ -107,12 +64,6 @@ variable "ecr_repository_arns" {
   description = "Dev/Prod ECR repository ARNs supplied from dev/prod environments."
   type        = map(string)
   default     = {}
-}
-
-variable "raw_bucket_access_policy_arn" {
-  description = "Deprecated single raw bucket access policy ARN. Prefer raw_bucket_access_policy_arns for Dev/Prod bucket separation."
-  type        = string
-  default     = null
 }
 
 variable "raw_bucket_access_policy_arns" {

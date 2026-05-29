@@ -28,7 +28,7 @@ M2-OPS-02에서는 기존 `terraform/environments/dev` 안에 함께 있던 Netw
 | Environment | Backend key | 역할 |
 | --- | --- | --- |
 | network | network/terraform.tfstate | Network VPC, TGW, OpenVPN, 중앙 NAT, Network SG |
-| shared | shared/terraform.tfstate | GitHub OIDC, 공통 IAM, S3 Raw Bucket, 공통 Secrets 기준 |
+| shared | shared/terraform.tfstate | GitHub OIDC, 공통 IAM 후보, 환경별 Raw Bucket policy 입력 기준 |
 | dev | dev/terraform.tfstate | Dev VPC, Dev EKS, Dev Data Tier, Dev SQS/Data Pipeline |
 | prod | prod/terraform.tfstate | Prod VPC, Prod EKS, Prod Data Tier, Prod SQS/Data Pipeline, Edge |
 
@@ -67,7 +67,7 @@ Network 관련 enable flag는 기본 false이다.
 
 - GitHub OIDC Provider
 - 공통 IAM Role / Policy
-- S3 Raw Bucket
+- 환경별 Raw Bucket access policy 입력 기준
 - 공통 Secrets Manager 기준
 - OpenSearch service-linked role 기준 검토
 - Terraform backend bucket / lock table 기준 검토
@@ -77,7 +77,7 @@ Network 관련 enable flag는 기본 false이다.
 현재 Shared migration 후보는 다음과 같다.
 
 - `iam`
-- `s3_raw_bucket`
+- `s3_raw_bucket` 제거 완료
 
 Account-level 후보는 다음과 같다.
 
@@ -89,8 +89,7 @@ Account-level 후보는 다음과 같다.
 
 Shared 관련 enable flag는 기본 false이다.
 
-        enable_common_iam           = false
-    enable_s3_raw_bucket        = false
+    enable_common_iam           = false
     create_github_oidc_provider = false
 
 ### 3.3 Dev environment
@@ -149,7 +148,7 @@ Prod 관련 enable flag는 비용 방지를 위해 기본 false이다.
 ### 4.2 Shared 후보
 
 - `iam`
-- `s3_raw_bucket`
+- `s3_raw_bucket` 제거 완료
 
 ### 4.3 Prod 후보
 
@@ -176,14 +175,14 @@ Prod 관련 enable flag는 비용 방지를 위해 기본 false이다.
 | GitHub OIDC Provider | account-level 리소스이며 중복 생성 금지 |
 | 공통 IAM Role / Policy | Shared environment 후보 |
 | OpenSearch service-linked role | account-level 리소스이며 중복 생성 금지 |
-| S3 Raw Bucket | Shared environment 후보 |
+| S3 Raw Bucket | Dev/Prod 환경별 분리 관리. Shared Raw Bucket은 생성 경로를 제거하며 신규 수집 경로에서는 사용하지 않음 |
 | Terraform backend bucket / lock table | backend 자체는 별도 관리 대상이며 environment에서 중복 생성하지 않음 |
 | Network VPC / TGW | Network environment 후보 |
 
-Prod data pipeline은 shared Lambda role ARN과 shared raw bucket name을 변수로 주입받는 구조를 사용한다.
+Prod data pipeline은 Prod environment의 prod_s3_raw_bucket과 prod_sqs를 직접 참조하는 구조를 사용한다.
 
-    shared_lambda_collector_role_arn = ""
-    shared_raw_bucket_name           = ""
+    enable_prod_s3_raw_bucket = false
+    prod_raw_bucket_name      = null
 
 ## 6. Network / TGW 분리 기준
 
@@ -320,9 +319,9 @@ Network environment는 다음 module을 관리 대상으로 가진다.
 - Transit Gateway
 - OpenVPN
 
-Shared environment는 다음 module을 관리 대상으로 가진다.
+Shared environment는 다음 module 후보를 가진다.
 
-- S3 Raw Bucket
+- S3 Raw Bucket 생성 경로 제거 완료
 - Common IAM / GitHub OIDC / Lambda Collector Role / EKS Role 기준
 
 ECR은 Shared environment에 두지 않는다.
@@ -331,3 +330,16 @@ ECR은 Shared environment에 두지 않는다.
 - Prod ECR: terraform/environments/prod
 
 단, 실제 state mv/import/apply는 이번 PR에서 수행하지 않는다.
+
+## 12. S3 Raw Bucket Dev/Prod 분리 기준
+
+S3 Raw Bucket은 신규 데이터 수집 경로에서 Dev/Prod 환경별로 분리한다.
+
+- Dev Raw Bucket: terraform/environments/dev의 module.dev_s3_raw_bucket 기준
+- Prod Raw Bucket: terraform/environments/prod의 module.prod_s3_raw_bucket 기준
+- Shared Raw Bucket: terraform/environments/shared에서 생성 경로 제거, 신규 수집 경로에서는 사용하지 않음
+
+현재 AWS 실제 리소스와 Terraform state 기준으로 Shared Raw Bucket은 존재하지 않는다.
+따라서 이번 정리에서는 S3 Bucket 생성, 삭제, import, state mv를 수행하지 않는다.
+
+상세 기준은 docs/s3-raw-bucket.md를 따른다.

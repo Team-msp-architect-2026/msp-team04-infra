@@ -148,12 +148,6 @@ variable "shared_lambda_collector_role_arn" {
   default     = ""
 }
 
-variable "shared_raw_bucket_name" {
-  description = "Deprecated. Prod Raw Bucket is now managed by terraform/environments/prod via module.prod_s3_raw_bucket."
-  type        = string
-  default     = ""
-}
-
 variable "prod_eks_cluster_name" {
   description = "Prod EKS cluster name."
   type        = string
@@ -332,9 +326,6 @@ variable "prod_redis_automatic_failover_enabled" {
   type        = bool
   default     = true
 }
-
-
-
 
 variable "rds_engine_version" {
   description = "PostgreSQL engine version for RDS."
