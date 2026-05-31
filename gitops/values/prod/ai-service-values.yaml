@@ -1,27 +1,35 @@
 namespace: moment-prod
-
 replicaCount: 2
-
 image:
   repository: 611058323802.dkr.ecr.ap-northeast-3.amazonaws.com/moment-prod-ai-service
   tag: prod-placeholder
   pullPolicy: IfNotPresent
-
 serviceAccount:
   create: true
   name: ai-service
-  annotations: {}
-
+  annotations:
+    eks.amazonaws.com/role-arn: ""
 config:
-  AWS_REGION: ap-northeast-3
   ENVIRONMENT: prod
-
-secretRefs: []
-
-resources: {}
-
-nodeSelector: {}
-
-tolerations: []
-
+  AWS_REGION: ap-northeast-3
+  LOG_LEVEL: INFO
+secretRefs:
+  - envName: OPENAI_API_KEY
+    secretName: moment-prod-ai-secret
+    secretKey: openai-api-key
+resources:
+  requests:
+    cpu: 500m
+    memory: 1Gi
+  limits:
+    cpu: 1000m
+    memory: 2Gi
+nodeSelector:
+  workload: ai
+  capacity: spot
+tolerations:
+  - key: capacity
+    operator: Equal
+    value: spot
+    effect: NoSchedule
 affinity: {}

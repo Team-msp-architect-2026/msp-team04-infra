@@ -1,27 +1,51 @@
 namespace: moment-dev
-
 replicaCount: 1
-
 image:
   repository: 611058323802.dkr.ecr.ap-northeast-3.amazonaws.com/moment-dev-backend-api
   tag: dev-placeholder
   pullPolicy: IfNotPresent
-
 serviceAccount:
   create: true
   name: backend-api
-  annotations: {}
-
+  annotations:
+    eks.amazonaws.com/role-arn: ""
 config:
+  SPRING_PROFILES_ACTIVE: dev
   AWS_REGION: ap-northeast-3
   ENVIRONMENT: dev
-
-secretRefs: []
-
-resources: {}
-
-nodeSelector: {}
-
+secretRefs:
+  - envName: DB_PASSWORD
+    secretName: moment-dev-backend-secret
+    secretKey: db-password
+  - envName: JWT_SECRET
+    secretName: moment-dev-backend-secret
+    secretKey: jwt-secret
+  - envName: TOSS_SECRET
+    secretName: moment-dev-backend-secret
+    secretKey: toss-secret
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: 500m
+    memory: 1Gi
+nodeSelector:
+  workload: core
+  capacity: on-demand
 tolerations: []
-
 affinity: {}
+ingress:
+  enabled: true
+  className: alb
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/healthcheck-path: /health
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
+  hosts:
+    - host: ""
+      paths:
+        - path: /
+          pathType: Prefix

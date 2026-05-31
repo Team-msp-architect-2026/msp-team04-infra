@@ -1,27 +1,35 @@
 namespace: moment-dev
-
 replicaCount: 1
-
 image:
   repository: 611058323802.dkr.ecr.ap-northeast-3.amazonaws.com/moment-dev-ai-service
   tag: dev-placeholder
   pullPolicy: IfNotPresent
-
 serviceAccount:
   create: true
   name: ai-service
-  annotations: {}
-
+  annotations:
+    eks.amazonaws.com/role-arn: ""
 config:
-  AWS_REGION: ap-northeast-3
   ENVIRONMENT: dev
-
-secretRefs: []
-
-resources: {}
-
-nodeSelector: {}
-
-tolerations: []
-
+  AWS_REGION: ap-northeast-3
+  LOG_LEVEL: DEBUG
+secretRefs:
+  - envName: OPENAI_API_KEY
+    secretName: moment-dev-ai-secret
+    secretKey: openai-api-key
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: 500m
+    memory: 1Gi
+nodeSelector:
+  workload: ai
+  capacity: spot
+tolerations:
+  - key: capacity
+    operator: Equal
+    value: spot
+    effect: NoSchedule
 affinity: {}

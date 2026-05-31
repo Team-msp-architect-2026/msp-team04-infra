@@ -1,27 +1,52 @@
 namespace: moment-prod
-
 replicaCount: 2
-
 image:
   repository: 611058323802.dkr.ecr.ap-northeast-3.amazonaws.com/moment-prod-backend-api
   tag: prod-placeholder
   pullPolicy: IfNotPresent
-
 serviceAccount:
   create: true
   name: backend-api
-  annotations: {}
-
+  annotations:
+    eks.amazonaws.com/role-arn: ""
 config:
+  SPRING_PROFILES_ACTIVE: prod
   AWS_REGION: ap-northeast-3
   ENVIRONMENT: prod
-
-secretRefs: []
-
-resources: {}
-
-nodeSelector: {}
-
+secretRefs:
+  - envName: DB_PASSWORD
+    secretName: moment-prod-backend-secret
+    secretKey: db-password
+  - envName: JWT_SECRET
+    secretName: moment-prod-backend-secret
+    secretKey: jwt-secret
+  - envName: TOSS_SECRET
+    secretName: moment-prod-backend-secret
+    secretKey: toss-secret
+resources:
+  requests:
+    cpu: 500m
+    memory: 1Gi
+  limits:
+    cpu: 1000m
+    memory: 2Gi
+nodeSelector:
+  workload: core
+  capacity: on-demand
 tolerations: []
-
 affinity: {}
+ingress:
+  enabled: true
+  className: alb
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/healthcheck-path: /health
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80,"HTTPS":443}]'
+    alb.ingress.kubernetes.io/certificate-arn: ""
+  hosts:
+    - host: ""
+      paths:
+        - path: /
+          pathType: Prefix
