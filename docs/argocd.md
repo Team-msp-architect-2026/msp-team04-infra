@@ -225,3 +225,132 @@ PR 머지 전에는 gitops/argocd/dev 경로에 Root/Application manifest가 아
 PR이 develop에 머지된 뒤에는 Root Application이 develop 브랜치의 Dev AppProject, moment-dev Namespace, child Application manifest를 읽고 Dev Application을 생성할 수 있다.
 
 검증 목적으로 live cluster에서 targetRevision을 feature branch로 임시 변경할 수는 있으나, Git에 커밋되는 manifest의 targetRevision은 develop으로 유지한다.
+
+## 14. EKS 재생성 이후 ArgoCD 재부트스트랩 Runbook
+
+MoMent 프로젝트는 비용 절감을 위해 Terraform으로 AWS 리소스를 destroy/recreate 하면서 개발할 수 있다.
+
+EKS Cluster도 destroy 대상에 포함될 수 있으므로, EKS가 재생성되면 EKS 내부에 설치된 ArgoCD와 ArgoCD Application 리소스도 함께 사라진다.
+
+따라서 ArgoCD 구성은 단순 1회 설치가 아니라, EKS 재생성 이후에도 동일한 절차로 다시 설치하고 GitOps Application을 복구할 수 있어야 한다.
+
+### 14.1 Bootstrap 대상
+
+| 항목 | 값 |
+| --- | --- |
+| 대상 환경 | Dev |
+| 대상 Cluster | moment-dev-eks-cluster |
+| kube context 허용값 | moment-dev, moment-dev-eks-cluster |
+| ArgoCD Namespace | argocd |
+| Helm Release | argocd |
+| Root Application | moment-dev-root |
+| AppProject | moment-dev |
+| Application Namespace | moment-dev |
+| Child Applications | backend-api-dev, ai-service-dev, batch-job-dev |
+
+Prod 환경은 M3-ARGO-03에서 별도 Prod EKS와 Prod ArgoCD 기준으로 구성한다.
+
+### 14.2 Bootstrap 스크립트 구성
+
+| 파일 | 역할 |
+| --- | --- |
+| scripts/argocd/bootstrap.sh | EKS kubeconfig 갱신, kube context guard, Helm 기반 ArgoCD 설치, Root Application apply, 검증 실행 |
+| scripts/argocd/verify.sh | ArgoCD Pod, Application, AppProject, Namespace, 환경 혼입 여부 검증 |
+| Makefile | argocd-dev-bootstrap, argocd-dev-verify, argocd-prod-bootstrap, argocd-prod-verify 진입점 제공 |
+
+### 14.3 Dev Bootstrap 실행
+
+Dev EKS가 재생성된 뒤에는 AWS 인증과 kube 접근이 가능한 상태에서 다음 명령을 실행한다.
+
+- 명령: make argocd-dev-bootstrap
+
+이 명령은 다음 순서로 동작한다.
+
+1. AWS Account ID가 MoMent 실습 계정인지 확인한다.
+2. aws eks update-kubeconfig로 Dev EKS kubeconfig를 갱신한다.
+3. kube context가 Dev 허용값인지 확인한다.
+4. EKS Cluster가 ACTIVE 상태인지 확인한다.
+5. kubectl get nodes로 Node 접근 가능 여부를 확인한다.
+6. helm upgrade --install 방식으로 ArgoCD를 설치하거나 갱신한다.
+7. ArgoCD 주요 Deployment가 Available 상태인지 확인한다.
+8. Application/AppProject CRD 존재를 확인한다.
+9. GITOPS_REPO_TOKEN이 있을 경우 ArgoCD repository credential secret을 생성한다.
+10. Dev Root Application을 apply한다.
+11. verify.sh를 호출하여 최종 상태를 검증한다.
+
+### 14.4 Dev Verify 실행
+
+ArgoCD 설치 이후 현재 상태만 재확인하려면 다음 명령을 실행한다.
+
+- 명령: make argocd-dev-verify
+
+| 검증 항목 | 기대 결과 |
+| --- | --- |
+| kube context | moment-dev 또는 moment-dev-eks-cluster |
+| argocd namespace Pod | Running |
+| moment-dev-root | Synced / Healthy |
+| backend-api-dev | Synced / Healthy |
+| ai-service-dev | Synced / Healthy |
+| batch-job-dev | Synced / Healthy |
+| AppProject | moment-dev 존재 |
+| Namespace | moment-dev Active |
+| Prod Application 혼입 | 없음 |
+
+### 14.5 Repo Credential 처리 기준
+
+GitOps Repository credential은 Git에 평문으로 저장하지 않는다.
+
+Repository가 private이거나 인증이 필요한 경우, 로컬 또는 CI 환경에서만 다음 환경변수를 주입한다.
+
+| 환경변수 | 설명 |
+| --- | --- |
+| GITOPS_REPO_TOKEN | GitHub repository 접근 token |
+| GITOPS_REPO_USERNAME | GitHub username 또는 x-access-token |
+
+bootstrap.sh는 GITOPS_REPO_TOKEN이 있을 때만 ArgoCD repository credential secret을 생성한다.
+
+GITOPS_REPO_TOKEN이 비어 있으면 repository credential 생성을 건너뛴다.
+
+Secret manifest, token, password, kubeconfig는 Git에 커밋하지 않는다.
+
+### 14.6 ArgoCD CLI 의존성 제외
+
+bootstrap.sh는 재현성을 위해 argocd CLI sync에 의존하지 않는다.
+
+argocd CLI는 localhost port-forward 또는 별도 로그인 세션에 의존할 수 있으므로, EKS 재생성 직후 자동 bootstrap 경로에서는 실패할 수 있다.
+
+따라서 bootstrap은 kubectl과 helm 기준으로 수행하고, Dev Root Application의 automated sync와 ArgoCD controller reconcile을 기준으로 복구한다.
+
+ArgoCD UI 또는 CLI 확인이 필요한 경우에는 별도 터미널에서 다음 명령으로 port-forward 후 수동으로 확인한다.
+
+- 명령: kubectl port-forward svc/argocd-server -n argocd 8080:443
+
+### 14.7 Prod Bootstrap 주의사항
+
+Prod ArgoCD는 M3-ARGO-03에서 별도 구성한다.
+
+Prod ArgoCD는 Dev와 다른 EKS Cluster, Root Application, AppProject, Namespace를 사용해야 한다.
+
+Prod bootstrap은 실수 방지를 위해 CONFIRM_PROD=prod 값이 없으면 실행되지 않도록 한다.
+
+- 명령: CONFIRM_PROD=prod make argocd-prod-bootstrap
+
+Prod Application은 Dev처럼 자동 동기화하지 않고, diff 확인과 승인 이후 manual sync하는 방식을 기본으로 한다.
+
+### 14.8 완료 기준
+
+EKS 재생성 이후 다음 명령이 성공하면 ArgoCD 재부트스트랩이 완료된 것으로 본다.
+
+- 명령: make argocd-dev-bootstrap
+- 명령: make argocd-dev-verify
+
+완료 상태는 다음과 같다.
+
+- ArgoCD Helm Release가 deployed 상태이다.
+- argocd namespace의 주요 Pod가 Running 상태이다.
+- moment-dev-root가 Synced / Healthy 상태이다.
+- backend-api-dev, ai-service-dev, batch-job-dev가 Synced / Healthy 상태이다.
+- moment-dev AppProject가 존재한다.
+- moment-dev Namespace가 Active 상태이다.
+- Prod Application 또는 moment-prod 리소스가 Dev ArgoCD에 생성되지 않는다.
+- Git 변경사항에 password, token, AWS credential, kubeconfig가 포함되지 않는다.
