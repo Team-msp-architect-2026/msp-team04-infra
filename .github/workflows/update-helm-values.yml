@@ -1,0 +1,157 @@
+name: Update Helm Values Image Tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      service:
+        description: 'Service to update (backend-api, ai-service, batch-job, all)'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - backend-api
+          - ai-service
+          - batch-job
+          - all
+      image_tag:
+        description: 'Image tag (e.g. dev-abc1234)'
+        required: true
+        type: string
+      environment:
+        description: 'Environment (dev or prod)'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - prod
+      dry_run:
+        description: 'Dry run (do not commit)'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  ECR_REGISTRY: 611058323802.dkr.ecr.ap-northeast-3.amazonaws.com
+
+jobs:
+  update-helm-values:
+    name: Update Helm Values Image Tag
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout infra repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install yq
+        run: |
+          wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          chmod +x /usr/local/bin/yq
+          yq --version
+
+      - name: Set update targets
+        id: targets
+        run: |
+          SERVICE="${{ inputs.service }}"
+          ENV="${{ inputs.environment }}"
+          TAG="${{ inputs.image_tag }}"
+
+          if [ "$SERVICE" = "all" ]; then
+            SERVICES="backend-api ai-service batch-job"
+          else
+            SERVICES="$SERVICE"
+          fi
+
+          echo "SERVICES=$SERVICES" >> $GITHUB_OUTPUT
+          echo "ENV=$ENV" >> $GITHUB_OUTPUT
+          echo "TAG=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Update image tags with yq
+        run: |
+          SERVICES="${{ steps.targets.outputs.SERVICES }}"
+          ENV="${{ steps.targets.outputs.ENV }}"
+          TAG="${{ steps.targets.outputs.TAG }}"
+
+          for SERVICE in $SERVICES; do
+            VALUES_FILE="gitops/values/${ENV}/${SERVICE}-values.yaml"
+
+            if [ ! -f "$VALUES_FILE" ]; then
+              echo "ERROR: $VALUES_FILE not found"
+              exit 1
+            fi
+
+            echo "Updating $VALUES_FILE with tag=$TAG"
+
+            IMAGE_TAG="$TAG" yq -i '.image.tag = strenv(IMAGE_TAG)' "$VALUES_FILE"
+
+            echo "Updated $VALUES_FILE:"
+            cat "$VALUES_FILE"
+          done
+
+      - name: Show git diff
+        run: git diff
+
+      - name: Helm lint & template validation
+        run: |
+          SERVICES="${{ steps.targets.outputs.SERVICES }}"
+          ENV="${{ steps.targets.outputs.ENV }}"
+
+          for SERVICE in $SERVICES; do
+            VALUES_FILE="gitops/values/${ENV}/${SERVICE}-values.yaml"
+            CHART_PATH="gitops/charts/${SERVICE}"
+
+            echo "=== helm lint: $SERVICE ==="
+            helm lint "$CHART_PATH" -f "$VALUES_FILE"
+
+            echo "=== helm template: $SERVICE ==="
+            helm template "$SERVICE" "$CHART_PATH" -f "$VALUES_FILE"
+          done
+
+      - name: Verify image tag in rendered output
+        run: |
+          SERVICES="${{ steps.targets.outputs.SERVICES }}"
+          ENV="${{ steps.targets.outputs.ENV }}"
+          TAG="${{ steps.targets.outputs.TAG }}"
+
+          for SERVICE in $SERVICES; do
+            VALUES_FILE="gitops/values/${ENV}/${SERVICE}-values.yaml"
+            CHART_PATH="gitops/charts/${SERVICE}"
+
+            RENDERED=$(helm template "$SERVICE" "$CHART_PATH" -f "$VALUES_FILE")
+            if echo "$RENDERED" | grep -q "$TAG"; then
+              echo "✅ $SERVICE: image tag $TAG confirmed in rendered output"
+            else
+              echo "❌ $SERVICE: image tag $TAG NOT found in rendered output"
+              exit 1
+            fi
+          done
+
+      - name: Commit and push changes
+        if: ${{ inputs.dry_run == false }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          if git diff --quiet; then
+            echo "No changes to commit"
+          else
+            git add gitops/values/
+            git commit -m "[skip ci] chore(gitops): update ${{ inputs.service }} ${{ inputs.environment }} image tag to ${{ inputs.image_tag }}"
+            git push origin HEAD:develop
+          fi
+
+      - name: Print summary
+        run: |
+          echo "## Helm Values Image Tag Update 결과" >> $GITHUB_STEP_SUMMARY
+          echo "| 항목 | 값 |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|-----|" >> $GITHUB_STEP_SUMMARY
+          echo "| Service | ${{ inputs.service }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Environment | ${{ inputs.environment }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Image Tag | ${{ inputs.image_tag }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Dry Run | ${{ inputs.dry_run }} |" >> $GITHUB_STEP_SUMMARY
