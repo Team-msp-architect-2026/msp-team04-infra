@@ -159,3 +159,69 @@ kubectl get secret argocd-initial-admin-secret -n argocd
 - Public LoadBalancer 공개
 - GitOps Secret 평문 저장
 - Kubernetes application runtime 배포
+
+## 11. Dev App of Apps 구성 기준
+
+M3-ARGO-02에서는 Dev ArgoCD에 App of Apps 구조를 구성한다.
+
+구성 대상은 다음과 같다.
+
+| 항목 | 값 |
+| --- | --- |
+| Root Application | moment-dev-root |
+| AppProject | moment-dev |
+| Dev Namespace | moment-dev |
+| Backend Application | backend-api-dev |
+| AI Service Application | ai-service-dev |
+| Batch Job Application | batch-job-dev |
+
+Root Application은 다음 경로를 바라본다.
+
+| 항목 | 값 |
+| --- | --- |
+| Repository | https://github.com/Team-msp-architect-2026/msp-team04-infra.git |
+| Target Revision | develop |
+| Path | gitops/argocd/dev |
+| Destination Namespace | argocd |
+
+Dev Application은 Helm Chart와 Dev values 파일을 기준으로 구성한다.
+
+| Application | Chart Path | valueFiles | Destination Namespace |
+| --- | --- | --- | --- |
+| backend-api-dev | gitops/charts/backend-api | ../../values/dev/backend-api-values.yaml | moment-dev |
+| ai-service-dev | gitops/charts/ai-service | ../../values/dev/ai-service-values.yaml | moment-dev |
+| batch-job-dev | gitops/charts/batch-job | ../../values/dev/batch-job-values.yaml | moment-dev |
+
+Dev ArgoCD는 Dev Application만 관리한다.
+
+Prod EKS, moment-prod namespace, Prod ArgoCD, Prod Application은 M3-ARGO-03에서 별도로 구성한다.
+
+## 12. M3-ARGO-02 검증 기준
+
+M3-ARGO-02의 검증 기준은 다음과 같다.
+
+- AppProject moment-dev 생성 가능
+- Namespace moment-dev 생성 가능
+- Root Application moment-dev-root 생성 가능
+- Backend API / AI Service / Batch Job Dev Application manifest 작성
+- Dev Application source repo / chart path / valueFiles 계약 확인
+- Dev ArgoCD가 Prod Application을 만들지 않는지 확인
+- GitOps manifest에 민감정보가 없는지 확인
+
+현재 Helm Chart template은 M3-GITOPS-02에서 실제 Deployment, Service, Ingress, Job, ServiceAccount template을 채우기 전까지 비어 있을 수 있다.
+
+따라서 M3-ARGO-02에서는 Runtime Pod Running, ALB Ingress 생성, ImagePull 검증을 완료 조건으로 보지 않는다.
+
+해당 Runtime 검증은 M3-DEPLOY-01과 M3-DEPLOY-02에서 수행한다.
+
+## 13. Pre-merge Root Application 상태 주의
+
+Root Application의 targetRevision은 develop으로 고정한다.
+
+PR 머지 전에는 gitops/argocd/dev 경로에 Root/Application manifest가 아직 develop 브랜치에 없을 수 있으므로, Root Application이 실제 child Application을 생성하지 못할 수 있다.
+
+이 상태는 로컬 feature 브랜치의 child Application manifest가 아직 원격 develop에 반영되지 않았기 때문에 발생한다.
+
+PR이 develop에 머지된 뒤에는 Root Application이 develop 브랜치의 Dev AppProject, moment-dev Namespace, child Application manifest를 읽고 Dev Application을 생성할 수 있다.
+
+검증 목적으로 live cluster에서 targetRevision을 feature branch로 임시 변경할 수는 있으나, Git에 커밋되는 manifest의 targetRevision은 develop으로 유지한다.
