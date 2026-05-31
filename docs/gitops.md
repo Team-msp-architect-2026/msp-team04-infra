@@ -196,3 +196,99 @@ GitHub Actions가 Helm values image tag를 수정하는 경우, 다음 중 하�
 - workflow trigger 제한
 
 Dev values 변경과 Prod values 변경은 서로 다른 승인 흐름을 사용한다.
+
+---
+
+## 16. M3-GITOPS-02 Helm Chart 구현 결과
+
+### Helm Chart Template 구조
+
+| Template | Backend API | AI Service | Batch Job |
+|----------|------------|------------|-----------|
+| `_helpers.tpl` | ✅ | ✅ | ✅ |
+| `deployment.yaml` | ✅ | ✅ | - |
+| `cronjob.yaml` | - | - | ✅ |
+| `service.yaml` | ✅ | ✅ | - |
+| `ingress.yaml` | ✅ | - | - |
+| `serviceaccount.yaml` | ✅ | ✅ | ✅ |
+| `configmap.yaml` | ✅ | ✅ | ✅ |
+
+### NodeGroup 배치 기준
+
+| 서비스 | workload | capacity | 비고 |
+|--------|---------|---------|------|
+| Backend API | core | on-demand | 안정성 우선 |
+| AI Service | ai | spot | 비용 최적화 |
+| Batch Job | batch | spot | 비용 최적화, 중단 영향 큰 작업은 on-demand 전환 가능 |
+
+Spot taint 적용 시 toleration:
+```yaml
+tolerations:
+  - key: capacity
+    operator: Equal
+    value: spot
+    effect: NoSchedule
+```
+
+### Ingress / ALB Annotation 기준
+
+| 항목 | Dev | Prod |
+|------|-----|------|
+| scheme | internet-facing | internet-facing |
+| target-type | ip | ip |
+| healthcheck-path | /health | /health |
+| listen-ports | HTTP:80 | HTTP:80, HTTPS:443 |
+| certificate-arn | - | 별도 설정 필요 |
+
+### ConfigMap / Secret Reference 구조
+
+ConfigMap에는 민감하지 않은 값만 포함:
+- SPRING_PROFILES_ACTIVE
+- AWS_REGION
+- ENVIRONMENT
+- SQS_QUEUE_NAME (Batch)
+- S3_RAW_BUCKET (Batch)
+
+Secret은 secretKeyRef로 참조만 작성 (값 없음):
+
+| 서비스 | envName | secretName | secretKey |
+|--------|---------|-----------|-----------|
+| Backend API | DB_PASSWORD | moment-{env}-backend-secret | db-password |
+| Backend API | JWT_SECRET | moment-{env}-backend-secret | jwt-secret |
+| Backend API | TOSS_SECRET | moment-{env}-backend-secret | toss-secret |
+| AI Service | OPENAI_API_KEY | moment-{env}-ai-secret | openai-api-key |
+| Batch Job | DB_PASSWORD | moment-{env}-batch-secret | db-password |
+
+실제 Secret 생성 기준은 M3-CONFIG-01에서 확정.
+
+### ServiceAccount / IRSA 권한 범위
+
+| 서비스 | 권한 |
+|--------|------|
+| Backend API | Secrets Manager read, CloudWatch Logs write |
+| AI Service | OpenSearch access, Secrets Manager read |
+| Batch Job | S3 read, SQS consume, CloudWatch Logs write |
+
+IRSA Role ARN은 values의 `serviceAccount.annotations.eks.amazonaws.com/role-arn`에 주입.
+실제 Role ARN 연결은 M3-CONFIG-01에서 완료.
+
+### Helm 렌더링 검증 명령어
+
+```bash
+helm lint gitops/charts/backend-api -f gitops/values/dev/backend-api-values.yaml
+helm template backend-api gitops/charts/backend-api -f gitops/values/dev/backend-api-values.yaml
+helm template backend-api gitops/charts/backend-api -f gitops/values/prod/backend-api-values.yaml
+helm template ai-service gitops/charts/ai-service -f gitops/values/dev/ai-service-values.yaml
+helm template ai-service gitops/charts/ai-service -f gitops/values/prod/ai-service-values.yaml
+helm template batch-job gitops/charts/batch-job -f gitops/values/dev/batch-job-values.yaml
+helm template batch-job gitops/charts/batch-job -f gitops/values/prod/batch-job-values.yaml
+```
+
+### Dry-run 검증
+
+EKS가 현재 비용 절감을 위해 destroy 상태이므로 local helm template 렌더링으로 대체.
+EKS 접근 가능 시점에 server-side dry-run 수행 예정 (M3-DEPLOY-01).
+
+API version 확인:
+- Ingress: `networking.k8s.io/v1` ✅
+- CronJob: `batch/v1` ✅
