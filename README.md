@@ -71,6 +71,7 @@ terraform/
 | docs/opensearch.md | OpenSearch Dev/Prod 스펙 분리 및 Prod HA 옵션 기준 |
 | docs/terraform-environments.md | Dev/Prod Terraform environment 및 state 분리 전략 |
 | docs/gitops.md | GitOps Repository 구조, Helm Chart/Values 경로, ArgoCD Application 경로 기준 |
+| docs/argocd.md | Dev ArgoCD 설치, 접근 방식, repo 연결 및 보안 정리 기준 |
 | docs/m2-close-checklist.md | M2 Infra Bootstrap 최종 완료 체크리스트 및 M3 인수인계 기준 |
 | docs/m2-valid-b-runbook.md | Network / TGW / Data / IAM / Destroy 검증 및 운영 Runbook |
 
