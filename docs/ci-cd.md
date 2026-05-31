@@ -280,3 +280,12 @@ M3-CICD-03에서 사용할 변수명:
 2. **세부 정보** 클릭 → **스캐닝 및 취약성** 섹션 확인
 3. 취약성 등급: 중요 / 높음 / 보통 / 낮음 / 정보
 4. scan on push로 자동 실행 (24시간 1회 제한)
+
+### Prod Image Push 전략 (예정)
+
+- Prod ECR은 release 시점(3일 운영)에 생성 예정
+- Prod Push trigger: release tag (`v*.*.*`) 또는 `workflow_dispatch`
+- Prod image tag: `prod-{version}` 또는 `prod-{git_tag}`
+- Prod Push workflow는 Dev workflow와 분리하여 별도 파일로 구성
+- Prod OIDC Role 권한은 Dev와 동일하게 ECR 범위로만 제한
+- Prod 자동 배포는 M3-PROMOTE-01에서 수행
