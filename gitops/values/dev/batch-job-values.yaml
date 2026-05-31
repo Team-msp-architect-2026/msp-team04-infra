@@ -1,27 +1,43 @@
 namespace: moment-dev
-
-replicaCount: 1
-
 image:
   repository: 611058323802.dkr.ecr.ap-northeast-3.amazonaws.com/moment-dev-batch-job
   tag: dev-placeholder
   pullPolicy: IfNotPresent
-
 serviceAccount:
   create: true
   name: batch-job
-  annotations: {}
-
+  annotations:
+    eks.amazonaws.com/role-arn: ""
+schedule: "0 * * * *"
+concurrencyPolicy: Forbid
+successfulJobsHistoryLimit: 3
+failedJobsHistoryLimit: 1
+backoffLimit: 3
+restartPolicy: OnFailure
+args:
+  - "--spring.profiles.active=dev"
 config:
+  SPRING_PROFILES_ACTIVE: dev
   AWS_REGION: ap-northeast-3
-  ENVIRONMENT: dev
-
-secretRefs: []
-
-resources: {}
-
-nodeSelector: {}
-
-tolerations: []
-
+  SQS_QUEUE_NAME: moment-dev-public-data-queue
+  S3_RAW_BUCKET: moment-dev-raw-data-611058323802-ap-northeast-3
+secretRefs:
+  - envName: DB_PASSWORD
+    secretName: moment-dev-batch-secret
+    secretKey: db-password
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: 500m
+    memory: 1Gi
+nodeSelector:
+  workload: batch
+  capacity: spot
+tolerations:
+  - key: capacity
+    operator: Equal
+    value: spot
+    effect: NoSchedule
 affinity: {}

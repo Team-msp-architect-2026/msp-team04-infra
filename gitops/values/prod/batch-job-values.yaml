@@ -1,27 +1,43 @@
 namespace: moment-prod
-
-replicaCount: 1
-
 image:
   repository: 611058323802.dkr.ecr.ap-northeast-3.amazonaws.com/moment-prod-batch-job
   tag: prod-placeholder
   pullPolicy: IfNotPresent
-
 serviceAccount:
   create: true
   name: batch-job
-  annotations: {}
-
+  annotations:
+    eks.amazonaws.com/role-arn: ""
+schedule: "0 * * * *"
+concurrencyPolicy: Forbid
+successfulJobsHistoryLimit: 3
+failedJobsHistoryLimit: 1
+backoffLimit: 3
+restartPolicy: OnFailure
+args:
+  - "--spring.profiles.active=prod"
 config:
+  SPRING_PROFILES_ACTIVE: prod
   AWS_REGION: ap-northeast-3
-  ENVIRONMENT: prod
-
-secretRefs: []
-
-resources: {}
-
-nodeSelector: {}
-
-tolerations: []
-
+  SQS_QUEUE_NAME: moment-prod-public-data-queue
+  S3_RAW_BUCKET: moment-prod-raw-data-611058323802-ap-northeast-3
+secretRefs:
+  - envName: DB_PASSWORD
+    secretName: moment-prod-batch-secret
+    secretKey: db-password
+resources:
+  requests:
+    cpu: 500m
+    memory: 1Gi
+  limits:
+    cpu: 1000m
+    memory: 2Gi
+nodeSelector:
+  workload: batch
+  capacity: spot
+tolerations:
+  - key: capacity
+    operator: Equal
+    value: spot
+    effect: NoSchedule
 affinity: {}

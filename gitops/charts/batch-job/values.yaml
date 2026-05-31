@@ -1,28 +1,22 @@
-# Base chart values.
-# Environment-specific values must be defined in gitops/values/dev or gitops/values/prod.
-
 namespace: ""
-
-replicaCount: 1
-
 image:
   repository: ""
   tag: ""
   pullPolicy: IfNotPresent
-
 serviceAccount:
   create: true
   name: ""
   annotations: {}
-
+schedule: "0 * * * *"
+concurrencyPolicy: Forbid
+successfulJobsHistoryLimit: 3
+failedJobsHistoryLimit: 1
+backoffLimit: 3
+restartPolicy: OnFailure
+args: []
 config: {}
-
 secretRefs: []
-
 resources: {}
-
 nodeSelector: {}
-
 tolerations: []
-
 affinity: {}
