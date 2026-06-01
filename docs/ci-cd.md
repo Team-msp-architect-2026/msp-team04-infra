@@ -289,3 +289,76 @@ M3-CICD-03에서 사용할 변수명:
 - Prod Push workflow는 Dev workflow와 분리하여 별도 파일로 구성
 - Prod OIDC Role 권한은 Dev와 동일하게 ECR 범위로만 제한
 - Prod 자동 배포는 M3-PROMOTE-01에서 수행
+---
+
+## Image Tag Update 흐름 (M3-CICD-03)
+
+### 전체 흐름
+
+develop push
+    -> backend-build-push.yml / ai-ci-build-push.yml (ECR Push)
+    -> Trigger Helm values update (workflow_dispatch -> infra 레포)
+    -> update-helm-values.yml (values 파일 image tag 갱신)
+    -> [skip ci] commit -> develop push
+    -> ArgoCD가 변경 감지 -> 자동 배포
+
+### Image Tag Update workflow
+
+- workflow 파일: msp-team04-infra/.github/workflows/update-helm-values.yml
+- trigger: workflow_dispatch (backend/ai build workflow에서 자동 호출)
+- 수정 대상 파일:
+
+| 서비스 | 파일 |
+|--------|------|
+| backend-api | gitops/values/dev/backend-api-values.yaml |
+| ai-service | gitops/values/dev/ai-service-values.yaml |
+| batch-job | gitops/values/dev/batch-job-values.yaml |
+
+- 수정 필드: .image.tag, .image.repository (필요 시)
+- tag 형식: dev-{short_sha}
+- yq 명령 예시:
+
+IMAGE_TAG="dev-abc1234" yq -i '.image.tag = strenv(IMAGE_TAG)' gitops/values/dev/backend-api-values.yaml
+IMAGE_REPOSITORY="xxx.dkr.ecr.ap-northeast-3.amazonaws.com/moment-dev-backend-api" yq -i '.image.repository = strenv(IMAGE_REPOSITORY)' gitops/values/dev/backend-api-values.yaml
+
+### 렌더링 검증 항목
+
+update-helm-values.yml 내에서 values 수정 후 자동으로 아래 항목 검증:
+
+| 검증 항목 | 방법 |
+|-----------|------|
+| image tag 반영 | helm template 결과에서 tag grep |
+| namespace | moment-dev 포함 여부 확인 |
+| Secret 평문 노출 | secretKeyRef/valueFrom 제외 후 pattern match |
+| credential 노출 | AWS_ACCESS_KEY_ID 등 grep |
+| selector/label 일치 | matchLabels vs labels grep |
+| ServiceAccount 참조 | kind: ServiceAccount 존재 여부 |
+
+- 검증 실패 시 commit 미실행 (exit 1)
+- 렌더링 결과는 artifact로 저장 (retention: 7일)
+
+---
+
+## 무한 루프 방지 정책
+
+### 방지 전략
+
+| 전략 | 적용 여부 | 설명 |
+|------|-----------|------|
+| [skip ci] commit message | 적용 | infra values update commit에 [skip ci] 포함 |
+| GitOps 레포 분리 | 적용 | msp-team04-infra 별도 레포 -> backend/ai workflow 트리거 안 됨 |
+| PR trigger 미사용 | 적용 | build workflow는 push만 trigger, PR 시 미실행 |
+| Prod 자동 trigger 없음 | 적용 | Prod values update는 M3-PROMOTE-01에서만 수행 |
+
+### 루프 방지 흐름
+
+backend push -> build workflow -> infra workflow_dispatch 호출
+infra workflow -> [skip ci] commit push
+-> GitHub Actions가 [skip ci] 감지 -> workflow 실행 안 함
+
+### 주의사항
+
+- infra 레포 commit message에서 [skip ci] 제거 시 무한 루프 발생 가능
+- backend/ai workflow에서 workflow_dispatch로 infra를 호출하는 구조이므로
+  infra의 push가 다시 backend/ai를 트리거하지 않음 (레포 분리)
+- gitops 경로 path ignore는 레포 분리로 인해 불필요
