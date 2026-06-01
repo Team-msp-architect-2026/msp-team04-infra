@@ -141,6 +141,27 @@ output "dev_raw_bucket_access_policy_arn" {
   value       = try(module.dev_s3_raw_bucket[0].raw_bucket_access_policy_arn, null)
 }
 
+output "dev_profile_image_bucket_name" {
+  description = "Dev profile image S3 bucket name."
+  value       = try(module.dev_profile_image_bucket[0].bucket_name, null)
+}
+
+output "dev_profile_image_bucket_arn" {
+  description = "Dev profile image S3 bucket ARN."
+  value       = try(module.dev_profile_image_bucket[0].bucket_arn, null)
+}
+
+output "dev_profile_image_public_url_base" {
+  description = "Dev profile image public URL base for Backend PROFILE_IMAGE_PUBLIC_URL_BASE."
+  value       = try(module.dev_profile_image_bucket[0].public_url_base, null)
+}
+
+output "dev_profile_image_object_key_prefix" {
+  description = "Dev profile image object key prefix for Backend PROFILE_IMAGE_KEY_PREFIX."
+  value       = try(module.dev_profile_image_bucket[0].object_key_prefix, null)
+}
+
+
 output "shared_eks_cluster_role_arn" {
   description = "EKS Cluster IAM role ARN supplied from shared environment."
   value       = var.enable_dev_iam ? module.dev_iam[0].eks_cluster_role_arn : null

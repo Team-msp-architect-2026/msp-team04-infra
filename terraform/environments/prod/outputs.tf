@@ -63,6 +63,27 @@ output "prod_raw_bucket_access_policy_arn" {
   value       = try(module.prod_s3_raw_bucket[0].raw_bucket_access_policy_arn, null)
 }
 
+output "prod_profile_image_bucket_name" {
+  description = "Prod profile image S3 bucket name."
+  value       = try(module.prod_profile_image_bucket[0].bucket_name, null)
+}
+
+output "prod_profile_image_bucket_arn" {
+  description = "Prod profile image S3 bucket ARN."
+  value       = try(module.prod_profile_image_bucket[0].bucket_arn, null)
+}
+
+output "prod_profile_image_public_url_base" {
+  description = "Prod profile image public URL base for Backend PROFILE_IMAGE_PUBLIC_URL_BASE."
+  value       = try(module.prod_profile_image_bucket[0].public_url_base, null)
+}
+
+output "prod_profile_image_object_key_prefix" {
+  description = "Prod profile image object key prefix for Backend PROFILE_IMAGE_KEY_PREFIX."
+  value       = try(module.prod_profile_image_bucket[0].object_key_prefix, null)
+}
+
+
 output "prod_data_pipeline_lambda_function_name" {
   description = "Prod Lambda Collector function name."
   value       = try(module.prod_data_pipeline[0].lambda_function_name, null)

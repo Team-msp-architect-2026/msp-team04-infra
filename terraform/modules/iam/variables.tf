@@ -148,6 +148,19 @@ variable "opensearch_domain_arns" {
   default     = []
 }
 
+variable "profile_image_bucket_arns" {
+  description = "Profile image S3 bucket ARNs that Backend API pod can upload to."
+  type        = list(string)
+  default     = []
+}
+
+variable "profile_image_object_key_prefix" {
+  description = "S3 object key prefix for Backend profile image uploads."
+  type        = string
+  default     = "uploads/profile"
+}
+
+
 variable "attach_lambda_raw_bucket_policy" {
   description = "Whether to attach the raw bucket access policy to the Lambda collector role."
   type        = bool
