@@ -267,6 +267,31 @@ variable "dev_raw_bucket_name" {
   default     = null
 }
 
+variable "enable_dev_profile_image_bucket" {
+  description = "Whether to manage Dev profile image upload S3 bucket."
+  type        = bool
+  default     = true
+}
+
+variable "dev_profile_image_bucket_name" {
+  description = "Optional explicit Dev profile image S3 bucket name. Keep null to use the module naming convention."
+  type        = string
+  default     = null
+}
+
+variable "dev_profile_image_allowed_origins" {
+  description = "Allowed CORS origins for Dev profile image Presigned PUT upload."
+  type        = list(string)
+  default     = ["*"]
+}
+
+variable "dev_profile_image_object_key_prefix" {
+  description = "S3 object key prefix used by Backend profile image upload in Dev."
+  type        = string
+  default     = "uploads/profile"
+}
+
+
 variable "enable_dev_data_pipeline" {
   description = "Whether to create Dev EventBridge Scheduler and Lambda Collector for public data pipeline validation."
   type        = bool

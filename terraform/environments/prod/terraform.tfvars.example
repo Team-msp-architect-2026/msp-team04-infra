@@ -23,6 +23,12 @@ enable_prod_s3_raw_bucket = false
 prod_raw_bucket_name       = null
 enable_prod_sqs           = false
 
+enable_prod_profile_image_bucket       = false
+prod_profile_image_bucket_name         = null
+prod_profile_image_allowed_origins     = []
+prod_profile_image_object_key_prefix   = "uploads/profile"
+
+
 # Prod SQS + DLQ
 prod_sqs_visibility_timeout_seconds     = 900
 prod_sqs_message_retention_seconds      = 604800

@@ -43,6 +43,13 @@ dev_sqs_managed_sse_enabled            = true
 enable_dev_s3_raw_bucket = true
 dev_raw_bucket_name      = null
 
+# Profile image upload bucket
+enable_dev_profile_image_bucket       = true
+dev_profile_image_bucket_name         = null
+dev_profile_image_allowed_origins     = ["*"]
+dev_profile_image_object_key_prefix   = "uploads/profile"
+
+
 # EventBridge Scheduler + Lambda Collector data pipeline
 enable_dev_data_pipeline  = true
 enable_prod_data_pipeline = false

@@ -348,6 +348,25 @@ data "aws_iam_policy_document" "backend_pod" {
 
     resources = local.cloudwatch_logs_resource_arns
   }
+
+  dynamic "statement" {
+    for_each = length(var.profile_image_bucket_arns) > 0 ? [1] : []
+
+    content {
+      sid    = "AllowProfileImageUpload"
+      effect = "Allow"
+
+      actions = [
+        "s3:AbortMultipartUpload",
+        "s3:PutObject"
+      ]
+
+      resources = [
+        for bucket_arn in var.profile_image_bucket_arns :
+        "${bucket_arn}/${trimsuffix(trimprefix(var.profile_image_object_key_prefix, "/"), "/")}/*"
+      ]
+    }
+  }
 }
 
 resource "aws_iam_policy" "backend_pod" {
