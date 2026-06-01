@@ -50,6 +50,13 @@ dev_profile_image_allowed_origins     = ["*"]
 dev_profile_image_object_key_prefix   = "uploads/profile"
 
 
+# Notification SNS Topic
+enable_dev_notification_sns           = true
+dev_notification_sns_topic_name       = null
+dev_notification_sns_display_name     = "MoMent Dev Notification"
+dev_notification_sns_kms_master_key_id = null
+
+
 # EventBridge Scheduler + Lambda Collector data pipeline
 enable_dev_data_pipeline  = true
 enable_prod_data_pipeline = false

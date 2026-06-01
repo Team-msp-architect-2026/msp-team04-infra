@@ -155,6 +155,31 @@ variable "prod_profile_image_object_key_prefix" {
 }
 
 
+variable "enable_prod_notification_sns" {
+  description = "Whether to manage Prod notification SNS topic. Keep false until Prod activation is approved."
+  type        = bool
+  default     = false
+}
+
+variable "prod_notification_sns_topic_name" {
+  description = "Optional explicit Prod notification SNS topic name. Keep null to use the module naming convention."
+  type        = string
+  default     = null
+}
+
+variable "prod_notification_sns_display_name" {
+  description = "Prod notification SNS topic display name."
+  type        = string
+  default     = "MoMent Prod Notification"
+}
+
+variable "prod_notification_sns_kms_master_key_id" {
+  description = "Optional KMS key ID or alias for Prod notification SNS topic encryption. Keep null unless KMS encryption is explicitly required."
+  type        = string
+  default     = null
+}
+
+
 variable "enable_prod_data_pipeline" {
   description = "Whether to create Prod EventBridge Scheduler and Lambda Collector."
   type        = bool
