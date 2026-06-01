@@ -8,11 +8,28 @@ serviceAccount:
   create: true
   name: backend-api
   annotations:
+    # IRSA Role ARN - EKS 올라올 때 실제 ARN으로 교체 필요
+    # terraform output에서 backend API 전용 IRSA Role 생성 후 입력
     eks.amazonaws.com/role-arn: ""
 config:
   SPRING_PROFILES_ACTIVE: dev
   AWS_REGION: ap-northeast-3
   ENVIRONMENT: dev
+  # RDS - EKS 올라올 때 실제 endpoint로 교체 필요
+  DB_HOST: ""
+  DB_PORT: "5432"
+  DB_NAME: moment
+  # Redis - EKS 올라올 때 실제 endpoint로 교체 필요
+  REDIS_HOST: ""
+  REDIS_PORT: "6379"
+  # OpenSearch - EKS 올라올 때 실제 endpoint로 교체 필요
+  OPENSEARCH_HOST: ""
+  # S3
+  S3_PROFILE_IMAGE_BUCKET: moment-dev-profile-image-611058323802-ap-northeast-3
+  # SQS
+  SQS_QUEUE_NAME: moment-dev-public-data-queue
+  # AI Service internal endpoint - EKS 올라올 때 K8s service name으로 교체
+  AI_SERVICE_URL: "http://ai-service:8000"
 secretRefs:
   - envName: DB_PASSWORD
     secretName: moment-dev-backend-secret
