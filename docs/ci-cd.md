@@ -435,3 +435,34 @@ infra workflow -> [skip ci] commit push
 3. infra 레포 develop 브랜치에 실제 변경이 push 됐는지 확인: git log --oneline -3
 4. ArgoCD UI에서 Refresh 수동 실행
 5. automated sync 설정 확인: cat gitops/argocd/dev/applications/backend-api-dev.yaml
+
+---
+
+## M3-PROMOTE-01 연계용 Prod values 승격 기준
+
+Prod values 파일은 develop push로 자동 변경되지 않는다.
+Prod values 변경은 M3-PROMOTE-01 승격 workflow에서 승인 기반으로 수행한다.
+
+| 서비스 | Prod values 파일 | 수정 필드 |
+|--------|-----------------|-----------|
+| backend-api | gitops/values/prod/backend-api-values.yaml | .image.tag, .image.repository |
+| ai-service | gitops/values/prod/ai-service-values.yaml | .image.tag, .image.repository |
+| batch-job | gitops/values/prod/batch-job-values.yaml | .image.tag, .image.repository |
+
+Prod image tag 형식: prod-{version} 또는 prod-{short_sha}
+Prod ArgoCD manual sync 대상: backend-api-prod, ai-service-prod, batch-job-prod (M3-ARGO-03에서 구성)
+Prod rollback: Git revert로 이전 tag로 되돌린 후 Prod ArgoCD sync
+
+## ArgoCD values 변경 감지 흐름
+
+develop push
+    -> build workflow (ECR Push)
+    -> update-helm-values.yml (values image tag 갱신)
+    -> [skip ci] commit -> infra 레포 develop push
+    -> Dev ArgoCD가 develop 브랜치 변경 감지 (polling 또는 webhook)
+    -> backend-api-dev / ai-service-dev / batch-job-dev OutOfSync 감지
+    -> automated sync 실행 (selfHeal: true)
+    -> moment-dev namespace에 새 image 배포
+
+ArgoCD refresh 수동 실행: argocd app refresh backend-api-dev
+ArgoCD sync 수동 실행: argocd app sync backend-api-dev
