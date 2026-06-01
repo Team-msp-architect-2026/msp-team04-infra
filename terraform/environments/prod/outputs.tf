@@ -84,6 +84,17 @@ output "prod_profile_image_object_key_prefix" {
 }
 
 
+output "prod_notification_sns_topic_name" {
+  description = "Prod notification SNS topic name."
+  value       = try(module.prod_notification_sns[0].topic_name, null)
+}
+
+output "prod_notification_sns_topic_arn" {
+  description = "Prod notification SNS topic ARN for Backend NOTIFICATION_SNS_TOPIC_ARN."
+  value       = try(module.prod_notification_sns[0].topic_arn, null)
+}
+
+
 output "prod_data_pipeline_lambda_function_name" {
   description = "Prod Lambda Collector function name."
   value       = try(module.prod_data_pipeline[0].lambda_function_name, null)

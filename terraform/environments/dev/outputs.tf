@@ -162,6 +162,17 @@ output "dev_profile_image_object_key_prefix" {
 }
 
 
+output "dev_notification_sns_topic_name" {
+  description = "Dev notification SNS topic name."
+  value       = try(module.dev_notification_sns[0].topic_name, null)
+}
+
+output "dev_notification_sns_topic_arn" {
+  description = "Dev notification SNS topic ARN for Backend NOTIFICATION_SNS_TOPIC_ARN."
+  value       = try(module.dev_notification_sns[0].topic_arn, null)
+}
+
+
 output "shared_eks_cluster_role_arn" {
   description = "EKS Cluster IAM role ARN supplied from shared environment."
   value       = var.enable_dev_iam ? module.dev_iam[0].eks_cluster_role_arn : null

@@ -67,6 +67,7 @@ terraform/
 | docs/sqs.md | SQS + DLQ 구성, Dev/Prod 활성화 정책, IAM 연결 기준 |
 | docs/s3-raw-bucket.md | S3 Raw Bucket Dev/Prod 분리 기준 및 Shared Raw Bucket 정리 기준 |
 | docs/profile-image-bucket.md | 프로필 이미지 업로드용 S3 Bucket, CORS, Backend 권한 연결 기준 |
+| docs/notification-sns.md | SNS 알림 발송용 Topic, Backend Publish 권한, Dev/Prod 활성화 정책 |
 | docs/alb-controller.md | AWS Load Balancer Controller 설치, Dev 검증, Prod 활성화 절차 |
 | docs/data-pipeline.md | EventBridge Scheduler + Lambda Collector 데이터 파이프라인 구성 및 Dev/Prod 활성화 정책 |
 | docs/rds.md | RDS PostgreSQL Dev/Prod 스펙 분리 및 Prod 보호 옵션 기준 |

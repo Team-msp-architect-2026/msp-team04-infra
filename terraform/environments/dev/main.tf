@@ -178,6 +178,22 @@ module "dev_profile_image_bucket" {
   })
 }
 
+module "dev_notification_sns" {
+  count = var.enable_dev_notification_sns ? 1 : 0
+
+  source = "../../modules/notification-sns"
+
+  project_name      = var.project_name
+  environment       = "dev"
+  topic_name        = var.dev_notification_sns_topic_name
+  display_name      = var.dev_notification_sns_display_name
+  kms_master_key_id = var.dev_notification_sns_kms_master_key_id
+
+  common_tags = merge(local.common_tags, {
+    Environment = "dev"
+  })
+}
+
 
 
 module "dev_iam" {
@@ -208,6 +224,10 @@ module "dev_iam" {
   ] : []
   profile_image_object_key_prefix = var.dev_profile_image_object_key_prefix
 
+  notification_sns_topic_arns = var.enable_dev_notification_sns ? [
+    module.dev_notification_sns[0].topic_arn
+  ] : []
+
   sqs_queue_arns                     = var.enable_dev_sqs ? [module.dev_sqs[0].queue_arn] : []
   enable_sqs_queue_policy_statements = var.enable_dev_sqs
 
@@ -230,7 +250,8 @@ module "dev_iam" {
   depends_on = [
     module.dev_sqs,
     module.dev_s3_raw_bucket,
-    module.dev_profile_image_bucket
+    module.dev_profile_image_bucket,
+    module.dev_notification_sns
   ]
 }
 
