@@ -130,6 +130,31 @@ variable "prod_raw_bucket_name" {
   default     = null
 }
 
+variable "enable_prod_profile_image_bucket" {
+  description = "Whether to manage Prod profile image upload S3 bucket. Keep false until Prod activation is approved."
+  type        = bool
+  default     = false
+}
+
+variable "prod_profile_image_bucket_name" {
+  description = "Optional explicit Prod profile image S3 bucket name. Keep null to use the module naming convention."
+  type        = string
+  default     = null
+}
+
+variable "prod_profile_image_allowed_origins" {
+  description = "Allowed CORS origins for Prod profile image Presigned PUT upload."
+  type        = list(string)
+  default     = []
+}
+
+variable "prod_profile_image_object_key_prefix" {
+  description = "S3 object key prefix used by Backend profile image upload in Prod."
+  type        = string
+  default     = "uploads/profile"
+}
+
+
 variable "enable_prod_data_pipeline" {
   description = "Whether to create Prod EventBridge Scheduler and Lambda Collector."
   type        = bool

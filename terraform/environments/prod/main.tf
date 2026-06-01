@@ -143,6 +143,21 @@ module "prod_s3_raw_bucket" {
   common_tags = local.prod_tags
 }
 
+module "prod_profile_image_bucket" {
+  count = var.enable_prod_profile_image_bucket ? 1 : 0
+
+  source = "../../modules/profile-image-bucket"
+
+  project_name         = var.project_name
+  environment          = "prod"
+  bucket_name          = var.prod_profile_image_bucket_name
+  object_key_prefix    = var.prod_profile_image_object_key_prefix
+  cors_allowed_origins = var.prod_profile_image_allowed_origins
+
+  common_tags = local.prod_tags
+}
+
+
 
 module "prod_iam" {
   count  = var.enable_prod_iam ? 1 : 0
@@ -167,6 +182,11 @@ module "prod_iam" {
     raw = module.prod_s3_raw_bucket[0].raw_bucket_access_policy_arn
   } : {}
 
+  profile_image_bucket_arns = var.enable_prod_profile_image_bucket ? [
+    module.prod_profile_image_bucket[0].bucket_arn
+  ] : []
+  profile_image_object_key_prefix = var.prod_profile_image_object_key_prefix
+
   sqs_queue_arns                     = var.enable_prod_sqs ? [module.prod_sqs[0].queue_arn] : []
   enable_sqs_queue_policy_statements = var.enable_prod_sqs
 
@@ -182,7 +202,8 @@ module "prod_iam" {
 
   depends_on = [
     module.prod_sqs,
-    module.prod_s3_raw_bucket
+    module.prod_s3_raw_bucket,
+    module.prod_profile_image_bucket
   ]
 }
 
