@@ -48,6 +48,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          ref: develop
 
       - name: Install yq
         run: |
