@@ -194,8 +194,8 @@ module "dev_iam" {
   create_github_oidc_provider = false
   github_oidc_provider_arn    = var.github_oidc_provider_arn
 
-  create_eks_oidc_provider = false
-  enable_irsa_roles        = false
+  create_eks_oidc_provider = var.create_eks_oidc_provider
+  enable_irsa_roles        = var.enable_irsa_roles
 
   ecr_repository_arns = module.dev_ecr.repository_arns
 
@@ -222,6 +222,10 @@ module "dev_iam" {
   common_tags = merge(local.common_tags, {
     Environment = "dev"
   })
+
+  eks_oidc_issuer_url   = var.eks_oidc_issuer_url
+  eks_oidc_provider_arn = var.eks_oidc_provider_arn
+  irsa_service_accounts = var.irsa_service_accounts
 
   depends_on = [
     module.dev_sqs,

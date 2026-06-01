@@ -706,3 +706,36 @@ variable "github_oidc_provider_arn" {
   type        = string
   default     = "arn:aws:iam::611058323802:oidc-provider/token.actions.githubusercontent.com"
 }
+
+variable "enable_irsa_roles" {
+  description = "Whether to create IRSA roles for EKS service accounts."
+  type        = bool
+  default     = false
+}
+
+variable "create_eks_oidc_provider" {
+  description = "Whether to create EKS OIDC provider."
+  type        = bool
+  default     = false
+}
+
+variable "eks_oidc_issuer_url" {
+  description = "EKS OIDC issuer URL. Required when enable_irsa_roles is true."
+  type        = string
+  default     = ""
+}
+
+variable "eks_oidc_provider_arn" {
+  description = "EKS OIDC provider ARN. Required when enable_irsa_roles is true."
+  type        = string
+  default     = ""
+}
+
+variable "irsa_service_accounts" {
+  description = "Map of IRSA service accounts to create roles for."
+  type = map(object({
+    namespace = string
+    name      = string
+  }))
+  default = {}
+}
