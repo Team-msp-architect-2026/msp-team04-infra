@@ -8,11 +8,16 @@ serviceAccount:
   create: true
   name: ai-service
   annotations:
+    # IRSA Role ARN - EKS 올라올 때 실제 ARN으로 교체 필요
     eks.amazonaws.com/role-arn: ""
 config:
   ENVIRONMENT: dev
   AWS_REGION: ap-northeast-3
   LOG_LEVEL: DEBUG
+  # OpenSearch - EKS 올라올 때 실제 endpoint로 교체 필요
+  OPENSEARCH_HOST: ""
+  # Backend API internal endpoint - EKS 올라올 때 K8s service name으로 교체
+  BACKEND_API_URL: "http://backend-api:8080"
 secretRefs:
   - envName: OPENAI_API_KEY
     secretName: moment-dev-ai-secret

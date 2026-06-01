@@ -15,6 +15,15 @@ config:
   SPRING_PROFILES_ACTIVE: dev
   AWS_REGION: ap-northeast-3
   ENVIRONMENT: dev
+  DB_HOST: ""          # EKS 올라올 때 실제 RDS endpoint로 교체
+  DB_PORT: "5432"
+  DB_NAME: moment
+  REDIS_HOST: ""       # EKS 올라올 때 실제 Redis endpoint로 교체
+  REDIS_PORT: "6379"
+  OPENSEARCH_HOST: "" # EKS 올라올 때 실제 endpoint로 교체
+  S3_PROFILE_IMAGE_BUCKET: moment-dev-profile-image-611058323802-ap-northeast-3
+  SQS_QUEUE_NAME: moment-dev-public-data-queue
+  AI_SERVICE_URL: "http://ai-service:8000"
   # RDS - EKS 올라올 때 실제 endpoint로 교체 필요
   DB_HOST: ""
   DB_PORT: "5432"
