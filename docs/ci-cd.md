@@ -362,3 +362,76 @@ infra workflow -> [skip ci] commit push
 - backend/ai workflow에서 workflow_dispatch로 infra를 호출하는 구조이므로
   infra의 push가 다시 backend/ai를 트리거하지 않음 (레포 분리)
 - gitops 경로 path ignore는 레포 분리로 인해 불필요
+
+---
+
+## 장애 대응 절차 (M3-CICD-03)
+
+### ECR Push 성공 후 values update가 실행되지 않을 때
+
+1. backend/ai 레포 Actions 탭에서 build workflow 로그 확인
+2. Trigger Helm values update step 성공 여부 확인
+3. GITOPS_TOKEN secret 등록 여부 확인 (backend, ai 레포 둘 다)
+4. infra 레포 Actions 탭에서 update-helm-values.yml 실행 여부 확인
+5. GITOPS_TOKEN 권한 확인 (infra 레포 write 권한 필요)
+
+### yq 수정 실패 시
+
+1. workflow 로그에서 Install yq step 성공 여부 확인
+2. yq 버전 확인: yq --version
+3. values 파일 경로 확인: ls gitops/values/dev/
+4. 수동 테스트: IMAGE_TAG="dev-abc1234" yq -i '.image.tag = strenv(IMAGE_TAG)' gitops/values/dev/backend-api-values.yaml
+
+### values 파일 path 오류 시
+
+1. workflow 로그에서 ERROR: values file not found 메시지 확인
+2. infra 레포 develop 브랜치에서 파일 존재 여부 확인: ls gitops/values/dev/
+3. service 입력값 오타 확인 (backend-api, ai-service, batch-job, all)
+
+### image tag field path 오류 시
+
+1. values 파일에서 .image.tag 필드 존재 여부 확인
+2. 로컬에서 yq 직접 테스트: yq '.image.tag' gitops/values/dev/backend-api-values.yaml
+3. YAML 들여쓰기 오류 확인
+
+### Helm lint 실패 시
+
+1. workflow 로그에서 helm lint 오류 메시지 확인
+2. 로컬에서 직접 실행: helm lint gitops/charts/backend-api -f gitops/values/dev/backend-api-values.yaml
+3. Chart.yaml 필드 누락 여부 확인
+4. templates 디렉토리 파일 문법 오류 확인
+
+### Helm template 렌더링 실패 시
+
+1. workflow 로그에서 helm template 오류 메시지 확인
+2. 로컬에서 직접 실행: helm template backend-api gitops/charts/backend-api -f gitops/values/dev/backend-api-values.yaml
+3. values 파일에서 필수 필드 누락 여부 확인
+4. template 파일에서 존재하지 않는 values 참조 여부 확인
+
+### 렌더링 결과에 image tag가 반영되지 않을 때
+
+1. values 파일에서 image.tag 값 직접 확인: yq '.image.tag' gitops/values/dev/backend-api-values.yaml
+2. deployment.yaml이 templates 디렉토리에 존재하는지 확인: ls gitops/charts/backend-api/templates/
+3. template 파일에서 image 필드 확인: cat gitops/charts/backend-api/templates/deployment.yaml
+
+### Git commit 또는 push 실패 시
+
+1. workflow 로그에서 git push 오류 메시지 확인
+2. GITHUB_TOKEN 권한 확인 (contents: write 필요)
+3. develop 브랜치 protection rule 확인
+4. 충돌 발생 시 infra 레포 develop 브랜치 최신화 후 재실행
+
+### GitOps update commit 무한 루프 발생 시
+
+1. infra 레포 Actions 탭에서 연속 실행 여부 확인
+2. commit message에 [skip ci] 포함 여부 확인: git log --oneline -5
+3. [skip ci] 없으면 update-helm-values.yml commit 메시지 수정 후 재배포
+4. 레포 분리 구조 확인 (infra push가 backend/ai workflow 트리거하지 않아야 함)
+
+### ArgoCD가 values 변경을 감지하지 못할 때
+
+1. ArgoCD Application targetRevision이 develop인지 확인: argocd app get backend-api-dev
+2. ArgoCD repo connection 상태 확인: argocd repo list
+3. infra 레포 develop 브랜치에 실제 변경이 push 됐는지 확인: git log --oneline -3
+4. ArgoCD UI에서 Refresh 수동 실행
+5. automated sync 설정 확인: cat gitops/argocd/dev/applications/backend-api-dev.yaml
