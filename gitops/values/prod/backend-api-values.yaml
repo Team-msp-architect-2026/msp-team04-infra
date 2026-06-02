@@ -23,6 +23,7 @@ config:
   DB_HOST: ""
   DB_PORT: "5432"
   DB_NAME: moment
+  DB_URL: ""
 
   REDIS_HOST: ""
   REDIS_PORT: "6379"
