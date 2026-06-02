@@ -79,3 +79,10 @@ variable "common_tags" {
   type        = map(string)
   default     = {}
 }
+
+
+variable "public_read_enabled" {
+  description = "Whether profile image objects under object_key_prefix are publicly readable with s3:GetObject. Keep PutObject private and use Presigned PUT for uploads."
+  type        = bool
+  default     = false
+}

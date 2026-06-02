@@ -639,3 +639,10 @@ variable "enable_lambda_collector_secrets_manager_read" {
   type        = bool
   default     = false
 }
+
+
+variable "prod_profile_image_public_read_enabled" {
+  description = "Whether Prod profile image objects are publicly readable with s3:GetObject. Prefer CloudFront/OAC before enabling in production."
+  type        = bool
+  default     = false
+}

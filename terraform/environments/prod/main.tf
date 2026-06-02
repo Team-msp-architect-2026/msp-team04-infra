@@ -153,6 +153,7 @@ module "prod_profile_image_bucket" {
   bucket_name          = var.prod_profile_image_bucket_name
   object_key_prefix    = var.prod_profile_image_object_key_prefix
   cors_allowed_origins = var.prod_profile_image_allowed_origins
+  public_read_enabled  = var.prod_profile_image_public_read_enabled
 
   common_tags = local.prod_tags
 }

@@ -172,6 +172,7 @@ module "dev_profile_image_bucket" {
   bucket_name          = var.dev_profile_image_bucket_name
   object_key_prefix    = var.dev_profile_image_object_key_prefix
   cors_allowed_origins = var.dev_profile_image_allowed_origins
+  public_read_enabled  = var.dev_profile_image_public_read_enabled
 
   common_tags = merge(local.common_tags, {
     Environment = "dev"
