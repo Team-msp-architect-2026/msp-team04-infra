@@ -8,10 +8,8 @@ image:
 serviceAccount:
   create: true
   name: moment-dev-batch-job-sa
-  annotations: {}
-  # TODO: batch-job 전용 IRSA Role 생성 후 아래 형태로 변경
-  # annotations:
-  #   eks.amazonaws.com/role-arn: "arn:aws:iam::611058323802:role/moment-dev-batch-job-irsa-role"
+  annotations:
+    eks.amazonaws.com/role-arn: "arn:aws:iam::611058323802:role/moment-dev-batch-job-irsa-role"
 
 schedule: "0 * * * *"
 concurrencyPolicy: Forbid
@@ -25,7 +23,13 @@ args:
 
 config:
   SPRING_PROFILES_ACTIVE: dev
+  RUNTIME_PROFILE: dev
   AWS_REGION: ap-northeast-3
+
+  BATCH_JOB_NAME: public-data-collector
+  TRIGGER_TYPE: cron
+  UPDATE_FREQUENCY: hourly
+  SCHEDULE_CRON: "0 * * * *"
 
   SQS_QUEUE_NAME: moment-dev-public-data-queue
   SQS_QUEUE_URL: https://sqs.ap-northeast-3.amazonaws.com/611058323802/moment-dev-public-data-queue
