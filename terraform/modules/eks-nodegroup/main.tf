@@ -11,6 +11,38 @@ locals {
   )
 }
 
+resource "aws_launch_template" "node_group" {
+  for_each = var.node_groups
+
+  name_prefix = "${local.name_prefix}-${each.key}-"
+
+  block_device_mappings {
+    device_name = "/dev/xvda"
+    ebs {
+      volume_size           = each.value.disk_size
+      volume_type           = "gp3"
+      delete_on_termination = true
+    }
+  }
+
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"
+    http_put_response_hop_limit = 2
+  }
+
+  tag_specifications {
+    resource_type = "instance"
+    tags = merge(local.tags, {
+      Name = each.value.name
+    })
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
 resource "aws_eks_node_group" "this" {
   for_each = var.node_groups
 
@@ -21,7 +53,6 @@ resource "aws_eks_node_group" "this" {
 
   capacity_type  = each.value.capacity_type
   instance_types = each.value.instance_types
-  disk_size      = each.value.disk_size
 
   labels = each.value.labels
 
@@ -51,4 +82,9 @@ resource "aws_eks_node_group" "this" {
     Workload     = lookup(each.value.labels, "workload", "unknown")
     CapacityType = lookup(each.value.labels, "capacity", each.value.capacity_type)
   })
+
+  launch_template {
+    name    = aws_launch_template.node_group[each.key].name
+    version = aws_launch_template.node_group[each.key].latest_version
+  }
 }

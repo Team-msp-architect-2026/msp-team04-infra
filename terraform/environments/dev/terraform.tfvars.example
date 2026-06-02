@@ -6,8 +6,8 @@ network_vpc_cidr = "10.0.0.0/16"
 prod_vpc_cidr    = "10.10.0.0/16"
 dev_vpc_cidr     = "10.20.0.0/16"
 
-admin_cidr_blocks = ["115.138.87.55/32"]
-
+admin_cidr_blocks = ["112.220.50.35/32"]
+dev_eks_public_access_cidrs = ["112.220.50.35/32"]
 
 # Network OpenVPN admin access
 # Keep disabled by default. Enable only for validation or final demo, then destroy.

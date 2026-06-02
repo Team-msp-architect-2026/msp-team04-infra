@@ -8,7 +8,8 @@ locals {
     "sts",
     "secretsmanager",
     "ssm",
-    "kms"
+    "kms",
+    "ec2"
   ])
 
   tags = merge(
