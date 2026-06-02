@@ -40,7 +40,7 @@ secretRefs:
     secretName: moment-dev-backend-api-secret
     secretKey: db-password
 
-  - envName: JWT_SECRET
+  - envName: JWT_SECRET_KEY
     secretName: moment-dev-backend-api-secret
     secretKey: jwt-secret
 
