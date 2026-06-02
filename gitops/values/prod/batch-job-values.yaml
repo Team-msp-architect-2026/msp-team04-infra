@@ -1,30 +1,55 @@
 namespace: moment-prod
+
 image:
   repository: 611058323802.dkr.ecr.ap-northeast-3.amazonaws.com/moment-prod-batch-job
   tag: prod-placeholder
   pullPolicy: IfNotPresent
+
 serviceAccount:
   create: true
-  name: batch-job
-  annotations:
-    eks.amazonaws.com/role-arn: ""
+  name: moment-prod-batch-job-sa
+  annotations: {}
+  # TODO: prod batch-job 전용 IRSA Role 생성 후 아래 형태로 변경
+  # annotations:
+  #   eks.amazonaws.com/role-arn: "arn:aws:iam::611058323802:role/moment-prod-batch-job-irsa-role"
+
 schedule: "0 * * * *"
 concurrencyPolicy: Forbid
 successfulJobsHistoryLimit: 3
 failedJobsHistoryLimit: 1
 backoffLimit: 3
 restartPolicy: OnFailure
+
 args:
   - "--spring.profiles.active=prod"
+
 config:
   SPRING_PROFILES_ACTIVE: prod
   AWS_REGION: ap-northeast-3
+
   SQS_QUEUE_NAME: moment-prod-public-data-queue
+  SQS_QUEUE_URL: https://sqs.ap-northeast-3.amazonaws.com/611058323802/moment-prod-public-data-queue
   S3_RAW_BUCKET: moment-prod-raw-data-611058323802-ap-northeast-3
+
+  DB_HOST: ""
+  DB_PORT: "5432"
+  DB_NAME: moment
+
+  OPENSEARCH_HOST: ""
+
 secretRefs:
+  - envName: DB_USERNAME
+    secretName: moment-prod-batch-job-secret
+    secretKey: db-username
+
   - envName: DB_PASSWORD
-    secretName: moment-prod-batch-secret
+    secretName: moment-prod-batch-job-secret
     secretKey: db-password
+
+  - envName: PUBLIC_DATA_API_KEY
+    secretName: moment-prod-batch-job-secret
+    secretKey: public-data-api-key
+
 resources:
   requests:
     cpu: 500m
@@ -32,12 +57,15 @@ resources:
   limits:
     cpu: 1000m
     memory: 2Gi
+
 nodeSelector:
   workload: batch
   capacity: spot
+
 tolerations:
   - key: capacity
     operator: Equal
     value: spot
     effect: NoSchedule
+
 affinity: {}

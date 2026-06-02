@@ -1,54 +1,55 @@
 namespace: moment-dev
+
 replicaCount: 1
+
 image:
   repository: 611058323802.dkr.ecr.ap-northeast-3.amazonaws.com/moment-dev-backend-api
   tag: dev-24eabd0
   pullPolicy: IfNotPresent
+
 serviceAccount:
   create: true
-  name: backend-api
-  annotations:
-    # IRSA Role ARN - EKS 올라올 때 실제 ARN으로 교체 필요
-    # terraform output에서 backend API 전용 IRSA Role 생성 후 입력
-    eks.amazonaws.com/role-arn: ""
+  name: moment-dev-backend-api-sa
+  annotations: {}
+  # TODO: backend-api 전용 IRSA Role 생성 후 아래 형태로 변경
+  # annotations:
+  #   eks.amazonaws.com/role-arn: "arn:aws:iam::611058323802:role/moment-dev-backend-api-irsa-role"
+
 config:
   SPRING_PROFILES_ACTIVE: dev
   AWS_REGION: ap-northeast-3
   ENVIRONMENT: dev
-  DB_HOST: "" # EKS 올라올 때 실제 RDS endpoint로 교체
+
+  DB_HOST: moment-dev-postgres.c3qggqseuzcb.ap-northeast-3.rds.amazonaws.com
   DB_PORT: "5432"
   DB_NAME: moment
-  REDIS_HOST: "" # EKS 올라올 때 실제 Redis endpoint로 교체
+
+  REDIS_HOST: moment-dev-redis.o0zxzf.ng.0001.apn3.cache.amazonaws.com
   REDIS_PORT: "6379"
-  OPENSEARCH_HOST: "" # EKS 올라올 때 실제 endpoint로 교체
+
+  OPENSEARCH_HOST: vpc-moment-dev-opensearch-hdseoos3ibawg6xwwlaa4hff3u.ap-northeast-3.es.amazonaws.com
+
   S3_PROFILE_IMAGE_BUCKET: moment-dev-profile-image-611058323802-ap-northeast-3
   SQS_QUEUE_NAME: moment-dev-public-data-queue
   AI_SERVICE_URL: "http://ai-service:8000"
-  # RDS - EKS 올라올 때 실제 endpoint로 교체 필요
-  DB_HOST: ""
-  DB_PORT: "5432"
-  DB_NAME: moment
-  # Redis - EKS 올라올 때 실제 endpoint로 교체 필요
-  REDIS_HOST: ""
-  REDIS_PORT: "6379"
-  # OpenSearch - EKS 올라올 때 실제 endpoint로 교체 필요
-  OPENSEARCH_HOST: ""
-  # S3
-  S3_PROFILE_IMAGE_BUCKET: moment-dev-profile-image-611058323802-ap-northeast-3
-  # SQS
-  SQS_QUEUE_NAME: moment-dev-public-data-queue
-  # AI Service internal endpoint - EKS 올라올 때 K8s service name으로 교체
-  AI_SERVICE_URL: "http://ai-service:8000"
+
 secretRefs:
+  - envName: DB_USERNAME
+    secretName: moment-dev-backend-api-secret
+    secretKey: db-username
+
   - envName: DB_PASSWORD
-    secretName: moment-dev-backend-secret
+    secretName: moment-dev-backend-api-secret
     secretKey: db-password
+
   - envName: JWT_SECRET
-    secretName: moment-dev-backend-secret
+    secretName: moment-dev-backend-api-secret
     secretKey: jwt-secret
+
   - envName: TOSS_SECRET
-    secretName: moment-dev-backend-secret
+    secretName: moment-dev-backend-api-secret
     secretKey: toss-secret
+
 resources:
   requests:
     cpu: 250m
@@ -56,11 +57,15 @@ resources:
   limits:
     cpu: 500m
     memory: 1Gi
+
 nodeSelector:
   workload: core
   capacity: on-demand
+
 tolerations: []
+
 affinity: {}
+
 ingress:
   enabled: true
   className: alb
