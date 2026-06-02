@@ -764,3 +764,10 @@ variable "irsa_service_accounts" {
   }))
   default = {}
 }
+
+
+variable "dev_profile_image_public_read_enabled" {
+  description = "Whether Dev profile image objects are publicly readable with s3:GetObject for direct app display."
+  type        = bool
+  default     = true
+}

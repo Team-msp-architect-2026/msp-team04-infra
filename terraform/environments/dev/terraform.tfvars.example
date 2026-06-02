@@ -47,6 +47,7 @@ dev_raw_bucket_name      = null
 enable_dev_profile_image_bucket       = true
 dev_profile_image_bucket_name         = null
 dev_profile_image_allowed_origins     = ["*"]
+dev_profile_image_public_read_enabled = true
 dev_profile_image_object_key_prefix   = "uploads/profile"
 
 

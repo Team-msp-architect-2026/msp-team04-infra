@@ -26,6 +26,7 @@ enable_prod_sqs           = false
 enable_prod_profile_image_bucket       = false
 prod_profile_image_bucket_name         = null
 prod_profile_image_allowed_origins     = []
+prod_profile_image_public_read_enabled = false
 prod_profile_image_object_key_prefix   = "uploads/profile"
 
 
