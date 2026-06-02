@@ -134,26 +134,23 @@ Prod Secret 값은 Git에 커밋하지 않는다.
 
 ## 7. IRSA 상태
 
-현재 IAM Role 목록에서 확인된 IRSA Role은 다음과 같다.
+현재 IAM Role 목록에서 아래 IRSA Role을 확인했다.
 
 - `moment-dev-alb-controller-irsa-role`
 - `moment-dev-ebs-csi-irsa-role`
-
-아래 workload 전용 IRSA Role은 아직 확인되지 않았다.
-
 - `moment-dev-backend-api-irsa-role`
 - `moment-dev-ai-service-irsa-role`
 - `moment-dev-batch-job-irsa-role`
 
-따라서 현재 workload ServiceAccount annotation은 비워두었다.
+M3-CONFIG-01 범위에서 Backend API, AI Service, Batch Job 전용 IRSA Role을 생성하고 각 ServiceAccount annotation에 Role ARN을 반영했다.
 
-```yaml
-annotations: {}
-```
+| Workload | ServiceAccount | IRSA Role |
+|---|---|---|
+| Backend API | `moment-dev-backend-api-sa` | `moment-dev-backend-api-irsa-role` |
+| AI Service | `moment-dev-ai-service-sa` | `moment-dev-ai-service-irsa-role` |
+| Batch Job | `moment-dev-batch-job-sa` | `moment-dev-batch-job-irsa-role` |
 
-후속 Terraform 작업에서 workload별 IRSA Role을 생성한 뒤, 각 values 파일의 ServiceAccount annotation에 Role ARN을 반영해야 한다.
-
-예상 형식은 다음과 같다.
+values 반영 예시는 다음과 같다.
 
 ```yaml
 serviceAccount:
@@ -162,8 +159,6 @@ serviceAccount:
   annotations:
     eks.amazonaws.com/role-arn: arn:aws:iam::611058323802:role/moment-dev-backend-api-irsa-role
 ```
-
----
 
 ## 8. Dev Secret 생성 현황
 
@@ -336,4 +331,71 @@ M3-DEPLOY-02에서는 AI Service와 Batch Job이 아래 조건을 만족하는�
 - ConfigMap env 로드
 - Secret env 로드
 - ServiceAccount 적용
-- 필요한 AWS 접근 권한은 IRSA 생성 후 검증
+- 필요한 AWS 접근 권한은 workload별 IRSA Role 기준으로 검증
+
+---
+
+## 14. Dev 기준 추가 검토 결과
+
+### AI Service non-secret 설정
+
+Dev AI Service ConfigMap에는 다음 non-secret runtime 설정을 포함한다.
+
+| Key | 값 | 설명 |
+|---|---|---|
+| `ENVIRONMENT` | `dev` | 실행 환경 |
+| `RUNTIME_PROFILE` | `dev` | AI Service runtime profile |
+| `SERVER_PORT` | `8000` | AI Service container port 기준 |
+| `AWS_REGION` | `ap-northeast-3` | AWS region |
+| `LOG_LEVEL` | `DEBUG` | Dev log level |
+| `MODEL_NAME` | `default` | 기본 모델명 placeholder |
+| `OPENSEARCH_HOST` | Dev OpenSearch endpoint | 검색/벡터 저장소 endpoint |
+| `BACKEND_API_URL` | `http://backend-api:8080` | 내부 Backend API endpoint |
+
+`MODEL_NAME`은 현재 Dev 기본값으로 `default`를 사용한다. 실제 모델명이 확정되면 AI Service values에서 교체한다.
+
+### Batch Job 운영 메타데이터
+
+Dev Batch Job ConfigMap에는 다음 non-secret 운영 메타데이터를 포함한다.
+
+| Key | 값 | 설명 |
+|---|---|---|
+| `BATCH_JOB_NAME` | `public-data-collector` | 배치 작업 식별 이름 |
+| `TRIGGER_TYPE` | `cron` | 실행 방식 |
+| `UPDATE_FREQUENCY` | `hourly` | 갱신 주기 |
+| `SCHEDULE_CRON` | `0 * * * *` | CronJob schedule 기준 |
+
+실제 CronJob schedule은 Helm values의 `schedule` 값으로도 관리한다.
+
+### Secrets Manager read 권한 기준
+
+현재 M3-CONFIG-01에서는 Kubernetes Secret 수동 생성 방식을 선택했다.
+
+따라서 Backend API, AI Service, Batch Job Pod가 런타임에 AWS Secrets Manager에서 Secret 값을 직접 읽는 구조가 아니다.
+이에 따라 workload별 IRSA Role에는 Secrets Manager read 권한을 기본 포함하지 않는다.
+
+추후 External Secrets Operator 또는 애플리케이션 직접 조회 방식으로 전환할 경우, 각 workload IRSA Role에 `secretsmanager:GetSecretValue` 권한을 추가한다.
+
+### CloudWatch Logs write 권한 기준
+
+현재 Pod 로그는 애플리케이션이 stdout/stderr로 출력하고, 클러스터 로그 수집 계층에서 처리하는 구조를 기준으로 한다.
+
+따라서 애플리케이션 Pod가 AWS CloudWatch Logs API를 직접 호출하는 구조가 아니므로 workload별 IRSA Role에는 `logs:PutLogEvents` 등 CloudWatch Logs write 권한을 기본 포함하지 않는다.
+
+추후 애플리케이션이 CloudWatch Logs SDK를 직접 호출하는 구조로 변경될 경우, 해당 workload IRSA Role에 필요한 logs 권한을 추가한다.
+
+### OpenSearch credential 기준
+
+현재 Dev OpenSearch 접근은 VPC 내부 endpoint 기준으로 구성하며, 별도 username/password credential을 Secret으로 주입하지 않는다.
+
+따라서 OpenSearch credential secretKeyRef는 현재 미사용으로 정리한다.
+추후 OpenSearch fine-grained access control 또는 별도 인증 방식이 활성화되면 Secret key를 추가한다.
+
+### Mock profile / OpenAI API Key 기준
+
+AI Service는 `OPENAI_API_KEY`를 Secret으로 참조한다.
+
+Dev 환경에서 실제 LLM 호출이 필요한 경우 `moment-dev-ai-service-secret`에 실제 OpenAI API Key를 등록한다.
+Mock profile로 실행할 경우에는 애플리케이션 코드에서 mock profile 기준을 별도로 제공해야 하며, 현재 GitOps values는 실제 Secret reference 구조를 기준으로 작성한다.
+
+실제 LLM 호출 검증은 배포 이후 smoke test 범위에서 수행한다.
