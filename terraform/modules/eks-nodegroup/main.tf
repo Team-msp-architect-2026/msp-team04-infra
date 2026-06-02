@@ -16,6 +16,15 @@ resource "aws_launch_template" "node_group" {
 
   name_prefix = "${local.name_prefix}-${each.key}-"
 
+  block_device_mappings {
+    device_name = "/dev/xvda"
+    ebs {
+      volume_size           = each.value.disk_size
+      volume_type           = "gp3"
+      delete_on_termination = true
+    }
+  }
+
   metadata_options {
     http_endpoint               = "enabled"
     http_tokens                 = "required"
@@ -44,7 +53,6 @@ resource "aws_eks_node_group" "this" {
 
   capacity_type  = each.value.capacity_type
   instance_types = each.value.instance_types
-  disk_size      = each.value.disk_size
 
   labels = each.value.labels
 
@@ -75,7 +83,7 @@ resource "aws_eks_node_group" "this" {
     CapacityType = lookup(each.value.labels, "capacity", each.value.capacity_type)
   })
 
-    launch_template {
+  launch_template {
     name    = aws_launch_template.node_group[each.key].name
     version = aws_launch_template.node_group[each.key].latest_version
   }
