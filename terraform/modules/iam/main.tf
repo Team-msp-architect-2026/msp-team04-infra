@@ -367,6 +367,21 @@ data "aws_iam_policy_document" "backend_pod" {
       ]
     }
   }
+
+  dynamic "statement" {
+    for_each = length(var.notification_sns_topic_arns) > 0 ? [1] : []
+
+    content {
+      sid    = "AllowNotificationSnsPublish"
+      effect = "Allow"
+
+      actions = [
+        "sns:Publish"
+      ]
+
+      resources = var.notification_sns_topic_arns
+    }
+  }
 }
 
 resource "aws_iam_policy" "backend_pod" {

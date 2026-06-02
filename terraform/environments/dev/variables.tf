@@ -292,6 +292,31 @@ variable "dev_profile_image_object_key_prefix" {
 }
 
 
+variable "enable_dev_notification_sns" {
+  description = "Whether to manage Dev notification SNS topic for Backend notification publish."
+  type        = bool
+  default     = true
+}
+
+variable "dev_notification_sns_topic_name" {
+  description = "Optional explicit Dev notification SNS topic name. Keep null to use the module naming convention."
+  type        = string
+  default     = null
+}
+
+variable "dev_notification_sns_display_name" {
+  description = "Dev notification SNS topic display name."
+  type        = string
+  default     = "MoMent Dev Notification"
+}
+
+variable "dev_notification_sns_kms_master_key_id" {
+  description = "Optional KMS key ID or alias for Dev notification SNS topic encryption. Keep null unless KMS encryption is explicitly required."
+  type        = string
+  default     = null
+}
+
+
 variable "enable_dev_data_pipeline" {
   description = "Whether to create Dev EventBridge Scheduler and Lambda Collector for public data pipeline validation."
   type        = bool

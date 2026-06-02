@@ -160,6 +160,12 @@ variable "profile_image_object_key_prefix" {
   default     = "uploads/profile"
 }
 
+variable "notification_sns_topic_arns" {
+  description = "Notification SNS topic ARNs that Backend API pod can publish to."
+  type        = list(string)
+  default     = []
+}
+
 
 variable "attach_lambda_raw_bucket_policy" {
   description = "Whether to attach the raw bucket access policy to the Lambda collector role."

@@ -157,6 +157,20 @@ module "prod_profile_image_bucket" {
   common_tags = local.prod_tags
 }
 
+module "prod_notification_sns" {
+  count = var.enable_prod_notification_sns ? 1 : 0
+
+  source = "../../modules/notification-sns"
+
+  project_name      = var.project_name
+  environment       = "prod"
+  topic_name        = var.prod_notification_sns_topic_name
+  display_name      = var.prod_notification_sns_display_name
+  kms_master_key_id = var.prod_notification_sns_kms_master_key_id
+
+  common_tags = local.prod_tags
+}
+
 
 
 module "prod_iam" {
@@ -187,6 +201,10 @@ module "prod_iam" {
   ] : []
   profile_image_object_key_prefix = var.prod_profile_image_object_key_prefix
 
+  notification_sns_topic_arns = var.enable_prod_notification_sns ? [
+    module.prod_notification_sns[0].topic_arn
+  ] : []
+
   sqs_queue_arns                     = var.enable_prod_sqs ? [module.prod_sqs[0].queue_arn] : []
   enable_sqs_queue_policy_statements = var.enable_prod_sqs
 
@@ -203,7 +221,8 @@ module "prod_iam" {
   depends_on = [
     module.prod_sqs,
     module.prod_s3_raw_bucket,
-    module.prod_profile_image_bucket
+    module.prod_profile_image_bucket,
+    module.prod_notification_sns
   ]
 }
 
