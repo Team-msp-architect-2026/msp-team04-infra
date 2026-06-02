@@ -1,22 +1,32 @@
 namespace: moment-prod
+
 replicaCount: 2
+
 image:
   repository: 611058323802.dkr.ecr.ap-northeast-3.amazonaws.com/moment-prod-ai-service
   tag: prod-placeholder
   pullPolicy: IfNotPresent
+
 serviceAccount:
   create: true
-  name: ai-service
-  annotations:
-    eks.amazonaws.com/role-arn: ""
+  name: moment-prod-ai-service-sa
+  annotations: {}
+  # TODO: prod ai-service 전용 IRSA Role 생성 후 아래 형태로 변경
+  # annotations:
+  #   eks.amazonaws.com/role-arn: "arn:aws:iam::611058323802:role/moment-prod-ai-service-irsa-role"
+
 config:
   ENVIRONMENT: prod
   AWS_REGION: ap-northeast-3
   LOG_LEVEL: INFO
+  OPENSEARCH_HOST: ""
+  BACKEND_API_URL: "http://backend-api:8080"
+
 secretRefs:
   - envName: OPENAI_API_KEY
-    secretName: moment-prod-ai-secret
+    secretName: moment-prod-ai-service-secret
     secretKey: openai-api-key
+
 resources:
   requests:
     cpu: 500m
@@ -24,12 +34,15 @@ resources:
   limits:
     cpu: 1000m
     memory: 2Gi
+
 nodeSelector:
   workload: ai
   capacity: spot
+
 tolerations:
   - key: capacity
     operator: Equal
     value: spot
     effect: NoSchedule
+
 affinity: {}

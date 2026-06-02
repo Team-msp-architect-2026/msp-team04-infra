@@ -1,28 +1,55 @@
 namespace: moment-prod
+
 replicaCount: 2
+
 image:
   repository: 611058323802.dkr.ecr.ap-northeast-3.amazonaws.com/moment-prod-backend-api
   tag: prod-placeholder
   pullPolicy: IfNotPresent
+
 serviceAccount:
   create: true
-  name: backend-api
-  annotations:
-    eks.amazonaws.com/role-arn: ""
+  name: moment-prod-backend-api-sa
+  annotations: {}
+  # TODO: prod backend-api 전용 IRSA Role 생성 후 아래 형태로 변경
+  # annotations:
+  #   eks.amazonaws.com/role-arn: "arn:aws:iam::611058323802:role/moment-prod-backend-api-irsa-role"
+
 config:
   SPRING_PROFILES_ACTIVE: prod
   AWS_REGION: ap-northeast-3
   ENVIRONMENT: prod
+
+  DB_HOST: ""
+  DB_PORT: "5432"
+  DB_NAME: moment
+
+  REDIS_HOST: ""
+  REDIS_PORT: "6379"
+
+  OPENSEARCH_HOST: ""
+
+  S3_PROFILE_IMAGE_BUCKET: moment-prod-profile-image-611058323802-ap-northeast-3
+  SQS_QUEUE_NAME: moment-prod-public-data-queue
+  AI_SERVICE_URL: "http://ai-service:8000"
+
 secretRefs:
+  - envName: DB_USERNAME
+    secretName: moment-prod-backend-api-secret
+    secretKey: db-username
+
   - envName: DB_PASSWORD
-    secretName: moment-prod-backend-secret
+    secretName: moment-prod-backend-api-secret
     secretKey: db-password
+
   - envName: JWT_SECRET
-    secretName: moment-prod-backend-secret
+    secretName: moment-prod-backend-api-secret
     secretKey: jwt-secret
+
   - envName: TOSS_SECRET
-    secretName: moment-prod-backend-secret
+    secretName: moment-prod-backend-api-secret
     secretKey: toss-secret
+
 resources:
   requests:
     cpu: 500m
@@ -30,11 +57,15 @@ resources:
   limits:
     cpu: 1000m
     memory: 2Gi
+
 nodeSelector:
   workload: core
   capacity: on-demand
+
 tolerations: []
+
 affinity: {}
+
 ingress:
   enabled: true
   className: alb
