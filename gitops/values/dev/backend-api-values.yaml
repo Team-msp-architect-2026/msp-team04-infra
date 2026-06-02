@@ -21,6 +21,7 @@ config:
   DB_HOST: moment-dev-postgres.c3qggqseuzcb.ap-northeast-3.rds.amazonaws.com
   DB_PORT: "5432"
   DB_NAME: moment
+  DB_URL: "jdbc:postgresql://moment-dev-postgres.c3qggqseuzcb.ap-northeast-3.rds.amazonaws.com:5432/moment"
 
   REDIS_HOST: moment-dev-redis.o0zxzf.ng.0001.apn3.cache.amazonaws.com
   REDIS_PORT: "6379"
