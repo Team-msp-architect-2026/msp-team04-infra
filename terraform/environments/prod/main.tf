@@ -303,6 +303,58 @@ module "prod_eks" {
   common_tags = local.prod_tags
 }
 
+locals {
+  prod_runtime_secret_definitions = {
+    backend_api = {
+      name        = "moment/prod/backend-api"
+      description = "MoMent Prod Backend API runtime secrets. Values are managed out-of-band and are not stored in Terraform."
+    }
+    ai_service = {
+      name        = "moment/prod/ai-service"
+      description = "MoMent Prod AI Service runtime secrets. Values are managed out-of-band and are not stored in Terraform."
+    }
+    batch_job = {
+      name        = "moment/prod/batch-job"
+      description = "MoMent Prod Batch Job runtime secrets. Values are managed out-of-band and are not stored in Terraform."
+    }
+  }
+}
+
+resource "aws_secretsmanager_secret" "prod_runtime" {
+  for_each = var.enable_prod_external_secrets_irsa ? local.prod_runtime_secret_definitions : {}
+
+  name                    = each.value.name
+  description             = each.value.description
+  recovery_window_in_days = 7
+
+  tags = merge(local.prod_tags, {
+    Name = each.value.name
+    Role = "runtime-secret"
+  })
+}
+
+module "prod_external_secrets_irsa" {
+  count  = var.enable_prod_external_secrets_irsa && var.enable_prod_iam && var.enable_prod_eks ? 1 : 0
+  source = "../../modules/external-secrets-irsa"
+
+  project_name = var.project_name
+  environment  = "prod"
+
+  namespace            = var.prod_external_secrets_namespace
+  service_account_name = var.prod_external_secrets_service_account_name
+
+  eks_oidc_provider_arn = module.prod_eks[0].eks_oidc_provider_arn
+  eks_oidc_provider_url = module.prod_eks[0].eks_oidc_provider_url
+
+  secret_arns = [
+    for secret in aws_secretsmanager_secret.prod_runtime : secret.arn
+  ]
+
+  allow_rds_managed_secrets = true
+
+  common_tags = local.prod_tags
+}
+
 module "prod_redis" {
   count  = var.enable_prod_vpc && var.enable_prod_data_tier && var.enable_prod_redis ? 1 : 0
   source = "../../modules/redis"

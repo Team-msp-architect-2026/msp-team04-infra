@@ -118,6 +118,24 @@ variable "enable_prod_sqs" {
   default     = false
 }
 
+variable "enable_prod_external_secrets_irsa" {
+  description = "Whether to create Prod External Secrets Operator IRSA role and runtime secret containers."
+  type        = bool
+  default     = false
+}
+
+variable "prod_external_secrets_namespace" {
+  description = "Namespace where External Secrets Operator is installed in Prod EKS."
+  type        = string
+  default     = "external-secrets"
+}
+
+variable "prod_external_secrets_service_account_name" {
+  description = "ServiceAccount name used by External Secrets Operator in Prod EKS."
+  type        = string
+  default     = "external-secrets"
+}
+
 variable "enable_prod_s3_raw_bucket" {
   description = "Whether to manage Prod S3 Raw Bucket in terraform/environments/prod. Keep false until Prod data pipeline activation is approved."
   type        = bool
