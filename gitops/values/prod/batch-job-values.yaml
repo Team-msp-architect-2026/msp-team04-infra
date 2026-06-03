@@ -21,10 +21,13 @@ backoffLimit: 3
 restartPolicy: OnFailure
 
 args:
-  - "--spring.profiles.active=prod"
+  - "--spring.profiles.active=prod,batch"
+  - "--spring.main.web-application-type=none"
+  - "--spring.batch.job.enabled=true"
+  - "--spring.batch.job.name=syncJob"
 
 config:
-  SPRING_PROFILES_ACTIVE: prod
+  SPRING_PROFILES_ACTIVE: prod,batch
   AWS_REGION: ap-northeast-3
 
   SQS_QUEUE_NAME: moment-prod-public-data-queue
@@ -34,6 +37,9 @@ config:
   DB_HOST: ""
   DB_PORT: "5432"
   DB_NAME: moment
+  DB_URL: ""
+  SPRING_DATASOURCE_URL: ""
+  SPRING_FLYWAY_URL: ""
 
   OPENSEARCH_HOST: ""
 
@@ -46,9 +52,33 @@ secretRefs:
     secretName: moment-prod-batch-job-secret
     secretKey: db-password
 
+  - envName: SPRING_DATASOURCE_USERNAME
+    secretName: moment-prod-batch-job-secret
+    secretKey: db-username
+
+  - envName: SPRING_DATASOURCE_PASSWORD
+    secretName: moment-prod-batch-job-secret
+    secretKey: db-password
+
+  - envName: SPRING_FLYWAY_USER
+    secretName: moment-prod-batch-job-secret
+    secretKey: db-username
+
+  - envName: SPRING_FLYWAY_PASSWORD
+    secretName: moment-prod-batch-job-secret
+    secretKey: db-password
+
   - envName: PUBLIC_DATA_API_KEY
     secretName: moment-prod-batch-job-secret
     secretKey: public-data-api-key
+
+  - envName: PUBLIC_DATA_DATA_GO_KR_SERVICE_KEY
+    secretName: moment-prod-batch-job-secret
+    secretKey: public-data-api-key
+
+  - envName: JWT_SECRET_KEY
+    secretName: moment-prod-batch-job-secret
+    secretKey: jwt-secret
 
 resources:
   requests:
@@ -63,6 +93,10 @@ nodeSelector:
   capacity: spot
 
 tolerations:
+  - key: workload
+    operator: Equal
+    value: batch
+    effect: NoSchedule
   - key: capacity
     operator: Equal
     value: spot

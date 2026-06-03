@@ -40,6 +40,10 @@ nodeSelector:
   capacity: spot
 
 tolerations:
+  - key: workload
+    operator: Equal
+    value: ai
+    effect: NoSchedule
   - key: capacity
     operator: Equal
     value: spot

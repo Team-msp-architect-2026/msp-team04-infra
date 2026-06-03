@@ -2,7 +2,7 @@ namespace: moment-dev
 
 image:
   repository: 611058323802.dkr.ecr.ap-northeast-3.amazonaws.com/moment-dev-batch-job
-  tag: dev-24eabd0
+  tag: dev-06cb3c6
   pullPolicy: IfNotPresent
 
 serviceAccount:
@@ -19,10 +19,13 @@ backoffLimit: 3
 restartPolicy: OnFailure
 
 args:
-  - "--spring.profiles.active=dev"
+  - "--spring.profiles.active=dev,batch"
+  - "--spring.main.web-application-type=none"
+  - "--spring.batch.job.enabled=true"
+  - "--spring.batch.job.name=syncJob"
 
 config:
-  SPRING_PROFILES_ACTIVE: dev
+  SPRING_PROFILES_ACTIVE: dev,batch
   RUNTIME_PROFILE: dev
   AWS_REGION: ap-northeast-3
 
@@ -38,6 +41,9 @@ config:
   DB_HOST: moment-dev-postgres.c3qggqseuzcb.ap-northeast-3.rds.amazonaws.com
   DB_PORT: "5432"
   DB_NAME: moment
+  DB_URL: "jdbc:postgresql://moment-dev-postgres.c3qggqseuzcb.ap-northeast-3.rds.amazonaws.com:5432/moment"
+  SPRING_DATASOURCE_URL: "jdbc:postgresql://moment-dev-postgres.c3qggqseuzcb.ap-northeast-3.rds.amazonaws.com:5432/moment"
+  SPRING_FLYWAY_URL: "jdbc:postgresql://moment-dev-postgres.c3qggqseuzcb.ap-northeast-3.rds.amazonaws.com:5432/moment"
 
   OPENSEARCH_HOST: vpc-moment-dev-opensearch-hdseoos3ibawg6xwwlaa4hff3u.ap-northeast-3.es.amazonaws.com
 
@@ -50,9 +56,33 @@ secretRefs:
     secretName: moment-dev-batch-job-secret
     secretKey: db-password
 
+  - envName: SPRING_DATASOURCE_USERNAME
+    secretName: moment-dev-batch-job-secret
+    secretKey: db-username
+
+  - envName: SPRING_DATASOURCE_PASSWORD
+    secretName: moment-dev-batch-job-secret
+    secretKey: db-password
+
+  - envName: SPRING_FLYWAY_USER
+    secretName: moment-dev-batch-job-secret
+    secretKey: db-username
+
+  - envName: SPRING_FLYWAY_PASSWORD
+    secretName: moment-dev-batch-job-secret
+    secretKey: db-password
+
   - envName: PUBLIC_DATA_API_KEY
     secretName: moment-dev-batch-job-secret
     secretKey: public-data-api-key
+
+  - envName: PUBLIC_DATA_DATA_GO_KR_SERVICE_KEY
+    secretName: moment-dev-batch-job-secret
+    secretKey: public-data-api-key
+
+  - envName: JWT_SECRET_KEY
+    secretName: moment-dev-batch-job-secret
+    secretKey: jwt-secret
 
 resources:
   requests:
@@ -63,9 +93,17 @@ resources:
     memory: 1Gi
 
 nodeSelector:
-  workload: core
-  capacity: on-demand
+  workload: batch
+  capacity: spot
 
-tolerations: []
+tolerations:
+  - key: workload
+    operator: Equal
+    value: batch
+    effect: NoSchedule
+  - key: capacity
+    operator: Equal
+    value: spot
+    effect: NoSchedule
 
 affinity: {}

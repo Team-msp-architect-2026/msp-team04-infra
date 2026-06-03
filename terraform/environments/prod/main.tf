@@ -452,11 +452,18 @@ module "prod_eks_nodegroups" {
         workload = "batch"
         capacity = "spot"
       }
-      taints = [{
-        key    = "spot"
-        value  = "true"
-        effect = "NO_SCHEDULE"
-      }]
+      taints = [
+        {
+          key    = "workload"
+          value  = "batch"
+          effect = "NO_SCHEDULE"
+        },
+        {
+          key    = "capacity"
+          value  = "spot"
+          effect = "NO_SCHEDULE"
+        }
+      ]
     }
 
     ai_spot = {
@@ -471,11 +478,18 @@ module "prod_eks_nodegroups" {
         workload = "ai"
         capacity = "spot"
       }
-      taints = [{
-        key    = "spot"
-        value  = "true"
-        effect = "NO_SCHEDULE"
-      }]
+      taints = [
+        {
+          key    = "workload"
+          value  = "ai"
+          effect = "NO_SCHEDULE"
+        },
+        {
+          key    = "capacity"
+          value  = "spot"
+          effect = "NO_SCHEDULE"
+        }
+      ]
     }
 
     ops_on_demand = {
@@ -490,7 +504,13 @@ module "prod_eks_nodegroups" {
         workload = "ops"
         capacity = "on-demand"
       }
-      taints = []
+      taints = [
+        {
+          key    = "workload"
+          value  = "ops"
+          effect = "NO_SCHEDULE"
+        }
+      ]
     }
   }
 

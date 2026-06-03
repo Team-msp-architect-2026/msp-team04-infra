@@ -396,7 +396,7 @@ module "dev_eks_nodegroups" {
       capacity_type  = "SPOT"
       instance_types = ["t3.medium"]
       min_size       = 0
-      desired_size   = 0
+      desired_size   = 1
       max_size       = 2
       disk_size      = 20
 
@@ -409,6 +409,11 @@ module "dev_eks_nodegroups" {
         {
           key    = "workload"
           value  = "batch"
+          effect = "NO_SCHEDULE"
+        },
+        {
+          key    = "capacity"
+          value  = "spot"
           effect = "NO_SCHEDULE"
         }
       ]
@@ -432,6 +437,11 @@ module "dev_eks_nodegroups" {
         {
           key    = "workload"
           value  = "ai"
+          effect = "NO_SCHEDULE"
+        },
+        {
+          key    = "capacity"
+          value  = "spot"
           effect = "NO_SCHEDULE"
         }
       ]
