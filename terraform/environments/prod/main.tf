@@ -395,6 +395,18 @@ module "prod_opensearch" {
   common_tags = local.prod_tags
 }
 
+resource "aws_security_group_rule" "prod_vpc_endpoint_ingress_from_eks_cluster_primary_sg" {
+  count = var.enable_prod_vpc && var.enable_prod_vpc_endpoints && var.enable_prod_iam && var.enable_prod_eks ? 1 : 0
+
+  type                     = "ingress"
+  security_group_id        = module.prod_security_group[0].vpc_endpoint_sg_id
+  protocol                 = "tcp"
+  from_port                = 443
+  to_port                  = 443
+  source_security_group_id = module.prod_eks[0].cluster_security_group_id
+  description              = "Allow HTTPS from EKS cluster primary security group to VPC endpoints"
+}
+
 module "prod_eks_nodegroups" {
   count  = var.enable_prod_iam && var.enable_prod_eks && var.enable_prod_nodegroups ? 1 : 0
   source = "../../modules/eks-nodegroup"
@@ -515,6 +527,11 @@ module "prod_eks_nodegroups" {
   }
 
   common_tags = local.prod_tags
+
+  depends_on = [
+    module.prod_vpc_endpoint,
+    aws_security_group_rule.prod_vpc_endpoint_ingress_from_eks_cluster_primary_sg
+  ]
 }
 
 module "edge" {
