@@ -410,6 +410,11 @@ module "dev_eks_nodegroups" {
           key    = "workload"
           value  = "batch"
           effect = "NO_SCHEDULE"
+        },
+        {
+          key    = "capacity"
+          value  = "spot"
+          effect = "NO_SCHEDULE"
         }
       ]
     }
@@ -432,6 +437,11 @@ module "dev_eks_nodegroups" {
         {
           key    = "workload"
           value  = "ai"
+          effect = "NO_SCHEDULE"
+        },
+        {
+          key    = "capacity"
+          value  = "spot"
           effect = "NO_SCHEDULE"
         }
       ]
