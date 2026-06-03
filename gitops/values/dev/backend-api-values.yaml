@@ -31,6 +31,17 @@ config:
   S3_PROFILE_IMAGE_BUCKET: moment-dev-profile-image-611058323802-ap-northeast-3
   SQS_QUEUE_NAME: moment-dev-public-data-queue
   AI_SERVICE_URL: "http://ai-service:8000"
+  SPRING_DATASOURCE_URL: "jdbc:postgresql://moment-dev-postgres.c3qggqseuzcb.ap-northeast-3.rds.amazonaws.com:5432/moment"
+  SPRING_FLYWAY_URL: "jdbc:postgresql://moment-dev-postgres.c3qggqseuzcb.ap-northeast-3.rds.amazonaws.com:5432/moment"
+  KAKAO_CLIENT_ID: dev-dummy-kakao-client-id
+  KAKAO_CLIENT_SECRET: dev-dummy-kakao-client-secret
+  KAKAO_REDIRECT_URI: http://localhost/oauth/kakao/callback
+  SQS_QUEUE_URL: https://sqs.ap-northeast-3.amazonaws.com/611058323802/moment-dev-public-data-queue
+  PUBLIC_DATA_DATA_GO_KR_SERVICE_KEY: dev-dummy-public-data-key
+  DATA_GO_KR_SERVICE_KEY: dev-dummy-public-data-key
+  PUBLIC_DATA_API_KEY: dev-dummy-public-data-key
+  SPRING_BATCH_JDBC_INITIALIZE_SCHEMA: "always"
+  SPRING_BATCH_JOB_ENABLED: "false"
 
 secretRefs:
   - envName: DB_USERNAME
@@ -48,6 +59,41 @@ secretRefs:
   - envName: TOSS_SECRET
     secretName: moment-dev-backend-api-secret
     secretKey: toss-secret
+
+  - envName: SPRING_DATASOURCE_USERNAME
+    secretName: moment-dev-backend-api-secret
+    secretKey: db-username
+
+  - envName: SPRING_DATASOURCE_PASSWORD
+    secretName: moment-dev-backend-api-secret
+    secretKey: db-password
+
+  - envName: SPRING_FLYWAY_USER
+    secretName: moment-dev-backend-api-secret
+    secretKey: db-username
+
+  - envName: SPRING_FLYWAY_PASSWORD
+    secretName: moment-dev-backend-api-secret
+    secretKey: db-password
+
+
+readinessProbe:
+  tcpSocket:
+    port: 8080
+  initialDelaySeconds: 30
+  periodSeconds: 5
+  timeoutSeconds: 2
+  failureThreshold: 30
+  successThreshold: 1
+
+livenessProbe:
+  tcpSocket:
+    port: 8080
+  initialDelaySeconds: 180
+  periodSeconds: 15
+  timeoutSeconds: 2
+  failureThreshold: 5
+  successThreshold: 1
 
 resources:
   requests:
@@ -73,6 +119,7 @@ ingress:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/healthcheck-path: /health
+    alb.ingress.kubernetes.io/success-codes: "200,401"
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
   hosts:
     - host: ""
