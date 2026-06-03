@@ -156,3 +156,6 @@ enable_dev_eks_cluster_sg_ingress_rules = false
 enable_dev_redis             = true
 dev_redis_node_type          = "cache.t3.micro"
 dev_redis_num_cache_clusters = 1
+
+# Dev NAT Gateway is disabled during cost-down. Enable only when Dev private app egress is required.
+enable_dev_nat_gateway = false
