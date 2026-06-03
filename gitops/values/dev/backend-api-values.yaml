@@ -1,33 +1,25 @@
 namespace: moment-dev
-
 replicaCount: 1
-
 image:
   repository: 611058323802.dkr.ecr.ap-northeast-3.amazonaws.com/moment-dev-backend-api
-  tag: dev-24eabd0
+  tag: dev-96ef323
   pullPolicy: IfNotPresent
-
 serviceAccount:
   create: true
   name: moment-dev-backend-api-sa
   annotations:
     eks.amazonaws.com/role-arn: "arn:aws:iam::611058323802:role/moment-dev-backend-api-irsa-role"
-
 config:
   SPRING_PROFILES_ACTIVE: dev
   AWS_REGION: ap-northeast-3
   ENVIRONMENT: dev
-
   DB_HOST: moment-dev-postgres.c3qggqseuzcb.ap-northeast-3.rds.amazonaws.com
   DB_PORT: "5432"
   DB_NAME: moment
   DB_URL: "jdbc:postgresql://moment-dev-postgres.c3qggqseuzcb.ap-northeast-3.rds.amazonaws.com:5432/moment"
-
   REDIS_HOST: moment-dev-redis.o0zxzf.ng.0001.apn3.cache.amazonaws.com
   REDIS_PORT: "6379"
-
   OPENSEARCH_HOST: vpc-moment-dev-opensearch-hdseoos3ibawg6xwwlaa4hff3u.ap-northeast-3.es.amazonaws.com
-
   S3_PROFILE_IMAGE_BUCKET: moment-dev-profile-image-611058323802-ap-northeast-3
   SQS_QUEUE_NAME: moment-dev-public-data-queue
   AI_SERVICE_URL: "http://ai-service:8000"
@@ -42,41 +34,31 @@ config:
   PUBLIC_DATA_API_KEY: dev-dummy-public-data-key
   SPRING_BATCH_JDBC_INITIALIZE_SCHEMA: "always"
   SPRING_BATCH_JOB_ENABLED: "false"
-
 secretRefs:
   - envName: DB_USERNAME
     secretName: moment-dev-backend-api-secret
     secretKey: db-username
-
   - envName: DB_PASSWORD
     secretName: moment-dev-backend-api-secret
     secretKey: db-password
-
   - envName: JWT_SECRET_KEY
     secretName: moment-dev-backend-api-secret
     secretKey: jwt-secret
-
   - envName: TOSS_SECRET
     secretName: moment-dev-backend-api-secret
     secretKey: toss-secret
-
   - envName: SPRING_DATASOURCE_USERNAME
     secretName: moment-dev-backend-api-secret
     secretKey: db-username
-
   - envName: SPRING_DATASOURCE_PASSWORD
     secretName: moment-dev-backend-api-secret
     secretKey: db-password
-
   - envName: SPRING_FLYWAY_USER
     secretName: moment-dev-backend-api-secret
     secretKey: db-username
-
   - envName: SPRING_FLYWAY_PASSWORD
     secretName: moment-dev-backend-api-secret
     secretKey: db-password
-
-
 readinessProbe:
   tcpSocket:
     port: 8080
@@ -85,7 +67,6 @@ readinessProbe:
   timeoutSeconds: 2
   failureThreshold: 30
   successThreshold: 1
-
 livenessProbe:
   tcpSocket:
     port: 8080
@@ -94,7 +75,6 @@ livenessProbe:
   timeoutSeconds: 2
   failureThreshold: 5
   successThreshold: 1
-
 resources:
   requests:
     cpu: 250m
@@ -102,15 +82,11 @@ resources:
   limits:
     cpu: 500m
     memory: 1Gi
-
 nodeSelector:
   workload: core
   capacity: on-demand
-
 tolerations: []
-
 affinity: {}
-
 ingress:
   enabled: true
   className: alb
