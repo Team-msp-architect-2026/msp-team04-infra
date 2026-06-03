@@ -22,6 +22,9 @@ restartPolicy: OnFailure
 
 args:
   - "--spring.profiles.active=prod"
+  - "--spring.main.web-application-type=none"
+  - "--spring.batch.job.enabled=true"
+  - "--spring.batch.job.name=syncJob"
 
 config:
   SPRING_PROFILES_ACTIVE: prod
