@@ -81,6 +81,8 @@ locals {
   )
 
   lambda_collector_extra_policy_enabled = var.enable_sqs_queue_policy_statements || var.enable_lambda_collector_secrets_manager_read
+
+  github_actions_ecr_push_enabled = length(values(var.ecr_repository_arns)) > 0
 }
 
 # ── GitHub Actions OIDC ───────────────────────────────────────────────────────
@@ -138,6 +140,8 @@ resource "aws_iam_role" "github_actions" {
 }
 
 data "aws_iam_policy_document" "github_actions_ecr_push" {
+  count = local.github_actions_ecr_push_enabled ? 1 : 0
+
   statement {
     sid    = "AllowEcrAuthorizationToken"
     effect = "Allow"
@@ -171,16 +175,20 @@ data "aws_iam_policy_document" "github_actions_ecr_push" {
 }
 
 resource "aws_iam_policy" "github_actions_ecr_push" {
+  count = local.github_actions_ecr_push_enabled ? 1 : 0
+
   name        = "${local.name_prefix}-github-actions-ecr-push-policy"
   description = "Allow GitHub Actions to push and pull MoMent ECR images"
-  policy      = data.aws_iam_policy_document.github_actions_ecr_push.json
+  policy      = data.aws_iam_policy_document.github_actions_ecr_push[0].json
 
   tags = local.tags
 }
 
 resource "aws_iam_role_policy_attachment" "github_actions_ecr_push" {
+  count = local.github_actions_ecr_push_enabled ? 1 : 0
+
   role       = aws_iam_role.github_actions.name
-  policy_arn = aws_iam_policy.github_actions_ecr_push.arn
+  policy_arn = aws_iam_policy.github_actions_ecr_push[0].arn
 }
 
 # ── EKS Cluster / Node IAM Roles ──────────────────────────────────────────────

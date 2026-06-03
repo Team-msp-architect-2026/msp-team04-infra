@@ -22,7 +22,7 @@ output "role_arns" {
 output "policy_arns" {
   description = "IAM policy ARNs"
   value = {
-    github_actions_ecr_push      = aws_iam_policy.github_actions_ecr_push.arn
+    github_actions_ecr_push      = local.github_actions_ecr_push_enabled ? aws_iam_policy.github_actions_ecr_push[0].arn : null
     aws_load_balancer_controller = aws_iam_policy.aws_load_balancer_controller.arn
     backend_pod                  = aws_iam_policy.backend_pod.arn
     batch_pod                    = aws_iam_policy.batch_pod.arn
