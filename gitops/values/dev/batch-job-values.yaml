@@ -2,7 +2,7 @@ namespace: moment-dev
 
 image:
   repository: 611058323802.dkr.ecr.ap-northeast-3.amazonaws.com/moment-dev-batch-job
-  tag: dev-24eabd0
+  tag: dev-8760cf0
   pullPolicy: IfNotPresent
 
 serviceAccount:
@@ -19,13 +19,13 @@ backoffLimit: 3
 restartPolicy: OnFailure
 
 args:
-  - "--spring.profiles.active=dev"
+  - "--spring.profiles.active=dev,batch"
   - "--spring.main.web-application-type=none"
   - "--spring.batch.job.enabled=true"
   - "--spring.batch.job.name=syncJob"
 
 config:
-  SPRING_PROFILES_ACTIVE: dev
+  SPRING_PROFILES_ACTIVE: dev,batch
   RUNTIME_PROFILE: dev
   AWS_REGION: ap-northeast-3
 

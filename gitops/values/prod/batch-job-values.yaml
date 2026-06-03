@@ -21,13 +21,13 @@ backoffLimit: 3
 restartPolicy: OnFailure
 
 args:
-  - "--spring.profiles.active=prod"
+  - "--spring.profiles.active=prod,batch"
   - "--spring.main.web-application-type=none"
   - "--spring.batch.job.enabled=true"
   - "--spring.batch.job.name=syncJob"
 
 config:
-  SPRING_PROFILES_ACTIVE: prod
+  SPRING_PROFILES_ACTIVE: prod,batch
   AWS_REGION: ap-northeast-3
 
   SQS_QUEUE_NAME: moment-prod-public-data-queue
