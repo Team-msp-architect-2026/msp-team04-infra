@@ -91,6 +91,13 @@ module "prod_security_group" {
   app_port          = var.app_port
   admin_cidr_blocks = var.admin_cidr_blocks
 
+  eks_cluster_sg_id = try(module.prod_eks[0].cluster_security_group_id, "")
+
+  create_eks_cluster_sg_ingress_rules = (
+    var.enable_prod_eks &&
+    length(module.prod_eks) > 0
+  )
+
   common_tags = local.prod_tags
 }
 
