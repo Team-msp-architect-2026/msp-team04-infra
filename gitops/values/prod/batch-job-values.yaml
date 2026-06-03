@@ -34,6 +34,9 @@ config:
   DB_HOST: ""
   DB_PORT: "5432"
   DB_NAME: moment
+  DB_URL: ""
+  SPRING_DATASOURCE_URL: ""
+  SPRING_FLYWAY_URL: ""
 
   OPENSEARCH_HOST: ""
 
