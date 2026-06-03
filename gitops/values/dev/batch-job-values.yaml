@@ -2,7 +2,7 @@ namespace: moment-dev
 
 image:
   repository: 611058323802.dkr.ecr.ap-northeast-3.amazonaws.com/moment-dev-batch-job
-  tag: dev-8760cf0
+  tag: dev-dfa72a4
   pullPolicy: IfNotPresent
 
 serviceAccount:
@@ -73,6 +73,10 @@ secretRefs:
     secretKey: db-password
 
   - envName: PUBLIC_DATA_API_KEY
+    secretName: moment-dev-batch-job-secret
+    secretKey: public-data-api-key
+
+  - envName: PUBLIC_DATA_DATA_GO_KR_SERVICE_KEY
     secretName: moment-dev-batch-job-secret
     secretKey: public-data-api-key
 
