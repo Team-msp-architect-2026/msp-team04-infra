@@ -2,7 +2,7 @@ namespace: moment-dev
 
 image:
   repository: 611058323802.dkr.ecr.ap-northeast-3.amazonaws.com/moment-dev-batch-job
-  tag: dev-92c42bf
+  tag: dev-06cb3c6
   pullPolicy: IfNotPresent
 
 serviceAccount:
