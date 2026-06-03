@@ -20,15 +20,17 @@ config:
   AWS_REGION: ap-northeast-3
   ENVIRONMENT: prod
 
-  DB_HOST: ""
+  DB_HOST: moment-prod-postgres.c3qggqseuzcb.ap-northeast-3.rds.amazonaws.com
   DB_PORT: "5432"
   DB_NAME: moment
-  DB_URL: ""
+  DB_URL: "jdbc:postgresql://moment-prod-postgres.c3qggqseuzcb.ap-northeast-3.rds.amazonaws.com:5432/moment"
+  SPRING_DATASOURCE_URL: "jdbc:postgresql://moment-prod-postgres.c3qggqseuzcb.ap-northeast-3.rds.amazonaws.com:5432/moment"
+  SPRING_FLYWAY_URL: "jdbc:postgresql://moment-prod-postgres.c3qggqseuzcb.ap-northeast-3.rds.amazonaws.com:5432/moment"
 
-  REDIS_HOST: ""
+  REDIS_HOST: moment-prod-redis.o0zxzf.ng.0001.apn3.cache.amazonaws.com
   REDIS_PORT: "6379"
 
-  OPENSEARCH_HOST: ""
+  OPENSEARCH_HOST: vpc-moment-prod-opensearch-2trht5bolkacngjunc6lsbibuq.ap-northeast-3.es.amazonaws.com
 
   S3_PROFILE_IMAGE_BUCKET: moment-prod-profile-image-611058323802-ap-northeast-3
   SQS_QUEUE_NAME: moment-prod-public-data-queue

@@ -179,3 +179,31 @@ output "prod_eks_node_role_arn" {
   description = "Prod EKS node IAM role ARN."
   value       = var.enable_prod_iam ? module.prod_iam[0].eks_node_role_arn : null
 }
+
+output "prod_eks_oidc_provider_arn" {
+  description = "Prod EKS OIDC provider ARN."
+  value       = try(module.prod_eks[0].eks_oidc_provider_arn, null)
+}
+
+output "prod_eks_oidc_provider_url" {
+  description = "Prod EKS OIDC provider URL without https://."
+  value       = try(module.prod_eks[0].eks_oidc_provider_url, null)
+}
+
+output "prod_external_secrets_irsa_role_arn" {
+  description = "Prod External Secrets Operator IRSA role ARN."
+  value       = try(module.prod_external_secrets_irsa[0].role_arn, null)
+}
+
+output "prod_runtime_secret_arns" {
+  description = "Prod runtime Secrets Manager secret ARNs used by External Secrets Operator."
+  value = {
+    for key, secret in aws_secretsmanager_secret.prod_runtime : key => secret.arn
+  }
+}
+
+output "prod_rds_master_user_secret_arn" {
+  description = "Prod RDS managed master user secret ARN."
+  value       = try(module.prod_rds[0].master_user_secret_arn, null)
+  sensitive   = true
+}
