@@ -49,6 +49,22 @@ secretRefs:
     secretName: moment-prod-batch-job-secret
     secretKey: db-password
 
+  - envName: SPRING_DATASOURCE_USERNAME
+    secretName: moment-prod-batch-job-secret
+    secretKey: db-username
+
+  - envName: SPRING_DATASOURCE_PASSWORD
+    secretName: moment-prod-batch-job-secret
+    secretKey: db-password
+
+  - envName: SPRING_FLYWAY_USER
+    secretName: moment-prod-batch-job-secret
+    secretKey: db-username
+
+  - envName: SPRING_FLYWAY_PASSWORD
+    secretName: moment-prod-batch-job-secret
+    secretKey: db-password
+
   - envName: PUBLIC_DATA_API_KEY
     secretName: moment-prod-batch-job-secret
     secretKey: public-data-api-key
