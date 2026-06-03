@@ -90,16 +90,12 @@ resources:
 
 nodeSelector:
   workload: batch
-  capacity: spot
+  capacity: on-demand
 
 tolerations:
   - key: workload
     operator: Equal
     value: batch
-    effect: NoSchedule
-  - key: capacity
-    operator: Equal
-    value: spot
     effect: NoSchedule
 
 affinity: {}
