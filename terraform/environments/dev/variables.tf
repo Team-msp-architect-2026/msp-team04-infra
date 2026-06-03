@@ -117,6 +117,12 @@ variable "enable_prod_vpc_endpoints" {
   default     = false
 }
 
+variable "enable_dev_nat_gateway" {
+  description = "Whether to create Dev NAT Gateway for private app subnet egress."
+  type        = bool
+  default     = false
+}
+
 variable "enable_dev_vpc_endpoints" {
   description = "Whether to create Dev VPC Endpoints"
   type        = bool
@@ -722,7 +728,9 @@ variable "github_oidc_allowed_subjects" {
   description = "GitHub OIDC sub conditions allowed to assume the GitHub Actions role."
   type        = list(string)
   default = [
-    "repo:Team-msp-architect-2026/msp-team04-infra:ref:refs/heads/develop"
+    "repo:Team-msp-architect-2026/msp-team04-infra:ref:refs/heads/develop",
+    "repo:Team-msp-architect-2026/msp-team04-backend:ref:refs/heads/develop",
+    "repo:Team-msp-architect-2026/msp-team04-ai:ref:refs/heads/develop"
   ]
 }
 

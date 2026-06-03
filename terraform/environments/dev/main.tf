@@ -73,6 +73,8 @@ module "dev_vpc" {
 }
 
 resource "aws_eip" "nat" {
+  count = var.enable_dev_nat_gateway ? 1 : 0
+
   domain = "vpc"
   tags = merge(local.common_tags, {
     Name = "moment-dev-nat-eip"
@@ -80,7 +82,9 @@ resource "aws_eip" "nat" {
 }
 
 resource "aws_nat_gateway" "dev" {
-  allocation_id = aws_eip.nat.id
+  count = var.enable_dev_nat_gateway ? 1 : 0
+
+  allocation_id = aws_eip.nat[0].id
   subnet_id     = module.dev_vpc.dev_public_subnet_ids[0]
   tags = merge(local.common_tags, {
     Name = "moment-dev-nat-gw"
@@ -89,9 +93,11 @@ resource "aws_nat_gateway" "dev" {
 }
 
 resource "aws_route" "private_app_nat" {
+  count = var.enable_dev_nat_gateway ? 1 : 0
+
   route_table_id         = module.dev_vpc.dev_private_app_route_table_id
   destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = aws_nat_gateway.dev.id
+  nat_gateway_id         = aws_nat_gateway.dev[0].id
   depends_on             = [aws_nat_gateway.dev]
 }
 

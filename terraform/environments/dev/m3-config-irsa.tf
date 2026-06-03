@@ -1,16 +1,24 @@
+locals {
+  m3_config_irsa_enabled = var.enable_dev_eks && var.enable_irsa_roles
+}
+
 data "aws_caller_identity" "m3_config_current" {}
 
 data "aws_eks_cluster" "m3_config_dev" {
+  count = local.m3_config_irsa_enabled ? 1 : 0
+
   name = "moment-dev-eks-cluster"
 }
 
 data "aws_iam_openid_connect_provider" "m3_config_dev" {
-  url = data.aws_eks_cluster.m3_config_dev.identity[0].oidc[0].issuer
+  count = local.m3_config_irsa_enabled ? 1 : 0
+
+  url = data.aws_eks_cluster.m3_config_dev[0].identity[0].oidc[0].issuer
 }
 
 locals {
-  m3_config_oidc_provider_arn = data.aws_iam_openid_connect_provider.m3_config_dev.arn
-  m3_config_oidc_provider_url = replace(data.aws_eks_cluster.m3_config_dev.identity[0].oidc[0].issuer, "https://", "")
+  m3_config_oidc_provider_arn = local.m3_config_irsa_enabled ? data.aws_iam_openid_connect_provider.m3_config_dev[0].arn : ""
+  m3_config_oidc_provider_url = local.m3_config_irsa_enabled ? replace(data.aws_eks_cluster.m3_config_dev[0].identity[0].oidc[0].issuer, "https://", "") : ""
 
   m3_config_namespace = "moment-dev"
 
@@ -28,6 +36,8 @@ locals {
 }
 
 data "aws_iam_policy_document" "m3_config_backend_assume_role" {
+  count = local.m3_config_irsa_enabled ? 1 : 0
+
   statement {
     actions = ["sts:AssumeRoleWithWebIdentity"]
 
@@ -51,6 +61,8 @@ data "aws_iam_policy_document" "m3_config_backend_assume_role" {
 }
 
 data "aws_iam_policy_document" "m3_config_ai_assume_role" {
+  count = local.m3_config_irsa_enabled ? 1 : 0
+
   statement {
     actions = ["sts:AssumeRoleWithWebIdentity"]
 
@@ -74,6 +86,8 @@ data "aws_iam_policy_document" "m3_config_ai_assume_role" {
 }
 
 data "aws_iam_policy_document" "m3_config_batch_assume_role" {
+  count = local.m3_config_irsa_enabled ? 1 : 0
+
   statement {
     actions = ["sts:AssumeRoleWithWebIdentity"]
 
@@ -97,8 +111,10 @@ data "aws_iam_policy_document" "m3_config_batch_assume_role" {
 }
 
 resource "aws_iam_role" "m3_config_backend_irsa" {
+  count = local.m3_config_irsa_enabled ? 1 : 0
+
   name               = "moment-dev-backend-api-irsa-role"
-  assume_role_policy = data.aws_iam_policy_document.m3_config_backend_assume_role.json
+  assume_role_policy = data.aws_iam_policy_document.m3_config_backend_assume_role[0].json
 
   tags = {
     Project     = "MoMent"
@@ -109,8 +125,10 @@ resource "aws_iam_role" "m3_config_backend_irsa" {
 }
 
 resource "aws_iam_role" "m3_config_ai_irsa" {
+  count = local.m3_config_irsa_enabled ? 1 : 0
+
   name               = "moment-dev-ai-service-irsa-role"
-  assume_role_policy = data.aws_iam_policy_document.m3_config_ai_assume_role.json
+  assume_role_policy = data.aws_iam_policy_document.m3_config_ai_assume_role[0].json
 
   tags = {
     Project     = "MoMent"
@@ -121,8 +139,10 @@ resource "aws_iam_role" "m3_config_ai_irsa" {
 }
 
 resource "aws_iam_role" "m3_config_batch_irsa" {
+  count = local.m3_config_irsa_enabled ? 1 : 0
+
   name               = "moment-dev-batch-job-irsa-role"
-  assume_role_policy = data.aws_iam_policy_document.m3_config_batch_assume_role.json
+  assume_role_policy = data.aws_iam_policy_document.m3_config_batch_assume_role[0].json
 
   tags = {
     Project     = "MoMent"
@@ -133,6 +153,8 @@ resource "aws_iam_role" "m3_config_batch_irsa" {
 }
 
 data "aws_iam_policy_document" "m3_config_backend_policy" {
+  count = local.m3_config_irsa_enabled ? 1 : 0
+
   statement {
     sid = "AllowProfileImageBucketAccess"
 
@@ -165,6 +187,8 @@ data "aws_iam_policy_document" "m3_config_backend_policy" {
 }
 
 data "aws_iam_policy_document" "m3_config_ai_policy" {
+  count = local.m3_config_irsa_enabled ? 1 : 0
+
   statement {
     sid = "AllowOpenSearchAccess"
 
@@ -182,6 +206,8 @@ data "aws_iam_policy_document" "m3_config_ai_policy" {
 }
 
 data "aws_iam_policy_document" "m3_config_batch_policy" {
+  count = local.m3_config_irsa_enabled ? 1 : 0
+
   statement {
     sid = "AllowRawBucketAccess"
 
@@ -231,43 +257,55 @@ data "aws_iam_policy_document" "m3_config_batch_policy" {
 }
 
 resource "aws_iam_policy" "m3_config_backend_policy" {
+  count = local.m3_config_irsa_enabled ? 1 : 0
+
   name   = "moment-dev-backend-api-irsa-policy"
-  policy = data.aws_iam_policy_document.m3_config_backend_policy.json
+  policy = data.aws_iam_policy_document.m3_config_backend_policy[0].json
 }
 
 resource "aws_iam_policy" "m3_config_ai_policy" {
+  count = local.m3_config_irsa_enabled ? 1 : 0
+
   name   = "moment-dev-ai-service-irsa-policy"
-  policy = data.aws_iam_policy_document.m3_config_ai_policy.json
+  policy = data.aws_iam_policy_document.m3_config_ai_policy[0].json
 }
 
 resource "aws_iam_policy" "m3_config_batch_policy" {
+  count = local.m3_config_irsa_enabled ? 1 : 0
+
   name   = "moment-dev-batch-job-irsa-policy"
-  policy = data.aws_iam_policy_document.m3_config_batch_policy.json
+  policy = data.aws_iam_policy_document.m3_config_batch_policy[0].json
 }
 
 resource "aws_iam_role_policy_attachment" "m3_config_backend_attach" {
-  role       = aws_iam_role.m3_config_backend_irsa.name
-  policy_arn = aws_iam_policy.m3_config_backend_policy.arn
+  count = local.m3_config_irsa_enabled ? 1 : 0
+
+  role       = aws_iam_role.m3_config_backend_irsa[0].name
+  policy_arn = aws_iam_policy.m3_config_backend_policy[0].arn
 }
 
 resource "aws_iam_role_policy_attachment" "m3_config_ai_attach" {
-  role       = aws_iam_role.m3_config_ai_irsa.name
-  policy_arn = aws_iam_policy.m3_config_ai_policy.arn
+  count = local.m3_config_irsa_enabled ? 1 : 0
+
+  role       = aws_iam_role.m3_config_ai_irsa[0].name
+  policy_arn = aws_iam_policy.m3_config_ai_policy[0].arn
 }
 
 resource "aws_iam_role_policy_attachment" "m3_config_batch_attach" {
-  role       = aws_iam_role.m3_config_batch_irsa.name
-  policy_arn = aws_iam_policy.m3_config_batch_policy.arn
+  count = local.m3_config_irsa_enabled ? 1 : 0
+
+  role       = aws_iam_role.m3_config_batch_irsa[0].name
+  policy_arn = aws_iam_policy.m3_config_batch_policy[0].arn
 }
 
 output "dev_backend_api_irsa_role_arn" {
-  value = aws_iam_role.m3_config_backend_irsa.arn
+  value = local.m3_config_irsa_enabled ? aws_iam_role.m3_config_backend_irsa[0].arn : null
 }
 
 output "dev_ai_service_irsa_role_arn" {
-  value = aws_iam_role.m3_config_ai_irsa.arn
+  value = local.m3_config_irsa_enabled ? aws_iam_role.m3_config_ai_irsa[0].arn : null
 }
 
 output "dev_batch_job_irsa_role_arn" {
-  value = aws_iam_role.m3_config_batch_irsa.arn
+  value = local.m3_config_irsa_enabled ? aws_iam_role.m3_config_batch_irsa[0].arn : null
 }
