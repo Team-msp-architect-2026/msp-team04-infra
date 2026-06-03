@@ -50,6 +50,10 @@ secretRefs:
     secretName: moment-prod-batch-job-secret
     secretKey: public-data-api-key
 
+  - envName: JWT_SECRET_KEY
+    secretName: moment-prod-batch-job-secret
+    secretKey: jwt-secret
+
 resources:
   requests:
     cpu: 500m
