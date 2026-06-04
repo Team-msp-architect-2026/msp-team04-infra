@@ -653,9 +653,9 @@ variable "github_oidc_provider_arn" {
 }
 
 variable "enable_prod_public_data_secrets" {
-  description = "Whether to create Prod public data Secrets Manager secret containers for Lambda Collector. Secret values are managed out-of-band."
+  description = "Whether to keep Prod public data Secrets Manager secret containers for Lambda Collector. Secret values are managed out-of-band."
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "enable_lambda_collector_secrets_manager_read" {
