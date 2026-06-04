@@ -11,6 +11,7 @@ OPENVPN_PORT="${openvpn_port}"
 OPENVPN_PROTOCOL="${openvpn_protocol}"
 VPN_CIDR="${vpn_cidr}"
 ROUTE_CIDRS="${route_cidrs}"
+ENABLE_MASQUERADE="${enable_masquerade}"
 CLIENT_NAME="${client_name}"
 CLIENT_PROFILE_PATH="/home/ec2-user/$CLIENT_NAME.ovpn"
 
@@ -128,9 +129,14 @@ sysctl --system
 iptables -C FORWARD -s "$VPN_CIDR" -j ACCEPT 2>/dev/null || iptables -A FORWARD -s "$VPN_CIDR" -j ACCEPT
 iptables -C FORWARD -d "$VPN_CIDR" -m state --state ESTABLISHED,RELATED -j ACCEPT 2>/dev/null || iptables -A FORWARD -d "$VPN_CIDR" -m state --state ESTABLISHED,RELATED -j ACCEPT
 
-for cidr in $ROUTE_CIDRS; do
-  iptables -t nat -C POSTROUTING -s "$VPN_CIDR" -d "$cidr" -j MASQUERADE 2>/dev/null || iptables -t nat -A POSTROUTING -s "$VPN_CIDR" -d "$cidr" -j MASQUERADE
-done
+if [ "$ENABLE_MASQUERADE" = "true" ]; then
+  echo "[INFO] OpenVPN MASQUERADE mode enabled"
+  for cidr in $ROUTE_CIDRS; do
+    iptables -t nat -C POSTROUTING -s "$VPN_CIDR" -d "$cidr" -j MASQUERADE 2>/dev/null || iptables -t nat -A POSTROUTING -s "$VPN_CIDR" -d "$cidr" -j MASQUERADE
+  done
+else
+  echo "[INFO] OpenVPN routed mode enabled; MASQUERADE disabled for pushed route CIDRs"
+fi
 
 iptables-save > /etc/sysconfig/iptables
 systemctl enable --now iptables

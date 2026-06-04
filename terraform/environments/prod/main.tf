@@ -88,8 +88,9 @@ module "prod_security_group" {
   create_service_sg = true
   create_openvpn_sg = false
 
-  app_port          = var.app_port
-  admin_cidr_blocks = var.admin_cidr_blocks
+  app_port                   = var.app_port
+  admin_cidr_blocks          = var.admin_cidr_blocks
+  openvpn_client_cidr_blocks = [var.openvpn_vpn_cidr]
 
   eks_cluster_sg_id = try(module.prod_eks[0].cluster_security_group_id, "")
 

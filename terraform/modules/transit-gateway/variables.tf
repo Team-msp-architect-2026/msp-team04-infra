@@ -28,6 +28,18 @@ variable "network_public_route_table_id" {
   type        = string
 }
 
+variable "openvpn_vpn_cidr" {
+  description = "OpenVPN client tunnel CIDR that should route back to the Network VPC attachment."
+  type        = string
+  default     = "10.8.0.0/24"
+}
+
+variable "enable_openvpn_client_routes" {
+  description = "Whether to create TGW and VPC routes for routed OpenVPN client CIDR."
+  type        = bool
+  default     = false
+}
+
 variable "prod_vpc_id" {
   description = "Prod VPC ID."
   type        = string
@@ -48,6 +60,12 @@ variable "prod_private_app_route_table_id" {
   type        = string
 }
 
+variable "prod_private_data_route_table_id" {
+  description = "Prod VPC private data route table ID. Used for OpenVPN client CIDR return route."
+  type        = string
+  default     = ""
+}
+
 variable "dev_vpc_id" {
   description = "Dev VPC ID."
   type        = string
@@ -66,6 +84,12 @@ variable "dev_tgw_subnet_ids" {
 variable "dev_private_app_route_table_id" {
   description = "Dev VPC private app route table ID."
   type        = string
+}
+
+variable "dev_private_data_route_table_id" {
+  description = "Dev VPC private data route table ID. Used for OpenVPN client CIDR return route."
+  type        = string
+  default     = ""
 }
 
 variable "tags" {

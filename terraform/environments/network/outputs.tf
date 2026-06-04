@@ -93,6 +93,13 @@ output "network_openvpn_instance_id" {
   value       = try(module.network_openvpn[0].instance_id, null)
 }
 
+
+output "network_openvpn_primary_network_interface_id" {
+  description = "Network OpenVPN EC2 primary network interface ID."
+  value       = try(module.network_openvpn[0].primary_network_interface_id, null)
+}
+
+
 output "network_openvpn_public_ip" {
   description = "Network OpenVPN public IP."
   value       = try(module.network_openvpn[0].public_ip, null)

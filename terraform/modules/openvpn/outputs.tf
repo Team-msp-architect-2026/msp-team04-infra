@@ -8,6 +8,13 @@ output "private_ip" {
   value       = aws_instance.this.private_ip
 }
 
+
+output "primary_network_interface_id" {
+  description = "Primary network interface ID of the OpenVPN EC2 instance."
+  value       = aws_instance.this.primary_network_interface_id
+}
+
+
 output "public_ip" {
   description = "OpenVPN public IP. Elastic IP is preferred when enabled."
   value       = var.enable_eip ? aws_eip.this[0].public_ip : aws_instance.this.public_ip

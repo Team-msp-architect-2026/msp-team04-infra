@@ -43,6 +43,12 @@ variable "admin_cidr_blocks" {
   default     = []
 }
 
+variable "openvpn_client_cidr_blocks" {
+  description = "OpenVPN client CIDR blocks allowed to access Data Tier services with explicit ports."
+  type        = list(string)
+  default     = []
+}
+
 variable "app_port" {
   description = "Application port exposed by EKS workload"
   type        = number

@@ -143,6 +143,24 @@ resource "aws_ec2_transit_gateway_route" "dev_default_to_network" {
   transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.dev.id
 }
 
+
+resource "aws_ec2_transit_gateway_route" "prod_to_openvpn_clients" {
+  count = var.enable_openvpn_client_routes ? 1 : 0
+
+  destination_cidr_block         = var.openvpn_vpn_cidr
+  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.network.id
+  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.prod.id
+}
+
+resource "aws_ec2_transit_gateway_route" "dev_to_openvpn_clients" {
+  count = var.enable_openvpn_client_routes ? 1 : 0
+
+  destination_cidr_block         = var.openvpn_vpn_cidr
+  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.network.id
+  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.dev.id
+}
+
+
 resource "aws_ec2_transit_gateway_route" "prod_to_dev_blackhole" {
   destination_cidr_block         = var.dev_vpc_cidr
   blackhole                      = true
@@ -210,6 +228,30 @@ resource "aws_route" "dev_private_app_default_to_tgw" {
 resource "aws_route" "dev_private_app_to_network_vpc" {
   route_table_id         = var.dev_private_app_route_table_id
   destination_cidr_block = var.network_vpc_cidr
+  transit_gateway_id     = aws_ec2_transit_gateway.this.id
+
+  depends_on = [
+    aws_ec2_transit_gateway_vpc_attachment.dev
+  ]
+}
+
+resource "aws_route" "prod_private_data_to_openvpn_clients" {
+  count = var.enable_openvpn_client_routes && var.prod_private_data_route_table_id != "" ? 1 : 0
+
+  route_table_id         = var.prod_private_data_route_table_id
+  destination_cidr_block = var.openvpn_vpn_cidr
+  transit_gateway_id     = aws_ec2_transit_gateway.this.id
+
+  depends_on = [
+    aws_ec2_transit_gateway_vpc_attachment.prod
+  ]
+}
+
+resource "aws_route" "dev_private_data_to_openvpn_clients" {
+  count = var.enable_openvpn_client_routes && var.dev_private_data_route_table_id != "" ? 1 : 0
+
+  route_table_id         = var.dev_private_data_route_table_id
+  destination_cidr_block = var.openvpn_vpn_cidr
   transit_gateway_id     = aws_ec2_transit_gateway.this.id
 
   depends_on = [

@@ -40,6 +40,12 @@ variable "admin_cidr_blocks" {
   default     = []
 }
 
+variable "openvpn_vpn_cidr" {
+  description = "OpenVPN client tunnel CIDR used for routed admin access to Data Tier."
+  type        = string
+  default     = "10.8.0.0/24"
+}
+
 variable "app_port" {
   description = "Application port exposed by EKS workload."
   type        = number

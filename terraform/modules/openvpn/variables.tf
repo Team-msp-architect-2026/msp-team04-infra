@@ -71,6 +71,12 @@ variable "route_cidrs" {
   type        = list(string)
 }
 
+variable "enable_masquerade" {
+  description = "Whether to MASQUERADE VPN client traffic toward pushed route CIDRs. Keep false for routed VPN so Data Tier can see the VPN client CIDR."
+  type        = bool
+  default     = false
+}
+
 variable "client_name" {
   description = "Default OpenVPN client profile name generated on the instance."
   type        = string
