@@ -17,6 +17,7 @@ serviceAccount:
 
 config:
   SPRING_PROFILES_ACTIVE: prod
+  SPRING_BATCH_JOB_ENABLED: "false"
   AWS_REGION: ap-northeast-3
   ENVIRONMENT: prod
 
@@ -120,8 +121,8 @@ ingress:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/healthcheck-path: /health
-    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80,"HTTPS":443}]'
-    alb.ingress.kubernetes.io/certificate-arn: ""
+    alb.ingress.kubernetes.io/success-codes: "200,401"
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
   hosts:
     - host: ""
       paths:
