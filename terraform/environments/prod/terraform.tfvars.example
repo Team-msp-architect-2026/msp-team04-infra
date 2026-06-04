@@ -66,6 +66,11 @@ prod_eks_public_access_cidrs         = []
 # Prod data pipeline should stay disabled outside final demo/rehearsal.
 prod_data_pipeline_schedule_state = "DISABLED"
 
+# Prod public data Secrets Manager containers can be prepared before enabling the collector.
+# Secret values must be injected out-of-band and must not be committed.
+enable_prod_public_data_secrets             = false
+data_pipeline_public_data_sources_secret_name = "moment/prod/public-data/source-config"
+
 # Prod RDS protection defaults.
 prod_rds_instance_class          = "db.t4g.small"
 prod_rds_allocated_storage       = 50

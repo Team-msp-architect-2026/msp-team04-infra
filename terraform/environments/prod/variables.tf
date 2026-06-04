@@ -652,6 +652,12 @@ variable "github_oidc_provider_arn" {
   default     = "arn:aws:iam::611058323802:oidc-provider/token.actions.githubusercontent.com"
 }
 
+variable "enable_prod_public_data_secrets" {
+  description = "Whether to create Prod public data Secrets Manager secret containers for Lambda Collector. Secret values are managed out-of-band."
+  type        = bool
+  default     = false
+}
+
 variable "enable_lambda_collector_secrets_manager_read" {
   description = "Whether Prod Lambda Collector can read public data API keys from Secrets Manager."
   type        = bool

@@ -59,10 +59,13 @@ dev_notification_sns_kms_master_key_id = null
 
 
 # EventBridge Scheduler + Lambda Collector data pipeline
-enable_dev_data_pipeline  = true
+enable_dev_data_pipeline        = true
+enable_dev_public_data_secrets = false
 enable_prod_data_pipeline = false
 
 data_pipeline_public_data_api_url = ""
+
+data_pipeline_public_data_sources_secret_name = "moment/dev/public-data/source-config"
 
 data_pipeline_public_data_sources_json = <<EOT
 [

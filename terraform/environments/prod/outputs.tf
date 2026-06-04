@@ -207,3 +207,10 @@ output "prod_rds_master_user_secret_arn" {
   value       = try(module.prod_rds[0].master_user_secret_arn, null)
   sensitive   = true
 }
+
+output "prod_public_data_secret_arns" {
+  description = "ARNs of Prod public data Secrets Manager secrets for Lambda Collector."
+  value = {
+    for key, secret in aws_secretsmanager_secret.prod_public_data : key => secret.arn
+  }
+}
