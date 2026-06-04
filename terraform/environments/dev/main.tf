@@ -586,6 +586,21 @@ locals {
       description = "MoMent Dev Batch Job runtime secrets. Values are managed out-of-band and are not stored in Terraform."
     }
   }
+
+  dev_public_data_secret_definitions = {
+    source_config = {
+      name        = "moment/dev/public-data/source-config"
+      description = "MoMent Dev public data source config for Lambda Collector. Values are managed out-of-band and are not stored in Terraform."
+    }
+    seoul_openapi = {
+      name        = "moment/dev/public-data/seoul-openapi"
+      description = "MoMent Dev Seoul OpenAPI key for public data Lambda Collector. Values are managed out-of-band and are not stored in Terraform."
+    }
+    data_go_kr = {
+      name        = "moment/dev/public-data/data-go-kr"
+      description = "MoMent Dev data.go.kr API key for public data Lambda Collector. Values are managed out-of-band and are not stored in Terraform."
+    }
+  }
 }
 
 resource "aws_secretsmanager_secret" "dev_runtime" {
@@ -598,6 +613,20 @@ resource "aws_secretsmanager_secret" "dev_runtime" {
   tags = merge(local.common_tags, {
     Name = each.value.name
     Role = "runtime-secret"
+  })
+}
+
+
+resource "aws_secretsmanager_secret" "dev_public_data" {
+  for_each = var.enable_dev_public_data_secrets ? local.dev_public_data_secret_definitions : {}
+
+  name                    = each.value.name
+  description             = each.value.description
+  recovery_window_in_days = 7
+
+  tags = merge(local.common_tags, {
+    Name = each.value.name
+    Role = "public-data-secret"
   })
 }
 

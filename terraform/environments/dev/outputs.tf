@@ -403,3 +403,10 @@ output "dev_runtime_secret_arns" {
     for key, secret in aws_secretsmanager_secret.dev_runtime : key => secret.arn
   }
 }
+
+output "dev_public_data_secret_arns" {
+  description = "ARNs of Dev public data Secrets Manager secrets for Lambda Collector."
+  value = {
+    for key, secret in aws_secretsmanager_secret.dev_public_data : key => secret.arn
+  }
+}

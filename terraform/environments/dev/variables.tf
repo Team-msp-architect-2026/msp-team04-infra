@@ -329,6 +329,13 @@ variable "enable_dev_data_pipeline" {
   default     = true
 }
 
+
+variable "enable_dev_public_data_secrets" {
+  description = "Whether to create Dev public data Secrets Manager secret containers for Lambda Collector. Secret values are managed out-of-band."
+  type        = bool
+  default     = false
+}
+
 variable "enable_prod_data_pipeline" {
   description = "Whether to create Prod EventBridge Scheduler and Lambda Collector. Disabled by default for cost saving."
   type        = bool
