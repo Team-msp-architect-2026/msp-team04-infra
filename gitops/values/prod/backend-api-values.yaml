@@ -20,6 +20,7 @@ config:
   AWS_REGION: ap-northeast-3
   ENVIRONMENT: prod
 
+
   DB_HOST: moment-prod-postgres.c3qggqseuzcb.ap-northeast-3.rds.amazonaws.com
   DB_PORT: "5432"
   DB_NAME: moment
@@ -30,11 +31,20 @@ config:
   REDIS_HOST: moment-prod-redis.o0zxzf.ng.0001.apn3.cache.amazonaws.com
   REDIS_PORT: "6379"
 
+  OPENSEARCH_PORT: "443"
+  OPENSEARCH_SCHEME: https
   OPENSEARCH_HOST: vpc-moment-prod-opensearch-2trht5bolkacngjunc6lsbibuq.ap-northeast-3.es.amazonaws.com
 
-  S3_PROFILE_IMAGE_BUCKET: moment-prod-profile-image-611058323802-ap-northeast-3
+  PROFILE_IMAGE_BUCKET_NAME: moment-prod-profile-image-611058323802-ap-northeast-3
+  PROFILE_IMAGE_PUBLIC_URL_BASE: https://moment-prod-profile-image-611058323802-ap-northeast-3.s3.ap-northeast-3.amazonaws.com
+  PROFILE_IMAGE_PRESIGNED_URL_EXPIRATION_SECONDS: "600"
+  PROFILE_IMAGE_MAX_FILE_SIZE_BYTES: "5242880"
+  PROFILE_IMAGE_KEY_PREFIX: uploads/profile
   SQS_QUEUE_NAME: moment-prod-public-data-queue
-  AI_SERVICE_URL: "http://ai-service:8000"
+  SQS_QUEUE_URL: https://sqs.ap-northeast-3.amazonaws.com/611058323802/moment-prod-public-data-queue
+  AI_SERVICE_BASE_URL: "http://ai-service:8000"
+  NOTIFICATION_SNS_ENABLED: "false"
+  NOTIFICATION_SNS_TOPIC_ARN: ""
 
 secretRefs:
   - envName: DB_USERNAME
@@ -61,9 +71,30 @@ secretRefs:
     secretName: moment-prod-backend-api-secret
     secretKey: jwt-secret
 
-  - envName: TOSS_SECRET
+  - envName: TOSS_SECRET_KEY
     secretName: moment-prod-backend-api-secret
-    secretKey: toss-secret
+    secretKey: toss-secret-key
+  - envName: TOSS_CLIENT_KEY
+    secretName: moment-prod-backend-api-secret
+    secretKey: toss-client-key
+  - envName: TOSS_SUCCESS_URL
+    secretName: moment-prod-backend-api-secret
+    secretKey: toss-success-url
+  - envName: TOSS_FAIL_URL
+    secretName: moment-prod-backend-api-secret
+    secretKey: toss-fail-url
+  - envName: KAKAO_CLIENT_SECRET
+    secretName: moment-prod-backend-api-secret
+    secretKey: kakao-client-secret
+  - envName: KAKAO_CLIENT_ID
+    secretName: moment-prod-backend-api-secret
+    secretKey: kakao-client-id
+  - envName: KAKAO_REDIRECT_URI
+    secretName: moment-prod-backend-api-secret
+    secretKey: kakao-redirect-uri
+  - envName: PUBLIC_DATA_DATA_GO_KR_SERVICE_KEY
+    secretName: moment-prod-backend-api-secret
+    secretKey: public-data-data-go-kr-service-key
 
 resources:
   requests:

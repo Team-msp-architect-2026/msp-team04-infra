@@ -570,3 +570,55 @@ module "dev_opensearch" {
     Environment = "dev"
   })
 }
+
+locals {
+  dev_runtime_secret_definitions = {
+    backend_api = {
+      name        = "moment/dev/backend-api"
+      description = "MoMent Dev Backend API runtime secrets. Values are managed out-of-band and are not stored in Terraform."
+    }
+    ai_service = {
+      name        = "moment/dev/ai-service"
+      description = "MoMent Dev AI Service runtime secrets. Values are managed out-of-band and are not stored in Terraform."
+    }
+    batch_job = {
+      name        = "moment/dev/batch-job"
+      description = "MoMent Dev Batch Job runtime secrets. Values are managed out-of-band and are not stored in Terraform."
+    }
+  }
+}
+
+resource "aws_secretsmanager_secret" "dev_runtime" {
+  for_each = var.enable_dev_external_secrets_irsa ? local.dev_runtime_secret_definitions : {}
+
+  name                    = each.value.name
+  description             = each.value.description
+  recovery_window_in_days = 7
+
+  tags = merge(local.common_tags, {
+    Name = each.value.name
+    Role = "runtime-secret"
+  })
+}
+
+module "dev_external_secrets_irsa" {
+  count  = var.enable_dev_external_secrets_irsa && var.enable_dev_iam && var.enable_dev_eks ? 1 : 0
+  source = "../../modules/external-secrets-irsa"
+
+  project_name = var.project_name
+  environment  = "dev"
+
+  namespace            = var.dev_external_secrets_namespace
+  service_account_name = var.dev_external_secrets_service_account_name
+
+  eks_oidc_provider_arn = module.dev_eks[0].eks_oidc_provider_arn
+  eks_oidc_provider_url = module.dev_eks[0].eks_oidc_provider_url
+
+  secret_arns = [
+    for secret in aws_secretsmanager_secret.dev_runtime : secret.arn
+  ]
+
+  allow_rds_managed_secrets = false
+
+  common_tags = local.common_tags
+}

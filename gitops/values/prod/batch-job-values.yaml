@@ -41,6 +41,8 @@ config:
   SPRING_DATASOURCE_URL: "jdbc:postgresql://moment-prod-postgres.c3qggqseuzcb.ap-northeast-3.rds.amazonaws.com:5432/moment"
   SPRING_FLYWAY_URL: "jdbc:postgresql://moment-prod-postgres.c3qggqseuzcb.ap-northeast-3.rds.amazonaws.com:5432/moment"
 
+  OPENSEARCH_PORT: "443"
+  OPENSEARCH_SCHEME: https
   OPENSEARCH_HOST: vpc-moment-prod-opensearch-2trht5bolkacngjunc6lsbibuq.ap-northeast-3.es.amazonaws.com
 
 secretRefs:
