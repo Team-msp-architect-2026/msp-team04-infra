@@ -19,19 +19,21 @@ config:
   DB_URL: "jdbc:postgresql://moment-dev-postgres.c3qggqseuzcb.ap-northeast-3.rds.amazonaws.com:5432/moment"
   REDIS_HOST: moment-dev-redis.o0zxzf.ng.0001.apn3.cache.amazonaws.com
   REDIS_PORT: "6379"
+  OPENSEARCH_PORT: "443"
+  OPENSEARCH_SCHEME: https
   OPENSEARCH_HOST: vpc-moment-dev-opensearch-hdseoos3ibawg6xwwlaa4hff3u.ap-northeast-3.es.amazonaws.com
-  S3_PROFILE_IMAGE_BUCKET: moment-dev-profile-image-611058323802-ap-northeast-3
+  PROFILE_IMAGE_BUCKET_NAME: moment-dev-profile-image-611058323802-ap-northeast-3
+  PROFILE_IMAGE_PUBLIC_URL_BASE: https://moment-dev-profile-image-611058323802-ap-northeast-3.s3.ap-northeast-3.amazonaws.com
+  PROFILE_IMAGE_PRESIGNED_URL_EXPIRATION_SECONDS: "600"
+  PROFILE_IMAGE_MAX_FILE_SIZE_BYTES: "5242880"
+  PROFILE_IMAGE_KEY_PREFIX: uploads/profile
   SQS_QUEUE_NAME: moment-dev-public-data-queue
-  AI_SERVICE_URL: "http://ai-service:8000"
+  AI_SERVICE_BASE_URL: "http://ai-service:8000"
   SPRING_DATASOURCE_URL: "jdbc:postgresql://moment-dev-postgres.c3qggqseuzcb.ap-northeast-3.rds.amazonaws.com:5432/moment"
   SPRING_FLYWAY_URL: "jdbc:postgresql://moment-dev-postgres.c3qggqseuzcb.ap-northeast-3.rds.amazonaws.com:5432/moment"
-  KAKAO_CLIENT_ID: dev-dummy-kakao-client-id
-  KAKAO_CLIENT_SECRET: dev-dummy-kakao-client-secret
-  KAKAO_REDIRECT_URI: http://localhost/oauth/kakao/callback
   SQS_QUEUE_URL: https://sqs.ap-northeast-3.amazonaws.com/611058323802/moment-dev-public-data-queue
-  PUBLIC_DATA_DATA_GO_KR_SERVICE_KEY: dev-dummy-public-data-key
-  DATA_GO_KR_SERVICE_KEY: dev-dummy-public-data-key
-  PUBLIC_DATA_API_KEY: dev-dummy-public-data-key
+  NOTIFICATION_SNS_ENABLED: "false"
+  NOTIFICATION_SNS_TOPIC_ARN: ""
   SPRING_BATCH_JDBC_INITIALIZE_SCHEMA: "always"
   SPRING_BATCH_JOB_ENABLED: "false"
 secretRefs:
@@ -44,9 +46,30 @@ secretRefs:
   - envName: JWT_SECRET_KEY
     secretName: moment-dev-backend-api-secret
     secretKey: jwt-secret
-  - envName: TOSS_SECRET
+  - envName: TOSS_SECRET_KEY
     secretName: moment-dev-backend-api-secret
-    secretKey: toss-secret
+    secretKey: toss-secret-key
+  - envName: TOSS_CLIENT_KEY
+    secretName: moment-dev-backend-api-secret
+    secretKey: toss-client-key
+  - envName: TOSS_SUCCESS_URL
+    secretName: moment-dev-backend-api-secret
+    secretKey: toss-success-url
+  - envName: TOSS_FAIL_URL
+    secretName: moment-dev-backend-api-secret
+    secretKey: toss-fail-url
+  - envName: KAKAO_CLIENT_SECRET
+    secretName: moment-dev-backend-api-secret
+    secretKey: kakao-client-secret
+  - envName: KAKAO_CLIENT_ID
+    secretName: moment-dev-backend-api-secret
+    secretKey: kakao-client-id
+  - envName: KAKAO_REDIRECT_URI
+    secretName: moment-dev-backend-api-secret
+    secretKey: kakao-redirect-uri
+  - envName: PUBLIC_DATA_DATA_GO_KR_SERVICE_KEY
+    secretName: moment-dev-backend-api-secret
+    secretKey: public-data-data-go-kr-service-key
   - envName: SPRING_DATASOURCE_USERNAME
     secretName: moment-dev-backend-api-secret
     secretKey: db-username

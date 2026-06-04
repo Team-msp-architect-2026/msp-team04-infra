@@ -19,6 +19,9 @@ config:
   ENVIRONMENT: prod
   AWS_REGION: ap-northeast-3
   LOG_LEVEL: INFO
+  OPENAI_MODEL: gpt-4o-mini
+  OPENAI_EMBEDDING_MODEL: text-embedding-3-small
+  OPENAI_TIMEOUT_SECONDS: "15"
   OPENSEARCH_HOST: vpc-moment-prod-opensearch-2trht5bolkacngjunc6lsbibuq.ap-northeast-3.es.amazonaws.com
   BACKEND_API_URL: "http://backend-api:8080"
 

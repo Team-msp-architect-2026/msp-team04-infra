@@ -391,3 +391,15 @@ output "dev_opensearch_dashboard_endpoint" {
   description = "Dev OpenSearch dashboard endpoint."
   value       = var.enable_dev_opensearch ? module.dev_opensearch[0].dashboard_endpoint : null
 }
+
+output "dev_external_secrets_irsa_role_arn" {
+  description = "Dev External Secrets Operator IRSA role ARN."
+  value       = try(module.dev_external_secrets_irsa[0].role_arn, null)
+}
+
+output "dev_runtime_secret_arns" {
+  description = "Dev runtime Secrets Manager secret ARNs used by External Secrets Operator."
+  value = {
+    for key, secret in aws_secretsmanager_secret.dev_runtime : key => secret.arn
+  }
+}

@@ -779,3 +779,21 @@ variable "dev_profile_image_public_read_enabled" {
   type        = bool
   default     = true
 }
+
+variable "enable_dev_external_secrets_irsa" {
+  description = "Whether to create Dev External Secrets Operator IRSA role and runtime secret containers."
+  type        = bool
+  default     = false
+}
+
+variable "dev_external_secrets_namespace" {
+  description = "Namespace where External Secrets Operator is installed in Dev EKS."
+  type        = string
+  default     = "external-secrets"
+}
+
+variable "dev_external_secrets_service_account_name" {
+  description = "ServiceAccount name used by External Secrets Operator in Dev EKS."
+  type        = string
+  default     = "external-secrets"
+}
