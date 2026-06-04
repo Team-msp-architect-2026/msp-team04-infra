@@ -82,6 +82,12 @@ variable "prod_private_app_route_table_id" {
   default     = ""
 }
 
+variable "prod_private_data_route_table_id" {
+  description = "Prod VPC private data route table ID for OpenVPN client CIDR return route."
+  type        = string
+  default     = ""
+}
+
 variable "dev_vpc_id" {
   description = "Dev VPC ID supplied from dev environment."
   type        = string
@@ -96,6 +102,12 @@ variable "dev_tgw_subnet_ids" {
 
 variable "dev_private_app_route_table_id" {
   description = "Dev private app route table ID supplied from dev environment."
+  type        = string
+  default     = ""
+}
+
+variable "dev_private_data_route_table_id" {
+  description = "Dev VPC private data route table ID for OpenVPN client CIDR return route."
   type        = string
   default     = ""
 }
@@ -140,6 +152,12 @@ variable "openvpn_vpn_cidr" {
   description = "OpenVPN client tunnel CIDR."
   type        = string
   default     = "10.8.0.0/24"
+}
+
+variable "openvpn_enable_masquerade" {
+  description = "Whether OpenVPN should MASQUERADE VPN client traffic to Dev/Prod CIDRs. Keep false for routed VPN Data Tier admin access."
+  type        = bool
+  default     = false
 }
 
 variable "openvpn_client_name" {

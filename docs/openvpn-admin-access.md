@@ -101,7 +101,7 @@ OpenVPN 서버는 Dev / Prod CIDR을 클라이언트에게 route push 한다.
 
 또한 OpenVPN EC2는 VPN/NAT 역할을 수행하므로 source_dest_check = false 로 설정한다.
 
-OpenVPN 서버에서는 VPN client 트래픽을 Dev / Prod CIDR로 전달하기 위해 IP forwarding과 iptables MASQUERADE를 구성한다.
+OpenVPN 서버는 Data Tier 관리자 접근 경로에서 VPN client CIDR을 보존하는 routed VPN 방식을 기본으로 사용한다. IP forwarding은 유지하되 Dev / Prod CIDR 대상 MASQUERADE는 기본 비활성화하며, 필요 시 `openvpn_enable_masquerade = true`로 예외 전환한다.
 
 ## 민감 정보 관리
 

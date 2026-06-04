@@ -5,6 +5,14 @@ locals {
     ManagedBy   = "terraform"
     Owner       = "team04"
   }
+
+  openvpn_client_routes_enabled = (
+    var.enable_openvpn &&
+    var.enable_network_vpc &&
+    var.enable_transit_gateway &&
+    length(var.prod_tgw_subnet_ids) > 0 &&
+    length(var.dev_tgw_subnet_ids) > 0
+  )
 }
 
 module "network_vpc" {
@@ -61,15 +69,20 @@ module "transit_gateway" {
   network_tgw_subnet_ids        = module.network_vpc[0].tgw_subnet_ids
   network_public_route_table_id = module.network_vpc[0].public_route_table_id
 
-  prod_vpc_id                     = var.prod_vpc_id
-  prod_vpc_cidr                   = var.prod_vpc_cidr
-  prod_tgw_subnet_ids             = var.prod_tgw_subnet_ids
-  prod_private_app_route_table_id = var.prod_private_app_route_table_id
+  openvpn_vpn_cidr             = var.openvpn_vpn_cidr
+  enable_openvpn_client_routes = local.openvpn_client_routes_enabled
 
-  dev_vpc_id                     = var.dev_vpc_id
-  dev_vpc_cidr                   = var.dev_vpc_cidr
-  dev_tgw_subnet_ids             = var.dev_tgw_subnet_ids
-  dev_private_app_route_table_id = var.dev_private_app_route_table_id
+  prod_vpc_id                      = var.prod_vpc_id
+  prod_vpc_cidr                    = var.prod_vpc_cidr
+  prod_tgw_subnet_ids              = var.prod_tgw_subnet_ids
+  prod_private_app_route_table_id  = var.prod_private_app_route_table_id
+  prod_private_data_route_table_id = var.prod_private_data_route_table_id
+
+  dev_vpc_id                      = var.dev_vpc_id
+  dev_vpc_cidr                    = var.dev_vpc_cidr
+  dev_tgw_subnet_ids              = var.dev_tgw_subnet_ids
+  dev_private_app_route_table_id  = var.dev_private_app_route_table_id
+  dev_private_data_route_table_id = var.dev_private_data_route_table_id
 
   tags = local.common_tags
 }
@@ -97,6 +110,7 @@ module "network_openvpn" {
   openvpn_protocol                              = var.openvpn_protocol
   vpn_cidr                                      = var.openvpn_vpn_cidr
   route_cidrs                                   = [var.dev_vpc_cidr, var.prod_vpc_cidr]
+  enable_masquerade                             = var.openvpn_enable_masquerade
   client_name                                   = var.openvpn_client_name
   client_profile_secret_name                    = var.openvpn_client_profile_secret_name
   client_profile_secret_recovery_window_in_days = var.openvpn_client_profile_secret_recovery_window_in_days
@@ -106,5 +120,29 @@ module "network_openvpn" {
 
   depends_on = [
     module.transit_gateway
+  ]
+}
+
+resource "aws_route" "network_tgw_to_openvpn_clients" {
+  count = local.openvpn_client_routes_enabled ? length(try(module.network_vpc[0].tgw_route_table_ids, [])) : 0
+
+  route_table_id         = module.network_vpc[0].tgw_route_table_ids[count.index]
+  destination_cidr_block = var.openvpn_vpn_cidr
+  network_interface_id   = module.network_openvpn[0].primary_network_interface_id
+
+  lifecycle {
+    precondition {
+      condition = (
+        var.dev_private_app_route_table_id != "" &&
+        var.prod_private_app_route_table_id != "" &&
+        var.dev_private_data_route_table_id != "" &&
+        var.prod_private_data_route_table_id != ""
+      )
+      error_message = "OpenVPN routed Data Tier access requires dev/prod private app and private data route table IDs."
+    }
+  }
+
+  depends_on = [
+    module.network_openvpn
   ]
 }

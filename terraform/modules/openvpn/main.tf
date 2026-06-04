@@ -142,6 +142,7 @@ resource "aws_instance" "this" {
     vpn_netmask               = cidrnetmask(var.vpn_cidr)
     route_cidrs               = join(" ", var.route_cidrs)
     route_push_lines          = local.route_push_lines
+    enable_masquerade         = var.enable_masquerade
     client_name               = var.client_name
   })
 

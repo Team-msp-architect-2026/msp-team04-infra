@@ -110,8 +110,9 @@ module "dev_security_group" {
   create_service_sg = true
   create_openvpn_sg = false
 
-  app_port          = var.app_port
-  admin_cidr_blocks = var.admin_cidr_blocks
+  app_port                   = var.app_port
+  admin_cidr_blocks          = var.admin_cidr_blocks
+  openvpn_client_cidr_blocks = [var.openvpn_vpn_cidr]
 
   common_tags = {
     Project = "MoMent"

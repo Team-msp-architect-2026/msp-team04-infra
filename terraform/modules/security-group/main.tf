@@ -353,6 +353,48 @@ resource "aws_security_group_rule" "openvpn_egress_all" {
   description = "Allow OpenVPN outbound traffic"
 }
 
+
+# OpenVPN routed client CIDR -> Data Tier restricted admin access
+resource "aws_security_group_rule" "rds_ingress_from_openvpn_clients" {
+  count = var.create_service_sg && length(var.openvpn_client_cidr_blocks) > 0 ? 1 : 0
+
+  type              = "ingress"
+  security_group_id = aws_security_group.rds[0].id
+  from_port         = 5432
+  to_port           = 5432
+  protocol          = "tcp"
+  cidr_blocks       = var.openvpn_client_cidr_blocks
+
+  description = "Allow PostgreSQL from OpenVPN client CIDR"
+}
+
+resource "aws_security_group_rule" "redis_ingress_from_openvpn_clients" {
+  count = var.create_service_sg && length(var.openvpn_client_cidr_blocks) > 0 ? 1 : 0
+
+  type              = "ingress"
+  security_group_id = aws_security_group.redis[0].id
+  from_port         = 6379
+  to_port           = 6379
+  protocol          = "tcp"
+  cidr_blocks       = var.openvpn_client_cidr_blocks
+
+  description = "Allow Redis from OpenVPN client CIDR"
+}
+
+resource "aws_security_group_rule" "opensearch_ingress_from_openvpn_clients" {
+  count = var.create_service_sg && length(var.openvpn_client_cidr_blocks) > 0 ? 1 : 0
+
+  type              = "ingress"
+  security_group_id = aws_security_group.opensearch[0].id
+  from_port         = 443
+  to_port           = 443
+  protocol          = "tcp"
+  cidr_blocks       = var.openvpn_client_cidr_blocks
+
+  description = "Allow OpenSearch HTTPS from OpenVPN client CIDR"
+}
+
+
 # ==============================================================
 # EKS Cluster SG (자동생성) -> Data 서비스 접근 허용
 # 원인: EKS 노드 ENI에 실제 붙는 SG는 Terraform SG가 아닌
