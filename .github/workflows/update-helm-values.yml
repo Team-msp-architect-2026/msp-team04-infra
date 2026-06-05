@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       service:
-        description: 'Service to update (backend-api, ai-service, batch-job, all)'
+        description: 'Service to update (backend-api, ai-service, batch-job, backend-batch, all)'
         required: true
         default: 'all'
         type: choice
@@ -12,6 +12,7 @@ on:
           - backend-api
           - ai-service
           - batch-job
+          - backend-batch
           - all
       image_tag:
         description: 'Image tag (e.g. dev-abc1234)'
@@ -64,6 +65,8 @@ jobs:
 
           if [ "$SERVICE" = "all" ]; then
             SERVICES="backend-api ai-service batch-job"
+          elif [ "$SERVICE" = "backend-batch" ]; then
+            SERVICES="backend-api batch-job"
           else
             SERVICES="$SERVICE"
           fi
