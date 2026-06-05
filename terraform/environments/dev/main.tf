@@ -119,7 +119,7 @@ module "dev_security_group" {
   }
 
   create_eks_cluster_sg_ingress_rules = var.enable_dev_eks_cluster_sg_ingress_rules
-  eks_cluster_sg_id                   = var.eks_cluster_sg_id
+  eks_cluster_sg_id                   = var.enable_dev_eks && var.enable_dev_eks_cluster_sg_ingress_rules ? module.dev_eks[0].cluster_security_group_id : ""
 }
 
 module "dev_vpc_endpoint" {
