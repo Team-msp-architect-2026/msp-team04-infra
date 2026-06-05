@@ -386,8 +386,8 @@ module "dev_eks_nodegroups" {
       capacity_type  = "ON_DEMAND"
       instance_types = ["t3.medium"]
       min_size       = 1
-      desired_size   = 1
-      max_size       = 1
+      desired_size   = 2
+      max_size       = 2
       disk_size      = 20
 
       labels = {
