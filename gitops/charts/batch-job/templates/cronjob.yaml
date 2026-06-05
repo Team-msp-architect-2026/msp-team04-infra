@@ -1,3 +1,4 @@
+{{- if eq (.Values.mode | default "cronjob") "cronjob" }}
 apiVersion: batch/v1
 kind: CronJob
 metadata:
@@ -7,6 +8,7 @@ metadata:
     {{- include "batch-job.labels" . | nindent 4 }}
 spec:
   schedule: {{ .Values.schedule | quote }}
+  suspend: {{ .Values.suspend | default false }}
   concurrencyPolicy: {{ .Values.concurrencyPolicy }}
   successfulJobsHistoryLimit: {{ .Values.successfulJobsHistoryLimit }}
   failedJobsHistoryLimit: {{ .Values.failedJobsHistoryLimit }}
@@ -59,3 +61,4 @@ spec:
           affinity:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+{{- end }}

@@ -1,3 +1,5 @@
+mode: worker
+replicaCount: 1
 namespace: moment-dev
 image:
   repository: 611058323802.dkr.ecr.ap-northeast-3.amazonaws.com/moment-dev-batch-job
@@ -9,6 +11,7 @@ serviceAccount:
   annotations:
     eks.amazonaws.com/role-arn: "arn:aws:iam::611058323802:role/moment-dev-batch-job-irsa-role"
 schedule: "0 * * * *"
+suspend: true
 concurrencyPolicy: Forbid
 successfulJobsHistoryLimit: 3
 failedJobsHistoryLimit: 1
@@ -17,12 +20,13 @@ restartPolicy: OnFailure
 args:
   - "--spring.profiles.active=dev,batch"
   - "--spring.main.web-application-type=none"
-  - "--spring.batch.job.enabled=true"
-  - "--spring.batch.job.name=syncJob"
+  - "--spring.batch.job.enabled=false"
 config:
   SPRING_PROFILES_ACTIVE: dev,batch
   RUNTIME_PROFILE: dev
   AWS_REGION: ap-northeast-3
+  SPRING_BATCH_JOB_ENABLED: "false"
+  BATCH_SQS_CONSUMER_ENABLED: "true"
   BATCH_JOB_NAME: public-data-collector
   TRIGGER_TYPE: cron
   UPDATE_FREQUENCY: hourly
