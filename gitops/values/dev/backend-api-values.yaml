@@ -58,9 +58,6 @@ secretRefs:
   - envName: TOSS_FAIL_URL
     secretName: moment-dev-backend-api-secret
     secretKey: toss-fail-url
-  - envName: KAKAO_CLIENT_SECRET
-    secretName: moment-dev-backend-api-secret
-    secretKey: kakao-client-secret
   - envName: KAKAO_CLIENT_ID
     secretName: moment-dev-backend-api-secret
     secretKey: kakao-client-id
