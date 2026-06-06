@@ -52,11 +52,10 @@ module "network_security_group" {
 }
 
 module "transit_gateway" {
-  count = (
+count = (
     var.enable_transit_gateway &&
     var.enable_network_vpc &&
-    length(var.prod_tgw_subnet_ids) > 0 &&
-    length(var.dev_tgw_subnet_ids) > 0
+    length(var.prod_tgw_subnet_ids) > 0
   ) ? 1 : 0
 
   source = "../../modules/transit-gateway"

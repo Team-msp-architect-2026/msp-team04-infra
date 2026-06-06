@@ -50,6 +50,7 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "prod" {
 }
 
 resource "aws_ec2_transit_gateway_vpc_attachment" "dev" {
+  count              = var.dev_vpc_id != "" && var.dev_vpc_id != null ? 1 : 0
   vpc_id             = var.dev_vpc_id
   subnet_ids         = var.dev_tgw_subnet_ids
   transit_gateway_id = aws_ec2_transit_gateway.this.id
@@ -107,7 +108,8 @@ resource "aws_ec2_transit_gateway_route_table_association" "prod" {
 }
 
 resource "aws_ec2_transit_gateway_route_table_association" "dev" {
-  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.dev.id
+  count                          = var.dev_vpc_id != "" && var.dev_vpc_id != null ? 1 : 0
+  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.dev[0].id
   transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.dev.id
 }
 
@@ -117,7 +119,8 @@ resource "aws_ec2_transit_gateway_route_table_propagation" "network_from_prod" {
 }
 
 resource "aws_ec2_transit_gateway_route_table_propagation" "network_from_dev" {
-  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.dev.id
+  count                          = var.dev_vpc_id != "" && var.dev_vpc_id != null ? 1 : 0
+  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.dev[0].id
   transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.network.id
 }
 
@@ -127,6 +130,7 @@ resource "aws_ec2_transit_gateway_route_table_propagation" "prod_from_network" {
 }
 
 resource "aws_ec2_transit_gateway_route_table_propagation" "dev_from_network" {
+  count                          = var.dev_vpc_id != "" && var.dev_vpc_id != null ? 1 : 0
   transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.network.id
   transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.dev.id
 }
@@ -143,7 +147,6 @@ resource "aws_ec2_transit_gateway_route" "dev_default_to_network" {
   transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.dev.id
 }
 
-
 resource "aws_ec2_transit_gateway_route" "prod_to_openvpn_clients" {
   count = var.enable_openvpn_client_routes ? 1 : 0
 
@@ -159,7 +162,6 @@ resource "aws_ec2_transit_gateway_route" "dev_to_openvpn_clients" {
   transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.network.id
   transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.dev.id
 }
-
 
 resource "aws_ec2_transit_gateway_route" "prod_to_dev_blackhole" {
   destination_cidr_block         = var.dev_vpc_cidr
@@ -185,6 +187,7 @@ resource "aws_route" "network_public_to_prod_vpc" {
 }
 
 resource "aws_route" "network_public_to_dev_vpc" {
+  count                  = var.dev_vpc_id != "" && var.dev_vpc_id != null ? 1 : 0
   route_table_id         = var.network_public_route_table_id
   destination_cidr_block = var.dev_vpc_cidr
   transit_gateway_id     = aws_ec2_transit_gateway.this.id
@@ -216,6 +219,7 @@ resource "aws_route" "prod_private_app_to_network_vpc" {
 }
 
 resource "aws_route" "dev_private_app_default_to_tgw" {
+  count                  = var.dev_vpc_id != "" && var.dev_vpc_id != null ? 1 : 0
   route_table_id         = var.dev_private_app_route_table_id
   destination_cidr_block = "0.0.0.0/0"
   transit_gateway_id     = aws_ec2_transit_gateway.this.id
@@ -226,6 +230,7 @@ resource "aws_route" "dev_private_app_default_to_tgw" {
 }
 
 resource "aws_route" "dev_private_app_to_network_vpc" {
+  count                  = var.dev_vpc_id != "" && var.dev_vpc_id != null ? 1 : 0
   route_table_id         = var.dev_private_app_route_table_id
   destination_cidr_block = var.network_vpc_cidr
   transit_gateway_id     = aws_ec2_transit_gateway.this.id

@@ -15,7 +15,7 @@ output "prod_tgw_attachment_id" {
 
 output "dev_tgw_attachment_id" {
   description = "Dev VPC TGW attachment ID."
-  value       = aws_ec2_transit_gateway_vpc_attachment.dev.id
+  value       = length(aws_ec2_transit_gateway_vpc_attachment.dev) > 0 ? aws_ec2_transit_gateway_vpc_attachment.dev[0].id : null
 }
 
 output "network_tgw_route_table_id" {
@@ -38,7 +38,7 @@ output "tgw_attachment_ids" {
   value = {
     network = aws_ec2_transit_gateway_vpc_attachment.network.id
     prod    = aws_ec2_transit_gateway_vpc_attachment.prod.id
-    dev     = aws_ec2_transit_gateway_vpc_attachment.dev.id
+    dev     = length(aws_ec2_transit_gateway_vpc_attachment.dev) > 0 ? aws_ec2_transit_gateway_vpc_attachment.dev[0].id : null
   }
 }
 
