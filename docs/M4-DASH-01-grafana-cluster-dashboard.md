@@ -46,3 +46,7 @@ kubectl port-forward -n monitoring svc/monitoring-dev-grafana 3000:80
 | CrashLoopBackOff | kube_pod_container_status_waiting_reason{reason="CrashLoopBackOff"} | ✅ argocd-applicationset-controller 1개 감지 |
 | HPA replica | kube_horizontalpodautoscaler_status_current_replicas | ⬜ HPA 미배포로 No data |
 | Namespace CPU request | kube_pod_container_resource_requests{resource="cpu"} | ✅ 32개 시리즈 |
+
+## Wiki 업데이트 필요
+- 대상: https://github.com/Team-msp-architect-2026/msp-team04-wiki/wiki/Monitoring-%EA%B5%AC%EC%B6%95
+- 내용: Grafana Cluster / Node / Pod 대시보드 구성 내용 추가
