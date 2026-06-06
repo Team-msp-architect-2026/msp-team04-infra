@@ -214,3 +214,14 @@ output "prod_public_data_secret_arns" {
     for key, secret in aws_secretsmanager_secret.prod_public_data : key => secret.arn
   }
 }
+
+
+output "prod_workload_irsa_role_arns" {
+  description = "Prod workload IRSA role ARNs keyed by workload."
+  value       = try(module.prod_workload_irsa[0].role_arns, {})
+}
+
+output "prod_workload_service_account_annotations" {
+  description = "Prod workload Kubernetes ServiceAccount annotations for IRSA."
+  value       = try(module.prod_workload_irsa[0].service_account_annotations, {})
+}

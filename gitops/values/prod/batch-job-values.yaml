@@ -8,10 +8,8 @@ image:
 serviceAccount:
   create: true
   name: moment-prod-batch-job-sa
-  annotations: {}
-  # TODO: prod batch-job 전용 IRSA Role 생성 후 아래 형태로 변경
-  # annotations:
-  #   eks.amazonaws.com/role-arn: "arn:aws:iam::611058323802:role/moment-prod-batch-job-irsa-role"
+  annotations:
+    eks.amazonaws.com/role-arn: "arn:aws:iam::611058323802:role/moment-prod-batch-irsa-role"
 
 schedule: "0 * * * *"
 concurrencyPolicy: Forbid
