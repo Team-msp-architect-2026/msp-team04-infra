@@ -9,10 +9,11 @@ terraform {
 }
 
 locals {
-  use_custom_domain = var.domain_name != null && var.domain_name != ""
-  alb_has_origin    = var.alb_dns_name != null && var.alb_dns_name != ""
-  origin_domain     = local.alb_has_origin ? var.alb_dns_name : "placeholder.ap-northeast-3.elb.amazonaws.com"
-  origin_protocol   = var.alb_https_enabled ? "https-only" : "http-only"
+  use_custom_domain        = var.domain_name != null && var.domain_name != ""
+  route53_hosted_zone_name = var.hosted_zone_name != null && var.hosted_zone_name != "" ? var.hosted_zone_name : var.domain_name
+  alb_has_origin           = var.alb_dns_name != null && var.alb_dns_name != ""
+  origin_domain            = local.alb_has_origin ? var.alb_dns_name : "placeholder.ap-northeast-3.elb.amazonaws.com"
+  origin_protocol          = var.alb_https_enabled ? "https-only" : "http-only"
 }
 
 ##############################################
@@ -20,7 +21,7 @@ locals {
 ##############################################
 resource "aws_route53_zone" "main" {
   count   = var.create_route53_hosted_zone && local.use_custom_domain ? 1 : 0
-  name    = var.domain_name
+  name    = local.route53_hosted_zone_name
   comment = "${var.name_prefix} managed hosted zone"
 
   tags = merge(var.tags, {
@@ -30,7 +31,7 @@ resource "aws_route53_zone" "main" {
 
 data "aws_route53_zone" "existing" {
   count        = !var.create_route53_hosted_zone && local.use_custom_domain ? 1 : 0
-  name         = var.domain_name
+  name         = local.route53_hosted_zone_name
   private_zone = false
 }
 
