@@ -1,0 +1,46 @@
+# kube-prometheus-stack values for dev environment
+
+kubePrometheusStack:
+  enabled: true
+
+  prometheus:
+    prometheusSpec:
+      retention: 7d
+      resources:
+        requests:
+          cpu: 200m
+          memory: 512Mi
+        limits:
+          cpu: 500m
+          memory: 1Gi
+      storageSpec: {}  # dev는 persistence 없음
+
+  grafana:
+    enabled: true
+    adminPassword: ""  # Secret으로 관리
+    persistence:
+      enabled: false  # dev는 persistence 없음
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+
+  alertmanager:
+    enabled: true
+    alertmanagerSpec:
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          cpu: 100m
+          memory: 128Mi
+
+  # Loki/Promtail 제외 (M4 범위 외)
+  loki:
+    enabled: false
+  promtail:
+    enabled: false
