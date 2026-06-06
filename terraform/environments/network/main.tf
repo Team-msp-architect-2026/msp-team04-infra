@@ -52,7 +52,7 @@ module "network_security_group" {
 }
 
 module "transit_gateway" {
-count = (
+  count = (
     var.enable_transit_gateway &&
     var.enable_network_vpc &&
     length(var.prod_tgw_subnet_ids) > 0

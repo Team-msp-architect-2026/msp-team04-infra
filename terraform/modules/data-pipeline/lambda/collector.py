@@ -18,16 +18,21 @@ DEFAULT_MAX_PAGES = 30
 
 
 def lambda_handler(event, context):
+    event = event or {}
+
     raw_bucket_name = os.environ["RAW_BUCKET_NAME"]
     queue_url = os.environ["QUEUE_URL"]
     environment = os.environ.get("ENVIRONMENT", "dev")
     project_name = os.environ.get("PROJECT_NAME", "moment")
 
     sources = _load_sources()
+    sources = _select_sources_for_event(sources, event)
+
     if not sources:
         raise ValueError(
-            "No public data sources configured. "
-            "Set DATA_PIPELINE_SOURCES_JSON or legacy PUBLIC_DATA_API_URL."
+            "No public data sources configured or selected. "
+            "Set DATA_PIPELINE_SOURCES_JSON, DATA_PIPELINE_SOURCES_SECRET_NAME, "
+            "legacy PUBLIC_DATA_API_URL, or provide a valid smoke source selector."
         )
 
     results = []
@@ -132,6 +137,90 @@ def _normalize_sources_payload(parsed, source_label):
         normalized_sources.append(normalized_source)
 
     return normalized_sources
+
+
+
+def _select_sources_for_event(sources, event):
+    if not isinstance(event, dict):
+        return sources
+
+    smoke = bool(event.get("smoke") or event.get("smokeTest"))
+    source_name_filter = event.get("sourceName")
+    source_detail_filter = event.get("sourceDetail")
+
+    if smoke and not source_name_filter:
+        raise ValueError("smoke source selector requires sourceName to avoid collecting all sources.")
+
+    if not smoke and not source_name_filter and not source_detail_filter:
+        return sources
+
+    selected_sources = []
+    for source in sources:
+        if source_name_filter and source.get("sourceName") != source_name_filter:
+            continue
+
+        if source_detail_filter and source.get("sourceDetail", "") != source_detail_filter:
+            continue
+
+        selected_source = dict(source)
+        selected_source = _apply_smoke_pagination_overrides(selected_source, event)
+        selected_sources.append(selected_source)
+
+    if not selected_sources:
+        raise ValueError(
+            "No source matched smoke selector. "
+            f"sourceName={source_name_filter}, sourceDetail={source_detail_filter}"
+        )
+
+    print(
+        json.dumps(
+            {
+                "message": "public data collector source selector applied",
+                "smoke": smoke,
+                "sourceName": source_name_filter,
+                "sourceDetail": source_detail_filter,
+                "selectedSourceCount": len(selected_sources),
+            },
+            ensure_ascii=False,
+        )
+    )
+
+    return selected_sources
+
+
+def _apply_smoke_pagination_overrides(source, event):
+    pagination = dict(source.get("pagination") or {})
+
+    max_pages_override = _get_event_override(event, "maxPages", "smokeMaxPages")
+    page_size_override = _get_event_override(event, "pageSize", "smokePageSize")
+
+    if max_pages_override is not None:
+        max_pages = int(max_pages_override)
+        if max_pages < 1:
+            raise ValueError("smoke maxPages must be greater than or equal to 1.")
+        pagination["maxPages"] = max_pages
+
+    if page_size_override is not None:
+        page_size = int(page_size_override)
+        if page_size < 1:
+            raise ValueError("smoke pageSize must be greater than or equal to 1.")
+        pagination["pageSize"] = page_size
+        pagination["sizeParam"] = pagination.get("sizeParam", "numOfRows")
+
+    if pagination:
+        source["pagination"] = pagination
+
+    return source
+
+
+def _get_event_override(event, primary_key, fallback_key):
+    if primary_key in event:
+        return event[primary_key]
+
+    if fallback_key in event:
+        return event[fallback_key]
+
+    return None
 
 
 def _normalize_operational_metadata(value, default_value):
