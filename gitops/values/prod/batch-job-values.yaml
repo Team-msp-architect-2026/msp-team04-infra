@@ -1,3 +1,5 @@
+mode: worker
+replicaCount: 1
 namespace: moment-prod
 
 image:
@@ -12,6 +14,7 @@ serviceAccount:
     eks.amazonaws.com/role-arn: "arn:aws:iam::611058323802:role/moment-prod-batch-irsa-role"
 
 schedule: "0 * * * *"
+suspend: true
 concurrencyPolicy: Forbid
 successfulJobsHistoryLimit: 3
 failedJobsHistoryLimit: 1
@@ -21,12 +24,19 @@ restartPolicy: OnFailure
 args:
   - "--spring.profiles.active=prod,batch"
   - "--spring.main.web-application-type=none"
-  - "--spring.batch.job.enabled=true"
-  - "--spring.batch.job.name=syncJob"
+  - "--spring.batch.job.enabled=false"
 
 config:
   SPRING_PROFILES_ACTIVE: prod,batch
+  RUNTIME_PROFILE: prod
   AWS_REGION: ap-northeast-3
+
+  SPRING_BATCH_JOB_ENABLED: "false"
+  BATCH_SQS_CONSUMER_ENABLED: "true"
+  BATCH_JOB_NAME: public-data-collector
+  TRIGGER_TYPE: cron
+  UPDATE_FREQUENCY: hourly
+  SCHEDULE_CRON: "0 * * * *"
 
   SQS_QUEUE_NAME: moment-prod-public-data-queue
   SQS_QUEUE_URL: https://sqs.ap-northeast-3.amazonaws.com/611058323802/moment-prod-public-data-queue
