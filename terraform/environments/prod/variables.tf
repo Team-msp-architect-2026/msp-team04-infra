@@ -682,3 +682,10 @@ variable "prod_profile_image_public_read_enabled" {
   type        = bool
   default     = false
 }
+
+
+variable "enable_prod_workload_irsa" {
+  description = "Whether to create Prod workload IRSA roles after Prod EKS OIDC provider is available."
+  type        = bool
+  default     = false
+}
