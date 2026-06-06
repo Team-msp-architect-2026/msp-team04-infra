@@ -589,6 +589,12 @@ variable "edge_domain_name" {
   default     = ""
 }
 
+variable "edge_hosted_zone_name" {
+  description = "Route53 Hosted Zone 이름. 예: moment-team04.click"
+  type        = string
+  default     = ""
+}
+
 variable "edge_subject_alternative_names" {
   description = "ACM subject alternative names."
   type        = list(string)

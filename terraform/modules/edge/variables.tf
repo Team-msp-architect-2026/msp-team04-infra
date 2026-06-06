@@ -16,6 +16,12 @@ variable "domain_name" {
   default     = ""
 }
 
+variable "hosted_zone_name" {
+  description = "Route53 Hosted Zone 이름. 예: moment-team04.click. 비워두면 domain_name을 사용"
+  type        = string
+  default     = ""
+}
+
 variable "subject_alternative_names" {
   description = "ACM 인증서 추가 도메인 (예: [\"www.example.com\"])"
   type        = list(string)

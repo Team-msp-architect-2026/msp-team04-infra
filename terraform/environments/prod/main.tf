@@ -635,6 +635,7 @@ module "edge" {
   name_prefix = "moment-prod"
 
   domain_name                = var.edge_domain_name
+  hosted_zone_name           = var.edge_hosted_zone_name
   subject_alternative_names  = var.edge_subject_alternative_names
   create_route53_hosted_zone = var.create_route53_hosted_zone
 
