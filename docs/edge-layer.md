@@ -206,3 +206,10 @@ terraform output waf_web_acl_id           # WAF ACL ID
 terraform output acm_certificate_arn      # ACM ARN (도메인 있을 때만)
 terraform output cloudfront_secret_header_name  # X-CloudFront-Secret
 ```
+## Edge 연결 완료 (2026-06-07)
+
+- CloudFront Origin: k8s-momentpr-backenda-23baa3cdfd-1074547664.ap-northeast-3.elb.amazonaws.com
+- ACM 인증서: api.moment-team04.click (ISSUED, us-east-1)
+- Route53: api.moment-team04.click A 레코드 → CloudFront
+- WAF Web ACL 연결 완료
+- 검증: curl https://api.moment-team04.click/health → MoMent backend is running
