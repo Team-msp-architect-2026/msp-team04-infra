@@ -10,6 +10,9 @@ serviceAccount:
   annotations: {}
 config: {}
 secretRefs: []
+startupProbe: {}
+readinessProbe: {}
+livenessProbe: {}
 resources: {}
 nodeSelector: {}
 tolerations: []

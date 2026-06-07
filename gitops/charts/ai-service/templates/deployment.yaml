@@ -24,18 +24,18 @@ spec:
             - name: http
               containerPort: 8000
               protocol: TCP
+          {{- with .Values.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
           readinessProbe:
-            httpGet:
-              path: /health
-              port: 8000
-            initialDelaySeconds: 20
-            periodSeconds: 10
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.livenessProbe }}
           livenessProbe:
-            httpGet:
-              path: /health
-              port: 8000
-            initialDelaySeconds: 40
-            periodSeconds: 15
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- if .Values.config }}
           envFrom:
             - configMapRef:
