@@ -123,7 +123,7 @@ module "network_openvpn" {
 }
 
 resource "aws_route" "network_tgw_to_openvpn_clients" {
-  count = local.openvpn_client_routes_enabled ? length(try(module.network_vpc[0].tgw_route_table_ids, [])) : 0
+  count = local.openvpn_client_routes_enabled ? length(var.network_tgw_subnet_cidrs) : 0
 
   route_table_id         = module.network_vpc[0].tgw_route_table_ids[count.index]
   destination_cidr_block = var.openvpn_vpn_cidr
