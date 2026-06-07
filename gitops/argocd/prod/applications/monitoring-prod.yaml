@@ -11,7 +11,7 @@ metadata:
     app.kubernetes.io/managed-by: argocd
     environment: prod
 spec:
-  project: moment-prod
+  project: monitoring-prod
   sources:
     - repoURL: https://github.com/Team-msp-architect-2026/msp-team04-infra.git
       targetRevision: develop

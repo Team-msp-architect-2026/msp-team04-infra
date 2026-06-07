@@ -11,14 +11,7 @@ metadata:
     app.kubernetes.io/managed-by: argocd
     environment: dev
 spec:
-  project: moment-dev
-  source:
-    repoURL: https://prometheus-community.github.io/helm-charts
-    chart: kube-prometheus-stack
-    targetRevision: "61.3.0"
-    helm:
-      valueFiles:
-        - $values/gitops/values/dev/monitoring-values.yaml
+  project: monitoring-dev
   sources:
     - repoURL: https://github.com/Team-msp-architect-2026/msp-team04-infra.git
       targetRevision: develop
