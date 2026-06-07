@@ -95,6 +95,24 @@ secretRefs:
     secretName: moment-prod-backend-api-secret
     secretKey: public-data-data-go-kr-service-key
 
+readinessProbe:
+  tcpSocket:
+    port: 8080
+  initialDelaySeconds: 30
+  periodSeconds: 5
+  timeoutSeconds: 2
+  failureThreshold: 30
+  successThreshold: 1
+
+livenessProbe:
+  tcpSocket:
+    port: 8080
+  initialDelaySeconds: 180
+  periodSeconds: 15
+  timeoutSeconds: 2
+  failureThreshold: 5
+  successThreshold: 1
+
 resources:
   requests:
     cpu: 500m

@@ -10,6 +10,25 @@ serviceAccount:
   annotations: {}
 config: {}
 secretRefs: []
+startupProbe: {}
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 8000
+  initialDelaySeconds: 20
+  periodSeconds: 10
+  timeoutSeconds: 2
+  failureThreshold: 6
+  successThreshold: 1
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 8000
+  initialDelaySeconds: 40
+  periodSeconds: 15
+  timeoutSeconds: 2
+  failureThreshold: 5
+  successThreshold: 1
 resources: {}
 nodeSelector: {}
 tolerations: []
