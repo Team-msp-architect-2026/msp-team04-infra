@@ -597,9 +597,9 @@ module "prod_eks_nodegroups" {
       name           = "${var.project_name}-prod-ops-on-demand-ng"
       capacity_type  = "ON_DEMAND"
       instance_types = ["t3.medium"]
-      min_size       = 1
-      desired_size   = 1
-      max_size       = 2
+      min_size       = 2
+      desired_size   = 2
+      max_size       = 3
       disk_size      = 30
       labels = {
         workload = "ops"
