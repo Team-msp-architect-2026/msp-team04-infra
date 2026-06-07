@@ -4,21 +4,13 @@ locals {
 
 data "aws_caller_identity" "m3_config_current" {}
 
-data "aws_eks_cluster" "m3_config_dev" {
-  count = local.m3_config_irsa_enabled ? 1 : 0
-
-  name = "moment-dev-eks-cluster"
-}
-
-data "aws_iam_openid_connect_provider" "m3_config_dev" {
-  count = local.m3_config_irsa_enabled ? 1 : 0
-
-  url = data.aws_eks_cluster.m3_config_dev[0].identity[0].oidc[0].issuer
-}
-
 locals {
-  m3_config_oidc_provider_arn = local.m3_config_irsa_enabled ? data.aws_iam_openid_connect_provider.m3_config_dev[0].arn : ""
-  m3_config_oidc_provider_url = local.m3_config_irsa_enabled ? replace(data.aws_eks_cluster.m3_config_dev[0].identity[0].oidc[0].issuer, "https://", "") : ""
+  m3_config_oidc_provider_arn = local.m3_config_irsa_enabled ? (
+    var.create_eks_oidc_provider ? module.dev_eks[0].eks_oidc_provider_arn : var.eks_oidc_provider_arn
+  ) : ""
+  m3_config_oidc_provider_url = local.m3_config_irsa_enabled ? (
+    var.create_eks_oidc_provider ? module.dev_eks[0].eks_oidc_provider_url : replace(var.eks_oidc_issuer_url, "https://", "")
+  ) : ""
 
   m3_config_namespace = "moment-dev"
 

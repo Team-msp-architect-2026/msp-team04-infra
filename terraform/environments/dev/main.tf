@@ -241,8 +241,12 @@ module "dev_iam" {
   create_github_oidc_provider = false
   github_oidc_provider_arn    = var.github_oidc_provider_arn
 
-  create_eks_oidc_provider = var.create_eks_oidc_provider
-  enable_irsa_roles        = var.enable_irsa_roles
+  # Dev workload IRSA roles are managed by dedicated Dev runtime config blocks
+  # such as m3-config-irsa.tf and alb-controller-irsa.tf.
+  # Keep the shared IAM module focused on base IAM roles/policies here to avoid
+  # duplicate EKS OIDC providers and duplicate IRSA role names during fresh Dev recreate.
+  create_eks_oidc_provider = false
+  enable_irsa_roles        = false
 
   ecr_repository_arns = module.dev_ecr.repository_arns
 
