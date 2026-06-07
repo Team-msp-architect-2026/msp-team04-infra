@@ -1,54 +1,54 @@
 # kube-prometheus-stack values for prod environment
-# Prod EKS 비활성 상태 - values만 문서화, 적용은 Prod EKS 활성화 시 진행
+# Prod EKS 비활성 또는 short-lived demo 정책이면 runtime sync는 별도 승인 후 진행
+# M4 scope: Metrics + Dashboard + Health + Alert 중심
+# Loki / Promtail 중앙 로그 수집은 M4 범위 외
 
-kubePrometheusStack:
-  enabled: true
-
-  prometheus:
-    prometheusSpec:
-      retention: 15d
-      resources:
-        requests:
-          cpu: 500m
-          memory: 1Gi
-        limits:
-          cpu: 1000m
-          memory: 2Gi
-      storageSpec:
-        volumeClaimTemplate:
-          spec:
-            accessModes: ["ReadWriteOnce"]
-            resources:
-              requests:
-                storage: 50Gi
-
-  grafana:
-    enabled: true
-    adminPassword: ""  # Secret으로 관리
-    persistence:
-      enabled: true
-      size: 10Gi
+prometheus:
+  prometheusSpec:
+    retention: 15d
     resources:
       requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 50Gi
+
+grafana:
+  enabled: true
+  persistence:
+    enabled: true
+    size: 10Gi
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+alertmanager:
+  enabled: true
+  alertmanagerSpec:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
         cpu: 200m
         memory: 256Mi
-      limits:
-        cpu: 500m
-        memory: 512Mi
 
-  alertmanager:
-    enabled: true
-    alertmanagerSpec:
-      resources:
-        requests:
-          cpu: 100m
-          memory: 128Mi
-        limits:
-          cpu: 200m
-          memory: 256Mi
+# kube-prometheus-stack chart에는 포함되지 않는 별도 로그 수집 도구를 명시적으로 비활성화한다.
+loki:
+  enabled: false
 
-  # Loki/Promtail 제외 (M4 범위 외)
-  loki:
-    enabled: false
-  promtail:
-    enabled: false
+promtail:
+  enabled: false

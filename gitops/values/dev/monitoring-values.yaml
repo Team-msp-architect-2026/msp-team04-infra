@@ -1,46 +1,45 @@
 # kube-prometheus-stack values for dev environment
+# M4 scope: Metrics + Dashboard + Health + Alert 중심
+# Loki / Promtail 중앙 로그 수집은 M4 범위 외
 
-kubePrometheusStack:
-  enabled: true
-
-  prometheus:
-    prometheusSpec:
-      retention: 7d
-      resources:
-        requests:
-          cpu: 200m
-          memory: 512Mi
-        limits:
-          cpu: 500m
-          memory: 1Gi
-      storageSpec: {}  # dev는 persistence 없음
-
-  grafana:
-    enabled: true
-    adminPassword: ""  # Secret으로 관리
-    persistence:
-      enabled: false  # dev는 persistence 없음
+prometheus:
+  prometheusSpec:
+    retention: 7d
     resources:
       requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+    storageSpec: {}
+
+grafana:
+  enabled: true
+  persistence:
+    enabled: false
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+alertmanager:
+  enabled: true
+  alertmanagerSpec:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
         cpu: 100m
         memory: 128Mi
-      limits:
-        cpu: 200m
-        memory: 256Mi
 
-  alertmanager:
-    enabled: true
-    alertmanagerSpec:
-      resources:
-        requests:
-          cpu: 50m
-          memory: 64Mi
-        limits:
-          cpu: 100m
-          memory: 128Mi
+# kube-prometheus-stack chart에는 포함되지 않는 별도 로그 수집 도구를 명시적으로 비활성화한다.
+loki:
+  enabled: false
 
-  # Loki/Promtail 제외 (M4 범위 외)
-  loki:
-    enabled: false
-  promtail:
-    enabled: false
+promtail:
+  enabled: false
