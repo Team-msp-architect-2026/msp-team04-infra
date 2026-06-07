@@ -39,3 +39,10 @@ resource "aws_iam_role" "dev_alb_controller_irsa" {
     KubernetesSubject = "system:serviceaccount:kube-system:aws-load-balancer-controller"
   })
 }
+
+resource "aws_iam_role_policy_attachment" "dev_alb_controller_irsa_attach" {
+  count = var.enable_dev_eks && var.enable_irsa_roles && var.enable_dev_iam ? 1 : 0
+
+  role       = aws_iam_role.dev_alb_controller_irsa[0].name
+  policy_arn = module.dev_iam[0].policy_arns["aws_load_balancer_controller"]
+}
