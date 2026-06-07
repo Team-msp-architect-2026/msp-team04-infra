@@ -462,9 +462,9 @@ module "dev_eks_nodegroups" {
       name           = "${var.project_name}-dev-ops-on-demand-ng"
       capacity_type  = "ON_DEMAND"
       instance_types = ["t3.medium"]
-      min_size       = 0
-      desired_size   = 0
-      max_size       = 1
+      min_size       = 1
+      desired_size   = 1
+      max_size       = 2
       disk_size      = 20
 
       labels = {
