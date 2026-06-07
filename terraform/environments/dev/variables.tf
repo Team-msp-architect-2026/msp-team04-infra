@@ -160,9 +160,9 @@ variable "dev_eks_cluster_admin_principal_arn" {
 }
 
 variable "enable_dev_eks_cluster_sg_ingress_rules" {
-  description = "Whether to create Dev Data Tier ingress rules from the EKS cluster auto-generated security group. Keep false for fresh apply until eks_cluster_sg_id is known."
+  description = "Whether to create Dev Data Tier ingress rules from the EKS cluster auto-generated security group. Keep true so EKS worker node traffic using the cluster primary security group can reach RDS, Redis, and OpenSearch."
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "eks_cluster_sg_id" {
