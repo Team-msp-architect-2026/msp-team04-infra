@@ -21,7 +21,7 @@ spec:
       values: |
         clusterName: moment-prod-eks-cluster
         region: ap-northeast-3
-        vpcId: vpc-08fda45f5b62dcc62
+        vpcId: vpc-05118bc77c0f028d0
 
         replicaCount: 2
 
