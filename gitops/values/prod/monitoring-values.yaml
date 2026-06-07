@@ -94,3 +94,21 @@ loki:
 
 promtail:
   enabled: false
+
+
+# EKS managed control plane components are not scraped through kube-system Services.
+# Keep monitoring AppProject scoped to the monitoring namespace and avoid kube-system Service creation.
+kubeEtcd:
+  enabled: false
+
+kubeScheduler:
+  enabled: false
+
+kubeControllerManager:
+  enabled: false
+
+kubeProxy:
+  enabled: false
+
+coreDns:
+  enabled: false
