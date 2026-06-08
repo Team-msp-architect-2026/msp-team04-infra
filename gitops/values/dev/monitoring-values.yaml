@@ -60,6 +60,15 @@ grafana:
   enabled: true
   persistence:
     enabled: false
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      labelValue: "1"
+      searchNamespace: monitoring
+      provider:
+        allowUiUpdates: false
+
   resources:
     requests:
       cpu: 100m

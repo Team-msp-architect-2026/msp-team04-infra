@@ -16,6 +16,12 @@ spec:
     - repoURL: https://github.com/Team-msp-architect-2026/msp-team04-infra.git
       targetRevision: develop
       ref: values
+    - repoURL: https://github.com/Team-msp-architect-2026/msp-team04-infra.git
+      targetRevision: develop
+      path: monitoring/dashboards
+      directory:
+        recurse: true
+        include: '*.yaml'
     - repoURL: https://prometheus-community.github.io/helm-charts
       chart: kube-prometheus-stack
       targetRevision: "61.3.0"
