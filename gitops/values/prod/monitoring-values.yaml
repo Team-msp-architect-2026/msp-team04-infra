@@ -71,6 +71,15 @@ grafana:
     enabled: true
     storageClassName: gp2
     size: 10Gi
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      labelValue: "1"
+      searchNamespace: monitoring
+      provider:
+        allowUiUpdates: false
+
   resources:
     requests:
       cpu: 200m
