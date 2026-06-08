@@ -25,7 +25,11 @@ output "dev_private_data_subnet_ids" {
 
 output "dev_reserved_data_subnet_ids" {
   description = "Dev reserved data subnet IDs for future Multi-AZ data tier expansion."
-  value       = slice(aws_subnet.private_data[*].id, 1, length(aws_subnet.private_data))
+  value = length(aws_subnet.private_data[*].id) > 1 ? slice(
+    aws_subnet.private_data[*].id,
+    1,
+    length(aws_subnet.private_data[*].id)
+  ) : []
 }
 
 output "dev_tgw_subnet_ids" {
