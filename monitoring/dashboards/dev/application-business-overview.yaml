@@ -13,7 +13,7 @@ metadata:
 data:
   application-business-overview.json: |
     {
-      "uid": "moment-dev-application-business-overview",
+      "uid": "moment-dev-app-biz-overview",
       "title": "MoMent Dev Application / Business Overview",
       "description": "Dev Application, runtime, and business KPI dashboard for MoMent backend and AI service.",
       "timezone": "browser",
