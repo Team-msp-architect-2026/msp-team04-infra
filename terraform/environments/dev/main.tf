@@ -566,7 +566,7 @@ module "dev_opensearch" {
   ebs_volume_type = var.opensearch_ebs_volume_type
   ebs_volume_size = var.dev_opensearch_ebs_volume_size
 
-  subnet_ids         = slice(module.dev_vpc.dev_private_data_subnet_ids, 0, 1)
+  subnet_ids         = local.dev_opensearch_subnet_ids
   security_group_ids = [module.dev_security_group.opensearch_sg_id]
 
   create_service_linked_role = var.create_opensearch_service_linked_role
@@ -577,6 +577,12 @@ module "dev_opensearch" {
 }
 
 locals {
+  dev_opensearch_subnet_ids = length(module.dev_vpc.dev_private_data_subnet_ids) > 0 ? slice(
+    module.dev_vpc.dev_private_data_subnet_ids,
+    0,
+    1
+  ) : []
+
   dev_runtime_secret_definitions = {
     backend_api = {
       name        = "moment/dev/backend-api"
