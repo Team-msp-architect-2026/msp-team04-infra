@@ -18,7 +18,7 @@ spec:
       ref: values
     - repoURL: https://github.com/Team-msp-architect-2026/msp-team04-infra.git
       targetRevision: develop
-      path: monitoring/dashboards
+      path: monitoring/dashboards/prod
       directory:
         recurse: true
         include: '*.yaml'

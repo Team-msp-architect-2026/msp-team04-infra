@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: moment-application-business-overview-dashboard
+  name: moment-prod-application-business-overview-dashboard
   namespace: monitoring
   labels:
     grafana_dashboard: "1"
@@ -9,12 +9,13 @@ metadata:
     app.kubernetes.io/part-of: moment
     app.kubernetes.io/component: dashboard
     app.kubernetes.io/managed-by: argocd
+    environment: prod
 data:
   application-business-overview.json: |
     {
-      "uid": "moment-application-business-overview",
-      "title": "MoMent Application / Business Overview",
-      "description": "Application, runtime, and business KPI dashboard for MoMent backend and AI service.",
+      "uid": "moment-prod-application-business-overview",
+      "title": "MoMent Prod Application / Business Overview",
+      "description": "Prod Application, runtime, and business KPI dashboard for MoMent backend and AI service.",
       "timezone": "browser",
       "schemaVersion": 39,
       "version": 1,
@@ -24,7 +25,8 @@ data:
         "application",
         "business",
         "m4",
-        "gitops"
+        "gitops",
+        "prod"
       ],
       "editable": false,
       "graphTooltip": 1,
@@ -47,20 +49,15 @@ data:
             "name": "environment",
             "type": "custom",
             "label": "Environment",
-            "query": "dev,prod",
-            "hide": 0,
+            "query": "prod",
+            "hide": 2,
             "current": {
-              "text": "dev",
-              "value": "dev"
+              "text": "prod",
+              "value": "prod"
             },
             "options": [
               {
                 "selected": true,
-                "text": "dev",
-                "value": "dev"
-              },
-              {
-                "selected": false,
                 "text": "prod",
                 "value": "prod"
               }
