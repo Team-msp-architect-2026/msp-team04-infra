@@ -278,6 +278,27 @@ locust -f monitoring/locust/locustfile.py \
 
 테스트 전 / 중 / 후 다음 항목을 캡처한다.
 
+#### 테스트 전
+- `kubectl get pods -n moment-dev`
+- `kubectl get ingress -n moment-dev`
+- Dev ALB `/health`, `/programs` 200 응답 확인
+- Grafana Pod CPU / Memory 기본 상태 확인
+- CloudWatch ALB RequestCount / TargetResponseTime 기본 상태 확인
+
+#### 테스트 중
+- Locust 실행 화면 또는 headless summary
+- Grafana request count / latency / error rate 변화 확인
+- Grafana Pod CPU / Memory 변화 확인
+- CloudWatch ALB RequestCount / TargetResponseTime 증가 확인
+
+#### 테스트 후
+- Locust HTML report 생성 확인
+- Grafana Pod restart count 변화 여부 확인
+- Grafana Deployment available replicas 확인
+- CloudWatch HTTPCode_Target_4XX_Count / HTTPCode_Target_5XX_Count 확인
+- CloudWatch HealthyHostCount / UnHealthyHostCount 확인
+- 중단 기준 위반 여부 확인
+
 - request count
 - request latency
 - error rate
@@ -314,6 +335,7 @@ M4-HPA-01에서 Backend API HPA 검증 시 Locust 부하 기준을 재사용할 
 2. Small Load Test로 Grafana / CloudWatch 지표 변화 확인
 3. Peak Demo Scenario로 HPA scale-out 가능성 확인
 4. Scale-in 관측은 M4-HPA-01에서 후속 검증
+M4-PERF-01 시점에서 HPA는 미설정 상태이며, Small Load Test 기준에서 Scale-out은 발생하지 않았다. Scale-out 관측 가능 여부 검증은 M4-HPA-01에서 수행한다.
 
 ---
 
