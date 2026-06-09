@@ -225,3 +225,24 @@ output "prod_workload_service_account_annotations" {
   description = "Prod workload Kubernetes ServiceAccount annotations for IRSA."
   value       = try(module.prod_workload_irsa[0].service_account_annotations, {})
 }
+
+
+output "prod_alerting_sns_topic_arn" {
+  description = "Prod CloudWatch monitoring alert SNS topic ARN."
+  value       = try(module.prod_alerting_slack_notifier[0].sns_topic_arn, null)
+}
+
+output "prod_alerting_slack_notifier_lambda_name" {
+  description = "Prod CloudWatch Slack notifier Lambda function name."
+  value       = try(module.prod_alerting_slack_notifier[0].lambda_function_name, null)
+}
+
+output "prod_alerting_slack_webhook_secret_arn" {
+  description = "Prod Slack webhook Secrets Manager secret ARN for monitoring alerts."
+  value       = try(module.prod_alerting_slack_notifier[0].slack_webhook_secret_arn, null)
+}
+
+output "prod_cloudwatch_alert_alarm_names" {
+  description = "Prod CloudWatch monitoring alert alarm names."
+  value       = try(module.prod_alerting_slack_notifier[0].cloudwatch_alarm_names, [])
+}

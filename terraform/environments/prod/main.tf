@@ -268,6 +268,52 @@ module "prod_data_pipeline" {
   ]
 }
 
+
+module "prod_alerting_slack_notifier" {
+  count  = var.enable_prod_alerting_slack_notifier ? 1 : 0
+  source = "../../modules/alerting-slack-notifier"
+
+  project_name = var.project_name
+  environment  = "prod"
+
+  sns_topic_name            = var.prod_alerting_sns_topic_name
+  sns_display_name          = "MoMent Prod Monitoring Alert"
+  slack_webhook_secret_name = var.prod_alerting_slack_webhook_secret_name
+
+  enable_cloudwatch_alarms = var.enable_prod_cloudwatch_alarms
+
+  rds_instance_identifiers = var.enable_prod_vpc && var.enable_prod_data_tier && var.enable_prod_rds ? {
+    postgres = module.prod_rds[0].db_instance_identifier
+  } : {}
+
+  redis_replication_group_ids = var.enable_prod_vpc && var.enable_prod_data_tier && var.enable_prod_redis ? {
+    redis = module.prod_redis[0].redis_replication_group_id
+  } : {}
+
+  opensearch_domain_names = var.enable_prod_vpc && var.enable_prod_data_tier && var.enable_prod_opensearch ? {
+    opensearch = module.prod_opensearch[0].domain_name
+  } : {}
+
+  sqs_queue_names = var.enable_prod_sqs ? {
+    public_data = module.prod_sqs[0].queue_name
+  } : {}
+
+  sqs_dlq_names = var.enable_prod_sqs ? {
+    public_data = module.prod_sqs[0].dlq_name
+  } : {}
+
+  lambda_function_names = (
+    var.enable_prod_iam &&
+    var.enable_prod_data_pipeline &&
+    var.enable_prod_sqs &&
+    var.enable_prod_s3_raw_bucket
+    ) ? {
+    public_data_collector = module.prod_data_pipeline[0].lambda_function_name
+  } : {}
+
+  common_tags = local.prod_tags
+}
+
 module "prod_eks" {
   count  = var.enable_prod_iam && var.enable_prod_vpc && var.enable_prod_eks ? 1 : 0
   source = "../../modules/eks"
@@ -383,9 +429,14 @@ module "prod_external_secrets_irsa" {
   eks_oidc_provider_arn = module.prod_eks[0].eks_oidc_provider_arn
   eks_oidc_provider_url = module.prod_eks[0].eks_oidc_provider_url
 
-  secret_arns = [
-    for secret in aws_secretsmanager_secret.prod_runtime : secret.arn
-  ]
+  secret_arns = concat(
+    [
+      for secret in aws_secretsmanager_secret.prod_runtime : secret.arn
+    ],
+    var.enable_prod_alerting_slack_notifier ? [
+      module.prod_alerting_slack_notifier[0].slack_webhook_secret_arn
+    ] : []
+  )
 
   allow_rds_managed_secrets = true
 
