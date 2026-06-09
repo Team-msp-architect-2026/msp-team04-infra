@@ -14,6 +14,13 @@ startupProbe: {}
 readinessProbe: {}
 livenessProbe: {}
 resources: {}
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 2
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: null
+  behavior: {}
 nodeSelector: {}
 tolerations: []
 affinity: {}
