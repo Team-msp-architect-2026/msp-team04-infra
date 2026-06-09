@@ -183,3 +183,9 @@ variable "openvpn_root_volume_size" {
   type        = number
   default     = 8
 }
+
+variable "enable_dev_private_app_default_to_tgw" {
+  description = "Whether Network environment should manage Dev private app default route to TGW. Keep false when Dev owns 0.0.0.0/0 through Dev NAT."
+  type        = bool
+  default     = false
+}
