@@ -46,17 +46,6 @@ locals {
   ])
 }
 
-resource "aws_secretsmanager_secret" "client_profile" {
-  name                    = local.client_profile_secret_name
-  description             = "OpenVPN client profile for MoMent Network VPC admin access"
-  recovery_window_in_days = var.client_profile_secret_recovery_window_in_days
-
-  tags = merge(local.tags, {
-    Name = local.client_profile_secret_name
-    Role = "openvpn-client-profile"
-  })
-}
-
 resource "aws_iam_role" "this" {
   name = "${var.name_prefix}-openvpn-role"
 
@@ -93,7 +82,7 @@ resource "aws_iam_role_policy" "client_profile_secret_write" {
           "secretsmanager:DescribeSecret",
           "secretsmanager:PutSecretValue"
         ]
-        Resource = aws_secretsmanager_secret.client_profile.arn
+        Resource = var.client_profile_secret_arn
       }
     ]
   })
@@ -133,7 +122,7 @@ resource "aws_instance" "this" {
 
   user_data = templatefile("${path.module}/user_data.sh.tftpl", {
     aws_region                = data.aws_region.current.name
-    client_profile_secret_arn = aws_secretsmanager_secret.client_profile.arn
+    client_profile_secret_arn = var.client_profile_secret_arn
     public_endpoint           = local.public_endpoint
     openvpn_port              = var.openvpn_port
     openvpn_protocol          = var.openvpn_protocol

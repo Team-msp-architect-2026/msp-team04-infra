@@ -37,10 +37,10 @@ output "client_config_path" {
 
 output "client_profile_secret_name" {
   description = "Secrets Manager secret name that stores the generated OpenVPN client profile."
-  value       = aws_secretsmanager_secret.client_profile.name
+  value       = var.client_profile_secret_name
 }
 
 output "client_profile_secret_arn" {
   description = "Secrets Manager secret ARN that stores the generated OpenVPN client profile."
-  value       = aws_secretsmanager_secret.client_profile.arn
+  value       = var.client_profile_secret_arn
 }
