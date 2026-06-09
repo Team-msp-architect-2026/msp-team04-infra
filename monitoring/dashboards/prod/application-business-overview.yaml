@@ -14,96 +14,462 @@ metadata:
 data:
   application-business-overview.json: |-
     {
-      "uid": "moment-prod-app-biz-overview",
-      "title": "MoMent Prod Application / Business Overview",
-      "description": "Prod Application, runtime, and business KPI dashboard for MoMent backend and AI service.",
-      "timezone": "browser",
-      "schemaVersion": 39,
-      "version": 1,
-      "refresh": "30s",
-      "tags": [
-        "moment",
-        "application",
-        "business",
-        "m4",
-        "gitops",
-        "prod"
-      ],
-      "editable": false,
-      "graphTooltip": 1,
-      "time": {
-        "from": "now-6h",
-        "to": "now"
-      },
-      "timepicker": {
-        "refresh_intervals": [
-          "10s",
-          "30s",
-          "1m",
-          "5m",
-          "15m"
-        ]
-      },
-      "templating": {
+      "annotations": {
         "list": [
           {
-            "name": "environment",
-            "type": "custom",
-            "label": "Environment",
-            "query": "prod",
-            "hide": 2,
-            "current": {
-              "text": "prod",
-              "value": "prod"
+            "builtIn": 1,
+            "datasource": {
+              "type": "grafana",
+              "uid": "-- Grafana --"
             },
-            "options": [
-              {
-                "selected": true,
-                "text": "prod",
-                "value": "prod"
-              }
-            ]
+            "enable": true,
+            "hide": true,
+            "iconColor": "rgba(0, 211, 255, 1)",
+            "name": "Annotations & Alerts",
+            "type": "dashboard"
           }
         ]
       },
-      "annotations": {
-        "list": [
-
-        ]
-      },
+      "description": "Prod Application, runtime, and business KPI dashboard for MoMent backend and AI service.",
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 1,
       "links": [
 
       ],
       "panels": [
         {
-          "id": 1,
-          "title": "Overview",
-          "type": "row",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [
+
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": [
+
+            ]
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 0
+          },
+          "id": 46,
+          "options": {
+            "legend": {
+              "calcs": [
+
+              ],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "100 *\r\n(\r\n  1 -\r\n  sum(node_memory_MemAvailable_bytes{instance=~\"10.10.10.121:9100|10.10.10.34:9100|10.10.11.130:9100|10.10.11.134:9100|10.10.11.78:9100\"})\r\n  /\r\n  sum(node_memory_MemTotal_bytes{instance=~\"10.10.10.121:9100|10.10.10.34:9100|10.10.11.130:9100|10.10.11.134:9100|10.10.11.78:9100\"})\r\n)",
+              "instant": false,
+              "interval": "30s",
+              "legendFormat": "OnDemand",
+              "range": true,
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "100 *\r\n(\r\n  1 -\r\n  sum(node_memory_MemAvailable_bytes{instance=~\"10.10.11.86:9100\"})\r\n  /\r\n  sum(node_memory_MemTotal_bytes{instance=~\"10.10.11.86:9100\"})\r\n)",
+              "hide": false,
+              "instant": false,
+              "interval": "30s",
+              "legendFormat": "Spot",
+              "range": true,
+              "refId": "B"
+            }
+          ],
+          "title": "NodeGroup Memory Usage (OnDemand / Spot)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [
+
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": [
+
+            ]
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 8
+          },
+          "id": 45,
+          "options": {
+            "legend": {
+              "calcs": [
+
+              ],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "100 *\r\nsum(rate(node_cpu_seconds_total{mode!=\"idle\", instance=~\"10.10.10.121:9100|10.10.10.34:9100|10.10.11.130:9100|10.10.11.134:9100|10.10.11.78:9100\"}[5m]))\r\n/\r\nsum(rate(node_cpu_seconds_total{instance=~\"10.10.10.121:9100|10.10.10.34:9100|10.10.11.130:9100|10.10.11.134:9100|10.10.11.78:9100\"}[5m]))",
+              "hide": false,
+              "instant": false,
+              "legendFormat": "OnDemand",
+              "range": true,
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "100 *\r\nsum(rate(node_cpu_seconds_total{mode!=\"idle\", instance=~\"10.10.11.86:9100\"}[5m]))\r\n/\r\nsum(rate(node_cpu_seconds_total{instance=~\"10.10.11.86:9100\"}[5m]))",
+              "hide": false,
+              "instant": false,
+              "legendFormat": "Spot",
+              "range": true,
+              "refId": "B"
+            }
+          ],
+          "title": "NodeGroup CPU Usage (On-Demand / Spot)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [
+
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": [
+
+            ]
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 16
+          },
+          "id": 44,
+          "options": {
+            "legend": {
+              "calcs": [
+
+              ],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "sum by (pod) (increase(kube_pod_container_status_restarts_total{namespace=\"moment-prod\"}[1h]))",
+              "instant": false,
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Pod Restart Count (1h)",
+          "type": "timeseries"
+        },
+        {
           "collapsed": false,
           "gridPos": {
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 0
+            "y": 24
           },
+          "id": 1,
           "panels": [
 
-          ]
+          ],
+          "title": "Overview",
+          "type": "row"
         },
         {
-          "id": 2,
-          "title": "Backend Request Rate",
-          "type": "timeseries",
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
           },
           "description": "Backend API request rate excluding actuator and health endpoints.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 8,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [
+
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "reqps"
+            },
+            "overrides": [
+
+            ]
+          },
           "gridPos": {
             "h": 7,
             "w": 8,
             "x": 0,
-            "y": 1
+            "y": 25
+          },
+          "id": 2,
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
           },
           "targets": [
             {
@@ -118,36 +484,67 @@ data:
               "refId": "A"
             }
           ],
+          "title": "Backend Request Rate",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "description": "Client/server error request rate.",
           "fieldConfig": {
             "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
               "custom": {
-                "drawStyle": "line",
-                "lineInterpolation": "linear",
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
                 "barAlignment": 0,
-                "lineWidth": 1,
+                "drawStyle": "line",
                 "fillOpacity": 8,
                 "gradientMode": "none",
-                "spanNulls": false,
-                "showPoints": "never",
-                "pointSize": 5,
-                "stacking": {
-                  "mode": "none",
-                  "group": "A"
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
                 },
-                "axisPlacement": "auto",
-                "axisLabel": "",
-                "axisColorMode": "text",
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
                 "scaleDistribution": {
                   "type": "linear"
                 },
-                "hideFrom": {
-                  "tooltip": false,
-                  "viz": false,
-                  "legend": false
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
                 },
                 "thresholdsStyle": {
                   "mode": "off"
                 }
+              },
+              "mappings": [
+
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
               },
               "unit": "reqps"
             },
@@ -155,6 +552,13 @@ data:
 
             ]
           },
+          "gridPos": {
+            "h": 7,
+            "w": 8,
+            "x": 8,
+            "y": 25
+          },
+          "id": 3,
           "options": {
             "legend": {
               "calcs": [
@@ -168,22 +572,6 @@ data:
               "mode": "multi",
               "sort": "desc"
             }
-          }
-        },
-        {
-          "id": 3,
-          "title": "Backend 4xx / 5xx Rate",
-          "type": "timeseries",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "description": "Client/server error request rate.",
-          "gridPos": {
-            "h": 7,
-            "w": 8,
-            "x": 8,
-            "y": 1
           },
           "targets": [
             {
@@ -209,43 +597,81 @@ data:
               "refId": "B"
             }
           ],
+          "title": "Backend 4xx / 5xx Rate",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "description": "Average backend HTTP latency based on Micrometer sum/count.",
           "fieldConfig": {
             "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
               "custom": {
-                "drawStyle": "line",
-                "lineInterpolation": "linear",
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
                 "barAlignment": 0,
-                "lineWidth": 1,
+                "drawStyle": "line",
                 "fillOpacity": 8,
                 "gradientMode": "none",
-                "spanNulls": false,
-                "showPoints": "never",
-                "pointSize": 5,
-                "stacking": {
-                  "mode": "none",
-                  "group": "A"
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
                 },
-                "axisPlacement": "auto",
-                "axisLabel": "",
-                "axisColorMode": "text",
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
                 "scaleDistribution": {
                   "type": "linear"
                 },
-                "hideFrom": {
-                  "tooltip": false,
-                  "viz": false,
-                  "legend": false
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
                 },
                 "thresholdsStyle": {
                   "mode": "off"
                 }
               },
-              "unit": "reqps"
+              "mappings": [
+
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "s"
             },
             "overrides": [
 
             ]
           },
+          "gridPos": {
+            "h": 7,
+            "w": 8,
+            "x": 16,
+            "y": 25
+          },
+          "id": 4,
           "options": {
             "legend": {
               "calcs": [
@@ -259,22 +685,6 @@ data:
               "mode": "multi",
               "sort": "desc"
             }
-          }
-        },
-        {
-          "id": 4,
-          "title": "Backend Avg Latency",
-          "type": "timeseries",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "description": "Average backend HTTP latency based on Micrometer sum/count.",
-          "gridPos": {
-            "h": 7,
-            "w": 8,
-            "x": 16,
-            "y": 1
           },
           "targets": [
             {
@@ -289,43 +699,96 @@ data:
               "refId": "A"
             }
           ],
+          "title": "Backend Avg Latency",
+          "type": "timeseries"
+        },
+        {
+          "collapsed": false,
+          "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 32
+          },
+          "id": 10,
+          "panels": [
+
+          ],
+          "title": "Business: Application / Payment",
+          "type": "row"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "description": "Application business event rate grouped by result.",
           "fieldConfig": {
             "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
               "custom": {
-                "drawStyle": "line",
-                "lineInterpolation": "linear",
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
                 "barAlignment": 0,
-                "lineWidth": 1,
+                "drawStyle": "line",
                 "fillOpacity": 8,
                 "gradientMode": "none",
-                "spanNulls": false,
-                "showPoints": "never",
-                "pointSize": 5,
-                "stacking": {
-                  "mode": "none",
-                  "group": "A"
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
                 },
-                "axisPlacement": "auto",
-                "axisLabel": "",
-                "axisColorMode": "text",
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
                 "scaleDistribution": {
                   "type": "linear"
                 },
-                "hideFrom": {
-                  "tooltip": false,
-                  "viz": false,
-                  "legend": false
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
                 },
                 "thresholdsStyle": {
                   "mode": "off"
                 }
               },
-              "unit": "s"
+              "mappings": [
+
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "ops"
             },
             "overrides": [
 
             ]
           },
+          "gridPos": {
+            "h": 7,
+            "w": 8,
+            "x": 0,
+            "y": 33
+          },
+          "id": 11,
           "options": {
             "legend": {
               "calcs": [
@@ -339,37 +802,6 @@ data:
               "mode": "multi",
               "sort": "desc"
             }
-          }
-        },
-        {
-          "id": 10,
-          "title": "Business: Application / Payment",
-          "type": "row",
-          "collapsed": false,
-          "gridPos": {
-            "h": 1,
-            "w": 24,
-            "x": 0,
-            "y": 8
-          },
-          "panels": [
-
-          ]
-        },
-        {
-          "id": 11,
-          "title": "Application Events by Result",
-          "type": "timeseries",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "description": "Application business event rate grouped by result.",
-          "gridPos": {
-            "h": 7,
-            "w": 8,
-            "x": 0,
-            "y": 9
           },
           "targets": [
             {
@@ -384,73 +816,65 @@ data:
               "refId": "A"
             }
           ],
-          "fieldConfig": {
-            "defaults": {
-              "custom": {
-                "drawStyle": "line",
-                "lineInterpolation": "linear",
-                "barAlignment": 0,
-                "lineWidth": 1,
-                "fillOpacity": 8,
-                "gradientMode": "none",
-                "spanNulls": false,
-                "showPoints": "never",
-                "pointSize": 5,
-                "stacking": {
-                  "mode": "none",
-                  "group": "A"
-                },
-                "axisPlacement": "auto",
-                "axisLabel": "",
-                "axisColorMode": "text",
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "hideFrom": {
-                  "tooltip": false,
-                  "viz": false,
-                  "legend": false
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "unit": "ops"
-            },
-            "overrides": [
-
-            ]
-          },
-          "options": {
-            "legend": {
-              "calcs": [
-                "lastNotNull"
-              ],
-              "displayMode": "table",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "desc"
-            }
-          }
+          "title": "Application Events by Result",
+          "type": "timeseries"
         },
         {
-          "id": 12,
-          "title": "Application Failure Reasons",
-          "type": "bargauge",
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
           },
           "description": "Application failure counts by sanitized low-cardinality reason.",
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [
+
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": [
+
+            ]
+          },
           "gridPos": {
             "h": 7,
             "w": 8,
             "x": 8,
-            "y": 9
+            "y": 33
           },
+          "id": 12,
+          "options": {
+            "displayMode": "gradient",
+            "maxVizHeight": 300,
+            "minVizHeight": 16,
+            "minVizWidth": 8,
+            "namePlacement": "auto",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showUnfilled": true,
+            "sizing": "auto",
+            "valueMode": "color"
+          },
+          "pluginVersion": "11.1.0",
           "targets": [
             {
               "datasource": {
@@ -464,43 +888,94 @@ data:
               "refId": "A"
             }
           ],
-          "fieldConfig": {
-            "defaults": {
-              "custom": {
-              },
-              "unit": "short"
-            },
-            "overrides": [
-
-            ]
-          },
-          "options": {
-            "reduceOptions": {
-              "values": false,
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": ""
-            },
-            "orientation": "horizontal",
-            "displayMode": "gradient",
-            "showUnfilled": true
-          }
+          "title": "Application Failure Reasons",
+          "type": "bargauge"
         },
         {
-          "id": 13,
-          "title": "Payment Events by Phase / Result",
-          "type": "timeseries",
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
           },
           "description": "Payment business event rate grouped by provider, phase, and result.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 8,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [
+
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "ops"
+            },
+            "overrides": [
+
+            ]
+          },
           "gridPos": {
             "h": 7,
             "w": 8,
             "x": 16,
-            "y": 9
+            "y": 33
+          },
+          "id": 13,
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
           },
           "targets": [
             {
@@ -515,73 +990,65 @@ data:
               "refId": "A"
             }
           ],
-          "fieldConfig": {
-            "defaults": {
-              "custom": {
-                "drawStyle": "line",
-                "lineInterpolation": "linear",
-                "barAlignment": 0,
-                "lineWidth": 1,
-                "fillOpacity": 8,
-                "gradientMode": "none",
-                "spanNulls": false,
-                "showPoints": "never",
-                "pointSize": 5,
-                "stacking": {
-                  "mode": "none",
-                  "group": "A"
-                },
-                "axisPlacement": "auto",
-                "axisLabel": "",
-                "axisColorMode": "text",
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "hideFrom": {
-                  "tooltip": false,
-                  "viz": false,
-                  "legend": false
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "unit": "ops"
-            },
-            "overrides": [
-
-            ]
-          },
-          "options": {
-            "legend": {
-              "calcs": [
-                "lastNotNull"
-              ],
-              "displayMode": "table",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "desc"
-            }
-          }
+          "title": "Payment Events by Phase / Result",
+          "type": "timeseries"
         },
         {
-          "id": 14,
-          "title": "Payment Failure Reasons",
-          "type": "bargauge",
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
           },
           "description": "Payment failure counts by phase and sanitized reason.",
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [
+
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": [
+
+            ]
+          },
           "gridPos": {
             "h": 7,
             "w": 12,
             "x": 0,
-            "y": 16
+            "y": 40
           },
+          "id": 14,
+          "options": {
+            "displayMode": "gradient",
+            "maxVizHeight": 300,
+            "minVizHeight": 16,
+            "minVizWidth": 8,
+            "namePlacement": "auto",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showUnfilled": true,
+            "sizing": "auto",
+            "valueMode": "color"
+          },
+          "pluginVersion": "11.1.0",
           "targets": [
             {
               "datasource": {
@@ -595,9 +1062,32 @@ data:
               "refId": "A"
             }
           ],
+          "title": "Payment Failure Reasons",
+          "type": "bargauge"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "description": "Total confirmed payment events in selected range.",
           "fieldConfig": {
             "defaults": {
-              "custom": {
+              "mappings": [
+
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
               },
               "unit": "short"
             },
@@ -605,34 +1095,31 @@ data:
 
             ]
           },
-          "options": {
-            "reduceOptions": {
-              "values": false,
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": ""
-            },
-            "orientation": "horizontal",
-            "displayMode": "gradient",
-            "showUnfilled": true
-          }
-        },
-        {
-          "id": 15,
-          "title": "Payment Confirmed Count",
-          "type": "stat",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "description": "Total confirmed payment events in selected range.",
           "gridPos": {
             "h": 7,
             "w": 12,
             "x": 12,
-            "y": 16
+            "y": 40
           },
+          "id": 15,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "percentChangeColorMode": "standard",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showPercentChange": false,
+            "textMode": "auto",
+            "wideLayout": true
+          },
+          "pluginVersion": "11.1.0",
           "targets": [
             {
               "datasource": {
@@ -646,60 +1133,87 @@ data:
               "refId": "A"
             }
           ],
-          "fieldConfig": {
-            "defaults": {
-              "custom": {
-              },
-              "unit": "short"
-            },
-            "overrides": [
-
-            ]
-          },
-          "options": {
-            "reduceOptions": {
-              "values": false,
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": ""
-            },
-            "orientation": "auto",
-            "textMode": "auto",
-            "colorMode": "value",
-            "graphMode": "area",
-            "justifyMode": "auto"
-          }
+          "title": "Payment Confirmed Count",
+          "type": "stat"
         },
         {
-          "id": 20,
-          "title": "Business: Search",
-          "type": "row",
           "collapsed": false,
           "gridPos": {
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 23
+            "y": 47
           },
+          "id": 20,
           "panels": [
 
-          ]
+          ],
+          "title": "Business: Search",
+          "type": "row"
         },
         {
-          "id": 21,
-          "title": "Search Requests by Type / Result",
-          "type": "timeseries",
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
           },
           "description": "Search business request rate grouped by type and result.",
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 8,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "unit": "ops"
+            },
+            "overrides": [
+
+            ]
+          },
           "gridPos": {
             "h": 7,
             "w": 8,
             "x": 0,
-            "y": 24
+            "y": 48
+          },
+          "id": 21,
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
           },
           "targets": [
             {
@@ -714,43 +1228,59 @@ data:
               "refId": "A"
             }
           ],
+          "title": "Search Requests by Type / Result",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "description": "Average search duration by search type.",
           "fieldConfig": {
             "defaults": {
               "custom": {
-                "drawStyle": "line",
-                "lineInterpolation": "linear",
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
                 "barAlignment": 0,
-                "lineWidth": 1,
+                "drawStyle": "line",
                 "fillOpacity": 8,
                 "gradientMode": "none",
-                "spanNulls": false,
-                "showPoints": "never",
-                "pointSize": 5,
-                "stacking": {
-                  "mode": "none",
-                  "group": "A"
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
                 },
-                "axisPlacement": "auto",
-                "axisLabel": "",
-                "axisColorMode": "text",
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
                 "scaleDistribution": {
                   "type": "linear"
                 },
-                "hideFrom": {
-                  "tooltip": false,
-                  "viz": false,
-                  "legend": false
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
                 },
                 "thresholdsStyle": {
                   "mode": "off"
                 }
               },
-              "unit": "ops"
+              "unit": "s"
             },
             "overrides": [
 
             ]
           },
+          "gridPos": {
+            "h": 7,
+            "w": 8,
+            "x": 8,
+            "y": 48
+          },
+          "id": 22,
           "options": {
             "legend": {
               "calcs": [
@@ -764,22 +1294,6 @@ data:
               "mode": "multi",
               "sort": "desc"
             }
-          }
-        },
-        {
-          "id": 22,
-          "title": "Search Avg Duration",
-          "type": "timeseries",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "description": "Average search duration by search type.",
-          "gridPos": {
-            "h": 7,
-            "w": 8,
-            "x": 8,
-            "y": 24
           },
           "targets": [
             {
@@ -794,72 +1308,43 @@ data:
               "refId": "A"
             }
           ],
-          "fieldConfig": {
-            "defaults": {
-              "custom": {
-                "drawStyle": "line",
-                "lineInterpolation": "linear",
-                "barAlignment": 0,
-                "lineWidth": 1,
-                "fillOpacity": 8,
-                "gradientMode": "none",
-                "spanNulls": false,
-                "showPoints": "never",
-                "pointSize": 5,
-                "stacking": {
-                  "mode": "none",
-                  "group": "A"
-                },
-                "axisPlacement": "auto",
-                "axisLabel": "",
-                "axisColorMode": "text",
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "hideFrom": {
-                  "tooltip": false,
-                  "viz": false,
-                  "legend": false
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "unit": "s"
-            },
-            "overrides": [
-
-            ]
-          },
-          "options": {
-            "legend": {
-              "calcs": [
-                "lastNotNull"
-              ],
-              "displayMode": "table",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "desc"
-            }
-          }
+          "title": "Search Avg Duration",
+          "type": "timeseries"
         },
         {
-          "id": 23,
-          "title": "Search Source Split",
-          "type": "bargauge",
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
           },
           "description": "Search source distribution such as ai, fallback, opensearch, embedding_failed.",
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+              },
+              "unit": "short"
+            },
+            "overrides": [
+
+            ]
+          },
           "gridPos": {
             "h": 7,
             "w": 8,
             "x": 16,
-            "y": 24
+            "y": 48
+          },
+          "id": 23,
+          "options": {
+            "displayMode": "gradient",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showUnfilled": true
           },
           "targets": [
             {
@@ -874,58 +1359,87 @@ data:
               "refId": "A"
             }
           ],
-          "fieldConfig": {
-            "defaults": {
-              "custom": {
-              },
-              "unit": "short"
-            },
-            "overrides": [
-
-            ]
-          },
-          "options": {
-            "reduceOptions": {
-              "values": false,
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": ""
-            },
-            "orientation": "horizontal",
-            "displayMode": "gradient",
-            "showUnfilled": true
-          }
+          "title": "Search Source Split",
+          "type": "bargauge"
         },
         {
-          "id": 30,
-          "title": "Business: Recommendation",
-          "type": "row",
           "collapsed": false,
           "gridPos": {
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 31
+            "y": 55
           },
+          "id": 30,
           "panels": [
 
-          ]
+          ],
+          "title": "Business: Recommendation",
+          "type": "row"
         },
         {
-          "id": 31,
-          "title": "Recommendation Requests by Type / Result",
-          "type": "timeseries",
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
           },
           "description": "Recommendation request rate grouped by type and result.",
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 8,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "unit": "ops"
+            },
+            "overrides": [
+
+            ]
+          },
           "gridPos": {
             "h": 7,
             "w": 8,
             "x": 0,
-            "y": 32
+            "y": 56
+          },
+          "id": 31,
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
           },
           "targets": [
             {
@@ -940,43 +1454,59 @@ data:
               "refId": "A"
             }
           ],
+          "title": "Recommendation Requests by Type / Result",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "description": "Average recommendation duration by type.",
           "fieldConfig": {
             "defaults": {
               "custom": {
-                "drawStyle": "line",
-                "lineInterpolation": "linear",
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
                 "barAlignment": 0,
-                "lineWidth": 1,
+                "drawStyle": "line",
                 "fillOpacity": 8,
                 "gradientMode": "none",
-                "spanNulls": false,
-                "showPoints": "never",
-                "pointSize": 5,
-                "stacking": {
-                  "mode": "none",
-                  "group": "A"
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
                 },
-                "axisPlacement": "auto",
-                "axisLabel": "",
-                "axisColorMode": "text",
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
                 "scaleDistribution": {
                   "type": "linear"
                 },
-                "hideFrom": {
-                  "tooltip": false,
-                  "viz": false,
-                  "legend": false
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
                 },
                 "thresholdsStyle": {
                   "mode": "off"
                 }
               },
-              "unit": "ops"
+              "unit": "s"
             },
             "overrides": [
 
             ]
           },
+          "gridPos": {
+            "h": 7,
+            "w": 8,
+            "x": 8,
+            "y": 56
+          },
+          "id": 32,
           "options": {
             "legend": {
               "calcs": [
@@ -990,22 +1520,6 @@ data:
               "mode": "multi",
               "sort": "desc"
             }
-          }
-        },
-        {
-          "id": 32,
-          "title": "Recommendation Avg Duration",
-          "type": "timeseries",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "description": "Average recommendation duration by type.",
-          "gridPos": {
-            "h": 7,
-            "w": 8,
-            "x": 8,
-            "y": 32
           },
           "targets": [
             {
@@ -1020,72 +1534,43 @@ data:
               "refId": "A"
             }
           ],
-          "fieldConfig": {
-            "defaults": {
-              "custom": {
-                "drawStyle": "line",
-                "lineInterpolation": "linear",
-                "barAlignment": 0,
-                "lineWidth": 1,
-                "fillOpacity": 8,
-                "gradientMode": "none",
-                "spanNulls": false,
-                "showPoints": "never",
-                "pointSize": 5,
-                "stacking": {
-                  "mode": "none",
-                  "group": "A"
-                },
-                "axisPlacement": "auto",
-                "axisLabel": "",
-                "axisColorMode": "text",
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "hideFrom": {
-                  "tooltip": false,
-                  "viz": false,
-                  "legend": false
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "unit": "s"
-            },
-            "overrides": [
-
-            ]
-          },
-          "options": {
-            "legend": {
-              "calcs": [
-                "lastNotNull"
-              ],
-              "displayMode": "table",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "desc"
-            }
-          }
+          "title": "Recommendation Avg Duration",
+          "type": "timeseries"
         },
         {
-          "id": 33,
-          "title": "Recommendation Source Split",
-          "type": "bargauge",
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
           },
           "description": "Recommendation source split such as AI/FALLBACK.",
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+              },
+              "unit": "short"
+            },
+            "overrides": [
+
+            ]
+          },
           "gridPos": {
             "h": 7,
             "w": 8,
             "x": 16,
-            "y": 32
+            "y": 56
+          },
+          "id": 33,
+          "options": {
+            "displayMode": "gradient",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showUnfilled": true
           },
           "targets": [
             {
@@ -1100,6 +1585,30 @@ data:
               "refId": "A"
             }
           ],
+          "title": "Recommendation Source Split",
+          "type": "bargauge"
+        },
+        {
+          "collapsed": false,
+          "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 63
+          },
+          "id": 40,
+          "panels": [
+
+          ],
+          "title": "Runtime: Backend / AI",
+          "type": "row"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "description": "Prometheus target up status for backend-api and ai-service.",
           "fieldConfig": {
             "defaults": {
               "custom": {
@@ -1110,48 +1619,26 @@ data:
 
             ]
           },
-          "options": {
-            "reduceOptions": {
-              "values": false,
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": ""
-            },
-            "orientation": "horizontal",
-            "displayMode": "gradient",
-            "showUnfilled": true
-          }
-        },
-        {
-          "id": 40,
-          "title": "Runtime: Backend / AI",
-          "type": "row",
-          "collapsed": false,
-          "gridPos": {
-            "h": 1,
-            "w": 24,
-            "x": 0,
-            "y": 39
-          },
-          "panels": [
-
-          ]
-        },
-        {
-          "id": 41,
-          "title": "Application Target Up",
-          "type": "stat",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "description": "Prometheus target up status for backend-api and ai-service.",
           "gridPos": {
             "h": 7,
             "w": 8,
             "x": 0,
-            "y": 40
+            "y": 64
+          },
+          "id": 41,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
           },
           "targets": [
             {
@@ -1166,45 +1653,72 @@ data:
               "refId": "A"
             }
           ],
-          "fieldConfig": {
-            "defaults": {
-              "custom": {
-              },
-              "unit": "short"
-            },
-            "overrides": [
-
-            ]
-          },
-          "options": {
-            "reduceOptions": {
-              "values": false,
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": ""
-            },
-            "orientation": "auto",
-            "textMode": "auto",
-            "colorMode": "value",
-            "graphMode": "area",
-            "justifyMode": "auto"
-          }
+          "title": "Application Target Up",
+          "type": "stat"
         },
         {
-          "id": 42,
-          "title": "Backend JVM Heap Used",
-          "type": "timeseries",
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
           },
           "description": "Backend JVM heap memory usage by pool.",
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 8,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "unit": "bytes"
+            },
+            "overrides": [
+
+            ]
+          },
           "gridPos": {
             "h": 7,
             "w": 8,
             "x": 8,
-            "y": 40
+            "y": 64
+          },
+          "id": 42,
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
           },
           "targets": [
             {
@@ -1219,43 +1733,59 @@ data:
               "refId": "A"
             }
           ],
+          "title": "Backend JVM Heap Used",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "description": "Backend process CPU usage from Micrometer.",
           "fieldConfig": {
             "defaults": {
               "custom": {
-                "drawStyle": "line",
-                "lineInterpolation": "linear",
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
                 "barAlignment": 0,
-                "lineWidth": 1,
+                "drawStyle": "line",
                 "fillOpacity": 8,
                 "gradientMode": "none",
-                "spanNulls": false,
-                "showPoints": "never",
-                "pointSize": 5,
-                "stacking": {
-                  "mode": "none",
-                  "group": "A"
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
                 },
-                "axisPlacement": "auto",
-                "axisLabel": "",
-                "axisColorMode": "text",
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
                 "scaleDistribution": {
                   "type": "linear"
                 },
-                "hideFrom": {
-                  "tooltip": false,
-                  "viz": false,
-                  "legend": false
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
                 },
                 "thresholdsStyle": {
                   "mode": "off"
                 }
               },
-              "unit": "bytes"
+              "unit": "percentunit"
             },
             "overrides": [
 
             ]
           },
+          "gridPos": {
+            "h": 7,
+            "w": 8,
+            "x": 16,
+            "y": 64
+          },
+          "id": 43,
           "options": {
             "legend": {
               "calcs": [
@@ -1269,22 +1799,6 @@ data:
               "mode": "multi",
               "sort": "desc"
             }
-          }
-        },
-        {
-          "id": 43,
-          "title": "Backend Process CPU Usage",
-          "type": "timeseries",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "description": "Backend process CPU usage from Micrometer.",
-          "gridPos": {
-            "h": 7,
-            "w": 8,
-            "x": 16,
-            "y": 40
           },
           "targets": [
             {
@@ -1299,60 +1813,11 @@ data:
               "refId": "A"
             }
           ],
-          "fieldConfig": {
-            "defaults": {
-              "custom": {
-                "drawStyle": "line",
-                "lineInterpolation": "linear",
-                "barAlignment": 0,
-                "lineWidth": 1,
-                "fillOpacity": 8,
-                "gradientMode": "none",
-                "spanNulls": false,
-                "showPoints": "never",
-                "pointSize": 5,
-                "stacking": {
-                  "mode": "none",
-                  "group": "A"
-                },
-                "axisPlacement": "auto",
-                "axisLabel": "",
-                "axisColorMode": "text",
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "hideFrom": {
-                  "tooltip": false,
-                  "viz": false,
-                  "legend": false
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "unit": "percentunit"
-            },
-            "overrides": [
-
-            ]
-          },
-          "options": {
-            "legend": {
-              "calcs": [
-                "lastNotNull"
-              ],
-              "displayMode": "table",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "desc"
-            }
-          }
+          "title": "Backend Process CPU Usage",
+          "type": "timeseries"
         },
         {
-          "id": 44,
+          "id": 47,
           "type": "row",
           "title": "HPA / Autoscaling",
           "collapsed": false,
@@ -1360,14 +1825,14 @@ data:
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 47
+            "y": 71
           },
           "panels": [
 
           ]
         },
         {
-          "id": 45,
+          "id": 48,
           "type": "timeseries",
           "title": "Backend HPA replicas",
           "description": "Current, desired, minimum, and maximum replicas for the Backend API HPA.",
@@ -1375,7 +1840,7 @@ data:
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 48
+            "y": 72
           },
           "fieldConfig": {
             "defaults": {
@@ -1447,7 +1912,7 @@ data:
           ]
         },
         {
-          "id": 46,
+          "id": 49,
           "type": "timeseries",
           "title": "Backend deployment replicas",
           "description": "Available, unavailable, and desired Deployment replicas for Backend API.",
@@ -1455,7 +1920,7 @@ data:
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 48
+            "y": 72
           },
           "fieldConfig": {
             "defaults": {
@@ -1518,7 +1983,7 @@ data:
           ]
         },
         {
-          "id": 47,
+          "id": 50,
           "type": "timeseries",
           "title": "Backend CPU utilization vs HPA target",
           "description": "Backend API CPU usage as a percentage of requested CPU, compared with the HPA target.",
@@ -1526,7 +1991,7 @@ data:
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 56
+            "y": 80
           },
           "fieldConfig": {
             "defaults": {
@@ -1580,7 +2045,7 @@ data:
           ]
         },
         {
-          "id": 48,
+          "id": 51,
           "type": "timeseries",
           "title": "Backend memory utilization",
           "description": "Backend API memory working set as a percentage of requested memory.",
@@ -1588,7 +2053,7 @@ data:
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 56
+            "y": 80
           },
           "fieldConfig": {
             "defaults": {
@@ -1633,7 +2098,7 @@ data:
           ]
         },
         {
-          "id": 49,
+          "id": 52,
           "type": "timeseries",
           "title": "Backend pod restarts and pending pods",
           "description": "Restart and Pending signals during HPA scale-out validation.",
@@ -1641,7 +2106,7 @@ data:
             "h": 8,
             "w": 24,
             "x": 0,
-            "y": 64
+            "y": 88
           },
           "fieldConfig": {
             "defaults": {
@@ -1694,5 +2159,59 @@ data:
             }
           ]
         }
-      ]
+      ],
+      "refresh": "30s",
+      "schemaVersion": 39,
+      "tags": [
+        "moment",
+        "application",
+        "business",
+        "m4",
+        "gitops",
+        "prod"
+      ],
+      "templating": {
+        "list": [
+          {
+            "current": {
+              "selected": false,
+              "text": "prod",
+              "value": "prod"
+            },
+            "hide": 2,
+            "includeAll": false,
+            "label": "Environment",
+            "multi": false,
+            "name": "environment",
+            "options": [
+              {
+                "selected": true,
+                "text": "prod",
+                "value": "prod"
+              }
+            ],
+            "query": "prod",
+            "skipUrlSync": false,
+            "type": "custom"
+          }
+        ]
+      },
+      "time": {
+        "from": "now-6h",
+        "to": "now"
+      },
+      "timepicker": {
+        "refresh_intervals": [
+          "10s",
+          "30s",
+          "1m",
+          "5m",
+          "15m"
+        ]
+      },
+      "timezone": "browser",
+      "title": "MoMent Prod Application / Business Overview",
+      "uid": "moment-prod-app-biz-overview",
+      "version": 1,
+      "weekStart": ""
     }
