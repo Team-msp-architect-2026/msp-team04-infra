@@ -117,6 +117,12 @@ variable "enable_prod_vpc_endpoints" {
   default     = false
 }
 
+variable "enable_dev_vpc" {
+  description = "Whether to create the Dev VPC and VPC-scoped network resources."
+  type        = bool
+  default     = true
+}
+
 variable "enable_dev_nat_gateway" {
   description = "Whether to create Dev NAT Gateway for private app subnet egress."
   type        = bool

@@ -49,64 +49,64 @@ output "dev_batch_repository_url" {
 
 output "dev_vpc_id" {
   description = "Dev VPC ID."
-  value       = module.dev_vpc.dev_vpc_id
+  value       = try(module.dev_vpc[0].dev_vpc_id, null)
 }
 
 output "dev_vpc_cidr" {
   description = "Dev VPC CIDR block."
-  value       = module.dev_vpc.dev_vpc_cidr
+  value       = try(module.dev_vpc[0].dev_vpc_cidr, null)
 }
 
 output "dev_public_subnet_ids" {
   description = "Dev public subnet IDs."
-  value       = module.dev_vpc.dev_public_subnet_ids
+  value       = try(module.dev_vpc[0].dev_public_subnet_ids, [])
 }
 
 output "dev_private_app_subnet_ids" {
   description = "Dev private app subnet IDs."
-  value       = module.dev_vpc.dev_private_app_subnet_ids
+  value       = try(module.dev_vpc[0].dev_private_app_subnet_ids, [])
 }
 
 output "dev_private_data_subnet_ids" {
   description = "Dev private data subnet IDs."
-  value       = module.dev_vpc.dev_private_data_subnet_ids
+  value       = try(module.dev_vpc[0].dev_private_data_subnet_ids, [])
 }
 
 output "dev_reserved_data_subnet_ids" {
   description = "Dev reserved private data subnet IDs."
-  value       = module.dev_vpc.dev_private_data_subnet_ids
+  value       = try(module.dev_vpc[0].dev_private_data_subnet_ids, [])
 }
 
 output "dev_tgw_subnet_ids" {
   description = "Dev TGW attachment subnet IDs."
-  value       = module.dev_vpc.dev_tgw_subnet_ids
+  value       = try(module.dev_vpc[0].dev_tgw_subnet_ids, [])
 }
 
 output "dev_public_route_table_id" {
   description = "Dev public route table ID."
-  value       = module.dev_vpc.dev_public_route_table_id
+  value       = try(module.dev_vpc[0].dev_public_route_table_id, null)
 }
 
 output "dev_private_app_route_table_id" {
   description = "Dev private app route table ID."
-  value       = module.dev_vpc.dev_private_app_route_table_id
+  value       = try(module.dev_vpc[0].dev_private_app_route_table_id, null)
 }
 
 output "dev_private_data_route_table_id" {
   description = "Dev private data route table ID."
-  value       = module.dev_vpc.dev_private_data_route_table_id
+  value       = try(module.dev_vpc[0].dev_private_data_route_table_id, null)
 }
 
 output "dev_tgw_route_table_id" {
   description = "Dev TGW subnet route table ID."
-  value       = module.dev_vpc.dev_tgw_route_table_id
+  value       = try(module.dev_vpc[0].dev_tgw_route_table_id, null)
 }
 
 # ── Dev Security Group / Endpoint Outputs ─────────────────────────────────────
 
 output "dev_security_group_ids" {
   description = "Dev service security group IDs."
-  value       = module.dev_security_group.service_security_group_ids
+  value       = try(module.dev_security_group[0].service_security_group_ids, {})
 }
 
 output "dev_s3_gateway_endpoint_id" {

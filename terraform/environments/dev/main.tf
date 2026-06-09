@@ -35,6 +35,7 @@ module "dev_ecr" {
 }
 
 module "dev_vpc" {
+  count  = var.enable_dev_vpc ? 1 : 0
   source = "../../modules/dev-vpc"
 
   project_name = var.project_name
@@ -73,7 +74,7 @@ module "dev_vpc" {
 }
 
 resource "aws_eip" "nat" {
-  count = var.enable_dev_nat_gateway ? 1 : 0
+  count = var.enable_dev_vpc && var.enable_dev_nat_gateway ? 1 : 0
 
   domain = "vpc"
   tags = merge(local.common_tags, {
@@ -82,10 +83,10 @@ resource "aws_eip" "nat" {
 }
 
 resource "aws_nat_gateway" "dev" {
-  count = var.enable_dev_nat_gateway ? 1 : 0
+  count = var.enable_dev_vpc && var.enable_dev_nat_gateway ? 1 : 0
 
   allocation_id = aws_eip.nat[0].id
-  subnet_id     = module.dev_vpc.dev_public_subnet_ids[0]
+  subnet_id     = module.dev_vpc[0].dev_public_subnet_ids[0]
   tags = merge(local.common_tags, {
     Name = "moment-dev-nat-gw"
   })
@@ -93,20 +94,21 @@ resource "aws_nat_gateway" "dev" {
 }
 
 resource "aws_route" "private_app_nat" {
-  count = var.enable_dev_nat_gateway ? 1 : 0
+  count = var.enable_dev_vpc && var.enable_dev_nat_gateway ? 1 : 0
 
-  route_table_id         = module.dev_vpc.dev_private_app_route_table_id
+  route_table_id         = module.dev_vpc[0].dev_private_app_route_table_id
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id         = aws_nat_gateway.dev[0].id
   depends_on             = [aws_nat_gateway.dev]
 }
 
 module "dev_security_group" {
+  count  = var.enable_dev_vpc ? 1 : 0
   source = "../../modules/security-group"
 
   name_prefix       = "moment-dev"
   environment       = "dev"
-  vpc_id            = module.dev_vpc.dev_vpc_id
+  vpc_id            = module.dev_vpc[0].dev_vpc_id
   create_service_sg = true
   create_openvpn_sg = false
 
@@ -123,16 +125,16 @@ module "dev_security_group" {
 }
 
 module "dev_vpc_endpoint" {
-  count  = var.enable_dev_vpc_endpoints ? 1 : 0
+  count  = var.enable_dev_vpc && var.enable_dev_vpc_endpoints ? 1 : 0
   source = "../../modules/vpc-endpoint"
 
   name_prefix = "moment-dev"
   environment = "dev"
 
-  vpc_id                      = module.dev_vpc.dev_vpc_id
-  private_app_subnet_ids      = module.dev_vpc.dev_private_app_subnet_ids
-  private_app_route_table_ids = [module.dev_vpc.dev_private_app_route_table_id]
-  endpoint_security_group_id  = module.dev_security_group.vpc_endpoint_sg_id
+  vpc_id                      = module.dev_vpc[0].dev_vpc_id
+  private_app_subnet_ids      = module.dev_vpc[0].dev_private_app_subnet_ids
+  private_app_route_table_ids = [module.dev_vpc[0].dev_private_app_route_table_id]
+  endpoint_security_group_id  = module.dev_security_group[0].vpc_endpoint_sg_id
 
   common_tags = {
     Project = "MoMent"
@@ -141,10 +143,10 @@ module "dev_vpc_endpoint" {
 
 
 resource "aws_security_group_rule" "vpc_endpoint_ingress_from_eks_cluster_sg" {
-  count = var.enable_dev_vpc_endpoints && var.enable_dev_eks ? 1 : 0
+  count = var.enable_dev_vpc && var.enable_dev_vpc_endpoints && var.enable_dev_eks ? 1 : 0
 
   type                     = "ingress"
-  security_group_id        = module.dev_security_group.vpc_endpoint_sg_id
+  security_group_id        = module.dev_security_group[0].vpc_endpoint_sg_id
   from_port                = 443
   to_port                  = 443
   protocol                 = "tcp"
@@ -266,7 +268,7 @@ module "dev_iam" {
   sqs_queue_arns                     = var.enable_dev_sqs ? [module.dev_sqs[0].queue_arn] : []
   enable_sqs_queue_policy_statements = var.enable_dev_sqs
 
-  opensearch_domain_arns = var.enable_dev_opensearch ? [
+  opensearch_domain_arns = var.enable_dev_vpc && var.enable_dev_opensearch ? [
     module.dev_opensearch[0].domain_arn,
     "${module.dev_opensearch[0].domain_arn}/*"
   ] : []
@@ -340,15 +342,15 @@ module "dev_alerting_slack_notifier" {
 
   enable_cloudwatch_alarms = var.enable_dev_cloudwatch_alarms
 
-  rds_instance_identifiers = var.enable_dev_rds ? {
+  rds_instance_identifiers = var.enable_dev_vpc && var.enable_dev_rds ? {
     postgres = module.dev_rds[0].db_instance_identifier
   } : {}
 
-  redis_replication_group_ids = var.enable_dev_redis ? {
+  redis_replication_group_ids = var.enable_dev_vpc && var.enable_dev_redis ? {
     redis = module.dev_redis[0].redis_replication_group_id
   } : {}
 
-  opensearch_domain_names = var.enable_dev_opensearch ? {
+  opensearch_domain_names = var.enable_dev_vpc && var.enable_dev_opensearch ? {
     opensearch = module.dev_opensearch[0].domain_name
   } : {}
 
@@ -378,7 +380,7 @@ module "dev_alerting_slack_notifier" {
 }
 
 module "dev_eks" {
-  count = var.enable_dev_iam && var.enable_dev_eks ? 1 : 0
+  count = var.enable_dev_vpc && var.enable_dev_iam && var.enable_dev_eks ? 1 : 0
 
   source = "../../modules/eks"
 
@@ -389,7 +391,7 @@ module "dev_eks" {
   cluster_role_arn   = module.dev_iam[0].eks_cluster_role_arn
   kubernetes_version = var.prod_eks_kubernetes_version
 
-  subnet_ids                 = module.dev_vpc.dev_private_app_subnet_ids
+  subnet_ids                 = module.dev_vpc[0].dev_private_app_subnet_ids
   cluster_security_group_ids = []
 
   endpoint_private_access = true
@@ -424,7 +426,7 @@ module "dev_eks" {
 }
 
 module "dev_eks_nodegroups" {
-  count = var.enable_dev_iam && var.enable_dev_eks && var.enable_dev_nodegroups ? 1 : 0
+  count = var.enable_dev_vpc && var.enable_dev_iam && var.enable_dev_eks && var.enable_dev_nodegroups ? 1 : 0
 
   source = "../../modules/eks-nodegroup"
 
@@ -433,7 +435,7 @@ module "dev_eks_nodegroups" {
 
   cluster_name  = module.dev_eks[0].cluster_name
   node_role_arn = module.dev_iam[0].eks_node_role_arn
-  subnet_ids    = module.dev_vpc.dev_private_app_subnet_ids
+  subnet_ids    = module.dev_vpc[0].dev_private_app_subnet_ids
 
   node_groups = {
     core_on_demand = {
@@ -537,7 +539,7 @@ module "dev_eks_nodegroups" {
 }
 
 module "dev_redis" {
-  count = var.enable_dev_redis ? 1 : 0
+  count = var.enable_dev_vpc && var.enable_dev_redis ? 1 : 0
 
   source = "../../modules/redis"
 
@@ -547,8 +549,8 @@ module "dev_redis" {
   replication_group_id = "${var.project_name}-dev-redis"
   description          = "MoMent Dev Redis for distributed lock and recommendation cache"
 
-  subnet_ids         = module.dev_vpc.dev_private_data_subnet_ids
-  security_group_ids = [module.dev_security_group.redis_sg_id]
+  subnet_ids         = module.dev_vpc[0].dev_private_data_subnet_ids
+  security_group_ids = [module.dev_security_group[0].redis_sg_id]
 
   engine_version = var.redis_engine_version
   node_type      = var.redis_node_type
@@ -561,7 +563,7 @@ module "dev_redis" {
 }
 
 module "dev_rds" {
-  count = var.enable_dev_rds ? 1 : 0
+  count = var.enable_dev_vpc && var.enable_dev_rds ? 1 : 0
 
   source = "../../modules/rds"
 
@@ -572,8 +574,8 @@ module "dev_rds" {
   database_name   = var.rds_database_name
   master_username = var.rds_master_username
 
-  subnet_ids         = module.dev_vpc.dev_private_data_subnet_ids
-  security_group_ids = [module.dev_security_group.rds_sg_id]
+  subnet_ids         = module.dev_vpc[0].dev_private_data_subnet_ids
+  security_group_ids = [module.dev_security_group[0].rds_sg_id]
 
   engine_version         = var.rds_engine_version
   parameter_group_family = var.rds_parameter_group_family
@@ -597,7 +599,7 @@ module "dev_rds" {
 }
 
 module "dev_opensearch" {
-  count = var.enable_dev_opensearch ? 1 : 0
+  count = var.enable_dev_vpc && var.enable_dev_opensearch ? 1 : 0
 
   source = "../../modules/opensearch"
 
@@ -618,7 +620,7 @@ module "dev_opensearch" {
   ebs_volume_size = var.dev_opensearch_ebs_volume_size
 
   subnet_ids         = local.dev_opensearch_subnet_ids
-  security_group_ids = [module.dev_security_group.opensearch_sg_id]
+  security_group_ids = [module.dev_security_group[0].opensearch_sg_id]
 
   create_service_linked_role = var.create_opensearch_service_linked_role
 
@@ -628,8 +630,12 @@ module "dev_opensearch" {
 }
 
 locals {
-  dev_opensearch_subnet_ids = length(module.dev_vpc.dev_private_data_subnet_ids) > 0 ? slice(
-    module.dev_vpc.dev_private_data_subnet_ids,
+  dev_opensearch_subnet_ids = (
+    var.enable_dev_vpc &&
+    length(module.dev_vpc) > 0 &&
+    length(module.dev_vpc[0].dev_private_data_subnet_ids) > 0
+    ) ? slice(
+    module.dev_vpc[0].dev_private_data_subnet_ids,
     0,
     1
   ) : []
