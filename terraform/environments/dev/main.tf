@@ -369,6 +369,9 @@ module "dev_alerting_slack_notifier" {
     public_data_collector = module.dev_data_pipeline[0].lambda_function_name
   } : {}
 
+  application_load_balancer_tag_selectors = var.dev_alerting_application_load_balancer_tag_selectors
+  target_group_tag_selectors              = var.dev_alerting_target_group_tag_selectors
+
   common_tags = merge(local.common_tags, {
     Environment = "dev"
   })

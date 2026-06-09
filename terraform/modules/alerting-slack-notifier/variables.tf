@@ -162,3 +162,44 @@ variable "common_tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "application_load_balancer_tag_selectors" {
+  description = "Application Load Balancer tag selectors keyed by logical name. Used for AWS Load Balancer Controller managed ALBs."
+  type = map(object({
+    tags = map(string)
+  }))
+  default = {}
+}
+
+variable "target_group_tag_selectors" {
+  description = "Target Group tag selectors keyed by logical name. load_balancer_key must reference application_load_balancer_tag_selectors."
+  type = map(object({
+    load_balancer_key = string
+    tags              = map(string)
+  }))
+  default = {}
+}
+
+variable "alb_elb_5xx_count_threshold" {
+  description = "ALB HTTPCode_ELB_5XX_Count alarm threshold."
+  type        = number
+  default     = 1
+}
+
+variable "alb_target_response_time_high_threshold_seconds" {
+  description = "ALB TargetResponseTime high threshold in seconds."
+  type        = number
+  default     = 2
+}
+
+variable "target_group_unhealthy_host_count_threshold" {
+  description = "Target Group UnHealthyHostCount alarm threshold."
+  type        = number
+  default     = 0
+}
+
+variable "target_group_5xx_count_threshold" {
+  description = "Target Group HTTPCode_Target_5XX_Count alarm threshold."
+  type        = number
+  default     = 1
+}

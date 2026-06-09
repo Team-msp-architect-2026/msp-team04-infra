@@ -311,6 +311,9 @@ module "prod_alerting_slack_notifier" {
     public_data_collector = module.prod_data_pipeline[0].lambda_function_name
   } : {}
 
+  application_load_balancer_tag_selectors = var.prod_alerting_application_load_balancer_tag_selectors
+  target_group_tag_selectors              = var.prod_alerting_target_group_tag_selectors
+
   common_tags = local.prod_tags
 }
 

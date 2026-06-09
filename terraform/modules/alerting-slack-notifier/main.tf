@@ -439,3 +439,182 @@ resource "aws_cloudwatch_metric_alarm" "lambda_errors" {
     Role = "cloudwatch-alarm"
   })
 }
+
+# ALB / Target Group resources are created dynamically by AWS Load Balancer Controller.
+# Look them up by stable controller tags instead of hardcoding generated names or ARNs.
+data "aws_resourcegroupstaggingapi_resources" "application_load_balancers" {
+  for_each = var.enable_cloudwatch_alarms ? var.application_load_balancer_tag_selectors : {}
+
+  resource_type_filters = ["elasticloadbalancing:loadbalancer"]
+
+  dynamic "tag_filter" {
+    for_each = each.value.tags
+
+    content {
+      key    = tag_filter.key
+      values = [tag_filter.value]
+    }
+  }
+}
+
+data "aws_resourcegroupstaggingapi_resources" "target_groups" {
+  for_each = var.enable_cloudwatch_alarms ? var.target_group_tag_selectors : {}
+
+  resource_type_filters = ["elasticloadbalancing:targetgroup"]
+
+  dynamic "tag_filter" {
+    for_each = each.value.tags
+
+    content {
+      key    = tag_filter.key
+      values = [tag_filter.value]
+    }
+  }
+}
+
+locals {
+  application_load_balancer_arns = {
+    for key, resources in data.aws_resourcegroupstaggingapi_resources.application_load_balancers :
+    key => resources.resource_tag_mapping_list[0].resource_arn
+    if length(resources.resource_tag_mapping_list) > 0
+  }
+
+  application_load_balancer_arn_suffixes = {
+    for key, arn in local.application_load_balancer_arns :
+    key => replace(arn, "/^arn:[^:]+:elasticloadbalancing:[^:]+:[0-9]+:loadbalancer\\//", "")
+  }
+
+  target_group_arns = {
+    for key, resources in data.aws_resourcegroupstaggingapi_resources.target_groups :
+    key => resources.resource_tag_mapping_list[0].resource_arn
+    if length(resources.resource_tag_mapping_list) > 0
+  }
+
+  target_group_arn_suffixes = {
+    for key, arn in local.target_group_arns :
+    key => replace(arn, "/^arn:[^:]+:elasticloadbalancing:[^:]+:[0-9]+:/", "")
+  }
+
+  target_group_alarm_dimensions = {
+    for key, target_group in local.target_group_arn_suffixes :
+    key => {
+      target_group  = target_group
+      load_balancer = local.application_load_balancer_arn_suffixes[var.target_group_tag_selectors[key].load_balancer_key]
+    }
+    if contains(keys(local.application_load_balancer_arn_suffixes), var.target_group_tag_selectors[key].load_balancer_key)
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "alb_elb_5xx_count" {
+  for_each = var.enable_cloudwatch_alarms ? local.application_load_balancer_arn_suffixes : {}
+
+  alarm_name          = "${local.name_prefix}-alb-${each.key}-elb-5xx-count"
+  alarm_description   = "ALB generated HTTP 5XX responses for ${each.key}."
+  namespace           = "AWS/ApplicationELB"
+  metric_name         = "HTTPCode_ELB_5XX_Count"
+  statistic           = "Sum"
+  period              = 60
+  evaluation_periods  = 5
+  datapoints_to_alarm = 1
+  threshold           = var.alb_elb_5xx_count_threshold
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  treat_missing_data  = "notBreaching"
+
+  dimensions = {
+    LoadBalancer = each.value
+  }
+
+  alarm_actions = local.alarm_actions
+  ok_actions    = local.ok_actions
+
+  tags = merge(local.tags, {
+    Name = "${local.name_prefix}-alb-${each.key}-elb-5xx-count"
+    Role = "cloudwatch-alarm"
+  })
+}
+
+resource "aws_cloudwatch_metric_alarm" "alb_target_response_time_high" {
+  for_each = var.enable_cloudwatch_alarms ? local.application_load_balancer_arn_suffixes : {}
+
+  alarm_name          = "${local.name_prefix}-alb-${each.key}-target-response-time-high"
+  alarm_description   = "ALB TargetResponseTime is high for ${each.key}."
+  namespace           = "AWS/ApplicationELB"
+  metric_name         = "TargetResponseTime"
+  statistic           = "Average"
+  period              = 60
+  evaluation_periods  = 5
+  datapoints_to_alarm = 3
+  threshold           = var.alb_target_response_time_high_threshold_seconds
+  comparison_operator = "GreaterThanThreshold"
+  treat_missing_data  = "notBreaching"
+
+  dimensions = {
+    LoadBalancer = each.value
+  }
+
+  alarm_actions = local.alarm_actions
+  ok_actions    = local.ok_actions
+
+  tags = merge(local.tags, {
+    Name = "${local.name_prefix}-alb-${each.key}-target-response-time-high"
+    Role = "cloudwatch-alarm"
+  })
+}
+
+resource "aws_cloudwatch_metric_alarm" "target_group_unhealthy_hosts" {
+  for_each = var.enable_cloudwatch_alarms ? local.target_group_alarm_dimensions : {}
+
+  alarm_name          = "${local.name_prefix}-tg-${each.key}-unhealthy-hosts"
+  alarm_description   = "Target Group has unhealthy targets for ${each.key}."
+  namespace           = "AWS/ApplicationELB"
+  metric_name         = "UnHealthyHostCount"
+  statistic           = "Average"
+  period              = 60
+  evaluation_periods  = 5
+  datapoints_to_alarm = 1
+  threshold           = var.target_group_unhealthy_host_count_threshold
+  comparison_operator = "GreaterThanThreshold"
+  treat_missing_data  = "notBreaching"
+
+  dimensions = {
+    LoadBalancer = each.value.load_balancer
+    TargetGroup  = each.value.target_group
+  }
+
+  alarm_actions = local.alarm_actions
+  ok_actions    = local.ok_actions
+
+  tags = merge(local.tags, {
+    Name = "${local.name_prefix}-tg-${each.key}-unhealthy-hosts"
+    Role = "cloudwatch-alarm"
+  })
+}
+
+resource "aws_cloudwatch_metric_alarm" "target_group_5xx_count" {
+  for_each = var.enable_cloudwatch_alarms ? local.target_group_alarm_dimensions : {}
+
+  alarm_name          = "${local.name_prefix}-tg-${each.key}-target-5xx-count"
+  alarm_description   = "Target Group generated HTTP 5XX responses for ${each.key}."
+  namespace           = "AWS/ApplicationELB"
+  metric_name         = "HTTPCode_Target_5XX_Count"
+  statistic           = "Sum"
+  period              = 60
+  evaluation_periods  = 5
+  datapoints_to_alarm = 1
+  threshold           = var.target_group_5xx_count_threshold
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  treat_missing_data  = "notBreaching"
+
+  dimensions = {
+    LoadBalancer = each.value.load_balancer
+    TargetGroup  = each.value.target_group
+  }
+
+  alarm_actions = local.alarm_actions
+  ok_actions    = local.ok_actions
+
+  tags = merge(local.tags, {
+    Name = "${local.name_prefix}-tg-${each.key}-target-5xx-count"
+    Role = "cloudwatch-alarm"
+  })
+}

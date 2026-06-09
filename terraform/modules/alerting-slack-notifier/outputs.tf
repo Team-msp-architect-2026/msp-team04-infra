@@ -44,6 +44,10 @@ output "cloudwatch_alarm_names" {
     [for alarm in aws_cloudwatch_metric_alarm.opensearch_cluster_yellow : alarm.alarm_name],
     [for alarm in aws_cloudwatch_metric_alarm.sqs_visible_messages_high : alarm.alarm_name],
     [for alarm in aws_cloudwatch_metric_alarm.sqs_dlq_visible_messages : alarm.alarm_name],
-    [for alarm in aws_cloudwatch_metric_alarm.lambda_errors : alarm.alarm_name]
+    [for alarm in aws_cloudwatch_metric_alarm.lambda_errors : alarm.alarm_name],
+    [for alarm in aws_cloudwatch_metric_alarm.alb_elb_5xx_count : alarm.alarm_name],
+    [for alarm in aws_cloudwatch_metric_alarm.alb_target_response_time_high : alarm.alarm_name],
+    [for alarm in aws_cloudwatch_metric_alarm.target_group_unhealthy_hosts : alarm.alarm_name],
+    [for alarm in aws_cloudwatch_metric_alarm.target_group_5xx_count : alarm.alarm_name]
   )
 }
