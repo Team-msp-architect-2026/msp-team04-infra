@@ -89,6 +89,12 @@ variable "client_profile_secret_name" {
   default     = ""
 }
 
+
+variable "client_profile_secret_arn" {
+  description = "ARN of the externally managed Secrets Manager secret where the generated OpenVPN client profile is stored."
+  type        = string
+}
+
 variable "client_profile_secret_recovery_window_in_days" {
   description = "Secrets Manager recovery window in days. Use 0 for short-lived validation environments."
   type        = number

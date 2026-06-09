@@ -166,6 +166,13 @@ variable "openvpn_client_name" {
   default     = "moment-admin"
 }
 
+
+variable "preserve_openvpn_client_profile_secret" {
+  description = "Whether to keep the OpenVPN client profile secret even when OpenVPN/Network runtime resources are disabled for cost-down."
+  type        = bool
+  default     = true
+}
+
 variable "openvpn_client_profile_secret_name" {
   description = "Secrets Manager secret name for generated OpenVPN client profile."
   type        = string

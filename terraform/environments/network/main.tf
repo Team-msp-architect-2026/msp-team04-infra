@@ -15,6 +15,32 @@ locals {
   )
 }
 
+
+locals {
+  openvpn_client_profile_secret_name = var.openvpn_client_profile_secret_name != "" ? var.openvpn_client_profile_secret_name : "${var.project_name}/network/openvpn-client-profile"
+}
+
+resource "aws_secretsmanager_secret" "openvpn_client_profile" {
+  count = (var.enable_openvpn || var.preserve_openvpn_client_profile_secret) ? 1 : 0
+
+  name                    = local.openvpn_client_profile_secret_name
+  description             = "OpenVPN client profile for MoMent Network VPC admin access"
+  recovery_window_in_days = var.openvpn_client_profile_secret_recovery_window_in_days
+
+  tags = merge(local.common_tags, {
+    Environment = "network"
+    ManagedBy   = "Terraform"
+    Component   = "openvpn"
+    Name        = local.openvpn_client_profile_secret_name
+    Role        = "openvpn-client-profile"
+  })
+}
+
+moved {
+  from = module.network_openvpn[0].aws_secretsmanager_secret.client_profile
+  to   = aws_secretsmanager_secret.openvpn_client_profile[0]
+}
+
 module "network_vpc" {
   count  = var.enable_network_vpc ? 1 : 0
   source = "../../modules/network-vpc"
@@ -77,12 +103,12 @@ module "transit_gateway" {
   prod_private_app_route_table_id  = var.prod_private_app_route_table_id
   prod_private_data_route_table_id = var.prod_private_data_route_table_id
 
-  dev_vpc_id                      = var.dev_vpc_id
-  dev_vpc_cidr                    = var.dev_vpc_cidr
-  dev_tgw_subnet_ids              = var.dev_tgw_subnet_ids
-  dev_private_app_route_table_id            = var.dev_private_app_route_table_id
-  dev_private_data_route_table_id           = var.dev_private_data_route_table_id
-  enable_dev_private_app_default_to_tgw     = var.enable_dev_private_app_default_to_tgw
+  dev_vpc_id                            = var.dev_vpc_id
+  dev_vpc_cidr                          = var.dev_vpc_cidr
+  dev_tgw_subnet_ids                    = var.dev_tgw_subnet_ids
+  dev_private_app_route_table_id        = var.dev_private_app_route_table_id
+  dev_private_data_route_table_id       = var.dev_private_data_route_table_id
+  enable_dev_private_app_default_to_tgw = var.enable_dev_private_app_default_to_tgw
 
   tags = local.common_tags
 }
@@ -112,7 +138,8 @@ module "network_openvpn" {
   route_cidrs                                   = [var.dev_vpc_cidr, var.prod_vpc_cidr]
   enable_masquerade                             = var.openvpn_enable_masquerade
   client_name                                   = var.openvpn_client_name
-  client_profile_secret_name                    = var.openvpn_client_profile_secret_name
+  client_profile_secret_name                    = local.openvpn_client_profile_secret_name
+  client_profile_secret_arn                     = aws_secretsmanager_secret.openvpn_client_profile[0].arn
   client_profile_secret_recovery_window_in_days = var.openvpn_client_profile_secret_recovery_window_in_days
   root_volume_size                              = var.openvpn_root_volume_size
 
