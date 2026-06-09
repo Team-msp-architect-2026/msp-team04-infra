@@ -1,17 +1,18 @@
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: moment-prod-application-business-overview-dashboard
   namespace: monitoring
   labels:
-    grafana_dashboard: "1"
+    grafana_dashboard: '1'
     app.kubernetes.io/name: grafana-dashboard
     app.kubernetes.io/part-of: moment
     app.kubernetes.io/component: dashboard
     app.kubernetes.io/managed-by: argocd
     environment: prod
 data:
-  application-business-overview.json: |
+  application-business-overview.json: |-
     {
       "annotations": {
         "list": [
@@ -33,7 +34,9 @@ data:
       "editable": true,
       "fiscalYearStartMonth": 0,
       "graphTooltip": 1,
-      "links": [],
+      "links": [
+
+      ],
       "panels": [
         {
           "datasource": {
@@ -77,7 +80,9 @@ data:
                   "mode": "off"
                 }
               },
-              "mappings": [],
+              "mappings": [
+
+              ],
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -92,7 +97,9 @@ data:
                 ]
               }
             },
-            "overrides": []
+            "overrides": [
+
+            ]
           },
           "gridPos": {
             "h": 8,
@@ -103,7 +110,9 @@ data:
           "id": 46,
           "options": {
             "legend": {
-              "calcs": [],
+              "calcs": [
+
+              ],
               "displayMode": "list",
               "placement": "bottom",
               "showLegend": true
@@ -187,7 +196,9 @@ data:
                   "mode": "off"
                 }
               },
-              "mappings": [],
+              "mappings": [
+
+              ],
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -202,7 +213,9 @@ data:
                 ]
               }
             },
-            "overrides": []
+            "overrides": [
+
+            ]
           },
           "gridPos": {
             "h": 8,
@@ -213,7 +226,9 @@ data:
           "id": 45,
           "options": {
             "legend": {
-              "calcs": [],
+              "calcs": [
+
+              ],
               "displayMode": "list",
               "placement": "bottom",
               "showLegend": true
@@ -296,7 +311,9 @@ data:
                   "mode": "off"
                 }
               },
-              "mappings": [],
+              "mappings": [
+
+              ],
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -311,7 +328,9 @@ data:
                 ]
               }
             },
-            "overrides": []
+            "overrides": [
+
+            ]
           },
           "gridPos": {
             "h": 8,
@@ -322,7 +341,9 @@ data:
           "id": 44,
           "options": {
             "legend": {
-              "calcs": [],
+              "calcs": [
+
+              ],
               "displayMode": "list",
               "placement": "bottom",
               "showLegend": true
@@ -358,7 +379,9 @@ data:
             "y": 24
           },
           "id": 1,
-          "panels": [],
+          "panels": [
+
+          ],
           "title": "Overview",
           "type": "row"
         },
@@ -405,7 +428,9 @@ data:
                   "mode": "off"
                 }
               },
-              "mappings": [],
+              "mappings": [
+
+              ],
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -421,7 +446,9 @@ data:
               },
               "unit": "reqps"
             },
-            "overrides": []
+            "overrides": [
+
+            ]
           },
           "gridPos": {
             "h": 7,
@@ -503,7 +530,9 @@ data:
                   "mode": "off"
                 }
               },
-              "mappings": [],
+              "mappings": [
+
+              ],
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -519,7 +548,9 @@ data:
               },
               "unit": "reqps"
             },
-            "overrides": []
+            "overrides": [
+
+            ]
           },
           "gridPos": {
             "h": 7,
@@ -612,7 +643,9 @@ data:
                   "mode": "off"
                 }
               },
-              "mappings": [],
+              "mappings": [
+
+              ],
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -628,7 +661,9 @@ data:
               },
               "unit": "s"
             },
-            "overrides": []
+            "overrides": [
+
+            ]
           },
           "gridPos": {
             "h": 7,
@@ -676,7 +711,9 @@ data:
             "y": 32
           },
           "id": 10,
-          "panels": [],
+          "panels": [
+
+          ],
           "title": "Business: Application / Payment",
           "type": "row"
         },
@@ -723,7 +760,9 @@ data:
                   "mode": "off"
                 }
               },
-              "mappings": [],
+              "mappings": [
+
+              ],
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -739,7 +778,9 @@ data:
               },
               "unit": "ops"
             },
-            "overrides": []
+            "overrides": [
+
+            ]
           },
           "gridPos": {
             "h": 7,
@@ -786,7 +827,9 @@ data:
           "description": "Application failure counts by sanitized low-cardinality reason.",
           "fieldConfig": {
             "defaults": {
-              "mappings": [],
+              "mappings": [
+
+              ],
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -802,7 +845,9 @@ data:
               },
               "unit": "short"
             },
-            "overrides": []
+            "overrides": [
+
+            ]
           },
           "gridPos": {
             "h": 7,
@@ -889,7 +934,9 @@ data:
                   "mode": "off"
                 }
               },
-              "mappings": [],
+              "mappings": [
+
+              ],
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -905,7 +952,9 @@ data:
               },
               "unit": "ops"
             },
-            "overrides": []
+            "overrides": [
+
+            ]
           },
           "gridPos": {
             "h": 7,
@@ -952,7 +1001,9 @@ data:
           "description": "Payment failure counts by phase and sanitized reason.",
           "fieldConfig": {
             "defaults": {
-              "mappings": [],
+              "mappings": [
+
+              ],
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -968,7 +1019,9 @@ data:
               },
               "unit": "short"
             },
-            "overrides": []
+            "overrides": [
+
+            ]
           },
           "gridPos": {
             "h": 7,
@@ -1020,7 +1073,9 @@ data:
           "description": "Total confirmed payment events in selected range.",
           "fieldConfig": {
             "defaults": {
-              "mappings": [],
+              "mappings": [
+
+              ],
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -1036,7 +1091,9 @@ data:
               },
               "unit": "short"
             },
-            "overrides": []
+            "overrides": [
+
+            ]
           },
           "gridPos": {
             "h": 7,
@@ -1088,7 +1145,9 @@ data:
             "y": 47
           },
           "id": 20,
-          "panels": [],
+          "panels": [
+
+          ],
           "title": "Business: Search",
           "type": "row"
         },
@@ -1131,7 +1190,9 @@ data:
               },
               "unit": "ops"
             },
-            "overrides": []
+            "overrides": [
+
+            ]
           },
           "gridPos": {
             "h": 7,
@@ -1209,7 +1270,9 @@ data:
               },
               "unit": "s"
             },
-            "overrides": []
+            "overrides": [
+
+            ]
           },
           "gridPos": {
             "h": 7,
@@ -1256,10 +1319,13 @@ data:
           "description": "Search source distribution such as ai, fallback, opensearch, embedding_failed.",
           "fieldConfig": {
             "defaults": {
-              "custom": {},
+              "custom": {
+              },
               "unit": "short"
             },
-            "overrides": []
+            "overrides": [
+
+            ]
           },
           "gridPos": {
             "h": 7,
@@ -1305,7 +1371,9 @@ data:
             "y": 55
           },
           "id": 30,
-          "panels": [],
+          "panels": [
+
+          ],
           "title": "Business: Recommendation",
           "type": "row"
         },
@@ -1348,7 +1416,9 @@ data:
               },
               "unit": "ops"
             },
-            "overrides": []
+            "overrides": [
+
+            ]
           },
           "gridPos": {
             "h": 7,
@@ -1426,7 +1496,9 @@ data:
               },
               "unit": "s"
             },
-            "overrides": []
+            "overrides": [
+
+            ]
           },
           "gridPos": {
             "h": 7,
@@ -1473,10 +1545,13 @@ data:
           "description": "Recommendation source split such as AI/FALLBACK.",
           "fieldConfig": {
             "defaults": {
-              "custom": {},
+              "custom": {
+              },
               "unit": "short"
             },
-            "overrides": []
+            "overrides": [
+
+            ]
           },
           "gridPos": {
             "h": 7,
@@ -1522,7 +1597,9 @@ data:
             "y": 63
           },
           "id": 40,
-          "panels": [],
+          "panels": [
+
+          ],
           "title": "Runtime: Backend / AI",
           "type": "row"
         },
@@ -1534,10 +1611,13 @@ data:
           "description": "Prometheus target up status for backend-api and ai-service.",
           "fieldConfig": {
             "defaults": {
-              "custom": {},
+              "custom": {
+              },
               "unit": "short"
             },
-            "overrides": []
+            "overrides": [
+
+            ]
           },
           "gridPos": {
             "h": 7,
@@ -1615,7 +1695,9 @@ data:
               },
               "unit": "bytes"
             },
-            "overrides": []
+            "overrides": [
+
+            ]
           },
           "gridPos": {
             "h": 7,
@@ -1693,7 +1775,9 @@ data:
               },
               "unit": "percentunit"
             },
-            "overrides": []
+            "overrides": [
+
+            ]
           },
           "gridPos": {
             "h": 7,
@@ -1731,6 +1815,349 @@ data:
           ],
           "title": "Backend Process CPU Usage",
           "type": "timeseries"
+        },
+        {
+          "id": 47,
+          "type": "row",
+          "title": "HPA / Autoscaling",
+          "collapsed": false,
+          "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 71
+          },
+          "panels": [
+
+          ]
+        },
+        {
+          "id": 48,
+          "type": "timeseries",
+          "title": "Backend HPA replicas",
+          "description": "Current, desired, minimum, and maximum replicas for the Backend API HPA.",
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 72
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "custom": {
+                "drawStyle": "line",
+                "lineInterpolation": "linear",
+                "lineWidth": 2,
+                "fillOpacity": 10,
+                "showPoints": "never",
+                "spanNulls": true
+              }
+            },
+            "overrides": [
+
+            ]
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "bottom",
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ]
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "expr": "kube_horizontalpodautoscaler_status_current_replicas{namespace=\"moment-prod\", horizontalpodautoscaler=\"backend-api\"}",
+              "legendFormat": "current",
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "expr": "kube_horizontalpodautoscaler_status_desired_replicas{namespace=\"moment-prod\", horizontalpodautoscaler=\"backend-api\"}",
+              "legendFormat": "desired",
+              "refId": "B"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "expr": "kube_horizontalpodautoscaler_spec_min_replicas{namespace=\"moment-prod\", horizontalpodautoscaler=\"backend-api\"}",
+              "legendFormat": "min",
+              "refId": "C"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "expr": "kube_horizontalpodautoscaler_spec_max_replicas{namespace=\"moment-prod\", horizontalpodautoscaler=\"backend-api\"}",
+              "legendFormat": "max",
+              "refId": "D"
+            }
+          ]
+        },
+        {
+          "id": 49,
+          "type": "timeseries",
+          "title": "Backend deployment replicas",
+          "description": "Available, unavailable, and desired Deployment replicas for Backend API.",
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 72
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "custom": {
+                "drawStyle": "line",
+                "lineInterpolation": "linear",
+                "lineWidth": 2,
+                "fillOpacity": 10,
+                "showPoints": "never",
+                "spanNulls": true
+              }
+            },
+            "overrides": [
+
+            ]
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "bottom",
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ]
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "expr": "kube_deployment_status_replicas_available{namespace=\"moment-prod\", deployment=\"backend-api\"}",
+              "legendFormat": "available",
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "expr": "kube_deployment_status_replicas_unavailable{namespace=\"moment-prod\", deployment=\"backend-api\"}",
+              "legendFormat": "unavailable",
+              "refId": "B"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "expr": "kube_deployment_spec_replicas{namespace=\"moment-prod\", deployment=\"backend-api\"}",
+              "legendFormat": "deployment desired",
+              "refId": "C"
+            }
+          ]
+        },
+        {
+          "id": 50,
+          "type": "timeseries",
+          "title": "Backend CPU utilization vs HPA target",
+          "description": "Backend API CPU usage as a percentage of requested CPU, compared with the HPA target.",
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 80
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "custom": {
+                "drawStyle": "line",
+                "lineInterpolation": "linear",
+                "lineWidth": 2,
+                "fillOpacity": 10,
+                "showPoints": "never",
+                "spanNulls": true
+              }
+            },
+            "overrides": [
+
+            ]
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "bottom",
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ]
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "expr": "100 * sum(rate(container_cpu_usage_seconds_total{namespace=\"moment-prod\", pod=~\"backend-api-.*\", container=\"backend-api\"}[5m])) / sum(kube_pod_container_resource_requests{namespace=\"moment-prod\", pod=~\"backend-api-.*\", container=\"backend-api\", resource=\"cpu\"})",
+              "legendFormat": "cpu utilization %",
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "expr": "kube_horizontalpodautoscaler_spec_target_metric{namespace=\"moment-prod\", horizontalpodautoscaler=\"backend-api\", metric_name=\"cpu\", metric_target_type=\"utilization\"}",
+              "legendFormat": "hpa target %",
+              "refId": "B"
+            }
+          ]
+        },
+        {
+          "id": 51,
+          "type": "timeseries",
+          "title": "Backend memory utilization",
+          "description": "Backend API memory working set as a percentage of requested memory.",
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 80
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "custom": {
+                "drawStyle": "line",
+                "lineInterpolation": "linear",
+                "lineWidth": 2,
+                "fillOpacity": 10,
+                "showPoints": "never",
+                "spanNulls": true
+              }
+            },
+            "overrides": [
+
+            ]
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "bottom",
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ]
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "expr": "100 * sum(container_memory_working_set_bytes{namespace=\"moment-prod\", pod=~\"backend-api-.*\", container=\"backend-api\"}) / sum(kube_pod_container_resource_requests{namespace=\"moment-prod\", pod=~\"backend-api-.*\", container=\"backend-api\", resource=\"memory\"})",
+              "legendFormat": "memory utilization %",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "id": 52,
+          "type": "timeseries",
+          "title": "Backend pod restarts and pending pods",
+          "description": "Restart and Pending signals during HPA scale-out validation.",
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 88
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "custom": {
+                "drawStyle": "line",
+                "lineInterpolation": "linear",
+                "lineWidth": 2,
+                "fillOpacity": 10,
+                "showPoints": "never",
+                "spanNulls": true
+              }
+            },
+            "overrides": [
+
+            ]
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "bottom",
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ]
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "expr": "sum(increase(kube_pod_container_status_restarts_total{namespace=\"moment-prod\", pod=~\"backend-api-.*\", container=\"backend-api\"}[5m]))",
+              "legendFormat": "restart increase 5m",
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "expr": "sum(kube_pod_status_phase{namespace=\"moment-prod\", pod=~\"backend-api-.*\", phase=\"Pending\"})",
+              "legendFormat": "pending pods",
+              "refId": "B"
+            }
+          ]
         }
       ],
       "refresh": "30s",
