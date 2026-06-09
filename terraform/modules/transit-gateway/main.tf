@@ -219,7 +219,7 @@ resource "aws_route" "prod_private_app_to_network_vpc" {
 }
 
 resource "aws_route" "dev_private_app_default_to_tgw" {
-  count                  = var.dev_vpc_id != "" && var.dev_vpc_id != null ? 1 : 0
+  count                  = var.enable_dev_private_app_default_to_tgw && var.dev_vpc_id != "" && var.dev_vpc_id != null ? 1 : 0
   route_table_id         = var.dev_private_app_route_table_id
   destination_cidr_block = "0.0.0.0/0"
   transit_gateway_id     = aws_ec2_transit_gateway.this.id

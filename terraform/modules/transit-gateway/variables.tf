@@ -97,3 +97,9 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "enable_dev_private_app_default_to_tgw" {
+  description = "Whether the Transit Gateway module manages Dev private app 0.0.0.0/0 route. Disable when Dev environment owns default egress through its own NAT Gateway."
+  type        = bool
+  default     = true
+}

@@ -80,8 +80,9 @@ module "transit_gateway" {
   dev_vpc_id                      = var.dev_vpc_id
   dev_vpc_cidr                    = var.dev_vpc_cidr
   dev_tgw_subnet_ids              = var.dev_tgw_subnet_ids
-  dev_private_app_route_table_id  = var.dev_private_app_route_table_id
-  dev_private_data_route_table_id = var.dev_private_data_route_table_id
+  dev_private_app_route_table_id            = var.dev_private_app_route_table_id
+  dev_private_data_route_table_id           = var.dev_private_data_route_table_id
+  enable_dev_private_app_default_to_tgw     = var.enable_dev_private_app_default_to_tgw
 
   tags = local.common_tags
 }
@@ -117,9 +118,6 @@ module "network_openvpn" {
 
   common_tags = local.common_tags
 
-  depends_on = [
-    module.transit_gateway
-  ]
 }
 
 resource "aws_route" "network_tgw_to_openvpn_clients" {
