@@ -410,3 +410,24 @@ output "dev_public_data_secret_arns" {
     for key, secret in aws_secretsmanager_secret.dev_public_data : key => secret.arn
   }
 }
+
+
+output "dev_alerting_sns_topic_arn" {
+  description = "Dev CloudWatch monitoring alert SNS topic ARN."
+  value       = try(module.dev_alerting_slack_notifier[0].sns_topic_arn, null)
+}
+
+output "dev_alerting_slack_notifier_lambda_name" {
+  description = "Dev CloudWatch Slack notifier Lambda function name."
+  value       = try(module.dev_alerting_slack_notifier[0].lambda_function_name, null)
+}
+
+output "dev_alerting_slack_webhook_secret_arn" {
+  description = "Dev Slack webhook Secrets Manager secret ARN for monitoring alerts."
+  value       = try(module.dev_alerting_slack_notifier[0].slack_webhook_secret_arn, null)
+}
+
+output "dev_cloudwatch_alert_alarm_names" {
+  description = "Dev CloudWatch monitoring alert alarm names."
+  value       = try(module.dev_alerting_slack_notifier[0].cloudwatch_alarm_names, [])
+}

@@ -326,6 +326,57 @@ module "dev_data_pipeline" {
   ]
 }
 
+
+module "dev_alerting_slack_notifier" {
+  count  = var.enable_dev_alerting_slack_notifier ? 1 : 0
+  source = "../../modules/alerting-slack-notifier"
+
+  project_name = var.project_name
+  environment  = "dev"
+
+  sns_topic_name            = var.dev_alerting_sns_topic_name
+  sns_display_name          = "MoMent Dev Monitoring Alert"
+  slack_webhook_secret_name = var.dev_alerting_slack_webhook_secret_name
+
+  enable_cloudwatch_alarms = var.enable_dev_cloudwatch_alarms
+
+  rds_instance_identifiers = var.enable_dev_rds ? {
+    postgres = module.dev_rds[0].db_instance_identifier
+  } : {}
+
+  redis_replication_group_ids = var.enable_dev_redis ? {
+    redis = module.dev_redis[0].redis_replication_group_id
+  } : {}
+
+  opensearch_domain_names = var.enable_dev_opensearch ? {
+    opensearch = module.dev_opensearch[0].domain_name
+  } : {}
+
+  sqs_queue_names = var.enable_dev_sqs ? {
+    public_data = module.dev_sqs[0].queue_name
+  } : {}
+
+  sqs_dlq_names = var.enable_dev_sqs ? {
+    public_data = module.dev_sqs[0].dlq_name
+  } : {}
+
+  lambda_function_names = (
+    var.enable_dev_iam &&
+    var.enable_dev_data_pipeline &&
+    var.enable_dev_sqs &&
+    var.enable_dev_s3_raw_bucket
+    ) ? {
+    public_data_collector = module.dev_data_pipeline[0].lambda_function_name
+  } : {}
+
+  application_load_balancer_tag_selectors = var.dev_alerting_application_load_balancer_tag_selectors
+  target_group_tag_selectors              = var.dev_alerting_target_group_tag_selectors
+
+  common_tags = merge(local.common_tags, {
+    Environment = "dev"
+  })
+}
+
 module "dev_eks" {
   count = var.enable_dev_iam && var.enable_dev_eks ? 1 : 0
 
@@ -346,7 +397,7 @@ module "dev_eks" {
   public_access_cidrs     = var.dev_eks_public_access_cidrs
 
   authentication_mode                         = "API"
-  bootstrap_cluster_creator_admin_permissions = false
+  bootstrap_cluster_creator_admin_permissions = true
   cluster_admin_principal_arn                 = var.dev_eks_cluster_admin_principal_arn
 
   addons = {
@@ -654,9 +705,14 @@ module "dev_external_secrets_irsa" {
   eks_oidc_provider_arn = module.dev_eks[0].eks_oidc_provider_arn
   eks_oidc_provider_url = module.dev_eks[0].eks_oidc_provider_url
 
-  secret_arns = [
-    for secret in aws_secretsmanager_secret.dev_runtime : secret.arn
-  ]
+  secret_arns = concat(
+    [
+      for secret in aws_secretsmanager_secret.dev_runtime : secret.arn
+    ],
+    var.enable_dev_alerting_slack_notifier ? [
+      module.dev_alerting_slack_notifier[0].slack_webhook_secret_arn
+    ] : []
+  )
 
   allow_rds_managed_secrets = false
 

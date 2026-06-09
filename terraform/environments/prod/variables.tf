@@ -689,3 +689,62 @@ variable "enable_prod_workload_irsa" {
   type        = bool
   default     = false
 }
+
+
+variable "enable_prod_alerting_slack_notifier" {
+  description = "Whether to create Prod CloudWatch alert SNS topic and Slack notifier Lambda."
+  type        = bool
+  default     = true
+}
+
+variable "enable_prod_cloudwatch_alarms" {
+  description = "Whether to create Prod CloudWatch metric alarms for Terraform-managed AWS resources."
+  type        = bool
+  default     = true
+}
+
+variable "prod_alerting_slack_webhook_secret_name" {
+  description = "Secrets Manager secret name for Prod monitoring Slack webhook. Secret value is managed out-of-band."
+  type        = string
+  default     = "moment/prod/monitoring/slack-alert-webhook"
+}
+
+variable "prod_alerting_sns_topic_name" {
+  description = "Optional explicit Prod monitoring alert SNS topic name."
+  type        = string
+  default     = null
+}
+
+variable "prod_alerting_application_load_balancer_tag_selectors" {
+  description = "Prod AWS Load Balancer Controller managed ALB tag selectors for CloudWatch alarms."
+  type = map(object({
+    tags = map(string)
+  }))
+  default = {
+    backend_api = {
+      tags = {
+        "ingress.k8s.aws/resource" = "LoadBalancer"
+        "ingress.k8s.aws/stack"    = "moment-prod/backend-api"
+        "elbv2.k8s.aws/cluster"    = "moment-prod-eks-cluster"
+      }
+    }
+  }
+}
+
+variable "prod_alerting_target_group_tag_selectors" {
+  description = "Prod AWS Load Balancer Controller managed Target Group tag selectors for CloudWatch alarms."
+  type = map(object({
+    load_balancer_key = string
+    tags              = map(string)
+  }))
+  default = {
+    backend_api = {
+      load_balancer_key = "backend_api"
+      tags = {
+        "ingress.k8s.aws/resource" = "moment-prod/backend-api-backend-api:8080"
+        "ingress.k8s.aws/stack"    = "moment-prod/backend-api"
+        "elbv2.k8s.aws/cluster"    = "moment-prod-eks-cluster"
+      }
+    }
+  }
+}
