@@ -147,7 +147,7 @@ spec:
     - name: moment-prod-business
       rules:
         - alert: MomentApplicationFailureSpike
-          expr: sum(increase(moment_business_application_total{environment="dev", result="failed"}[10m])) > 5
+          expr: sum(increase(moment_business_application_total{environment="prod", result="failed"}[10m])) > 5
           for: 2m
           labels:
             environment: prod
@@ -160,7 +160,7 @@ spec:
             action_hint: Check application validation errors, child/program IDs, seat lock flow, and backend logs.
 
         - alert: MomentPaymentFailureSpike
-          expr: sum(increase(moment_business_payment_total{environment="dev", result="failed"}[10m])) > 5
+          expr: sum(increase(moment_business_payment_total{environment="prod", result="failed"}[10m])) > 5
           for: 2m
           labels:
             environment: prod
@@ -173,7 +173,7 @@ spec:
             action_hint: Check Toss configuration, payment state flow, application IDs, and backend logs.
 
         - alert: MomentSearchFailureSpike
-          expr: sum(increase(moment_business_search_requests_total{environment="dev", result="failed"}[10m])) > 10
+          expr: sum(increase(moment_business_search_requests_total{environment="prod", result="failed"}[10m])) > 10
           for: 2m
           labels:
             environment: prod
@@ -186,7 +186,7 @@ spec:
             action_hint: Check search request parameters, OpenSearch connectivity, AI rerank dependency, and backend logs.
 
         - alert: MomentRecommendationFailureSpike
-          expr: sum(increase(moment_business_recommendation_requests_total{environment="dev", result="failed"}[10m])) > 5
+          expr: sum(increase(moment_business_recommendation_requests_total{environment="prod", result="failed"}[10m])) > 5
           for: 2m
           labels:
             environment: prod
