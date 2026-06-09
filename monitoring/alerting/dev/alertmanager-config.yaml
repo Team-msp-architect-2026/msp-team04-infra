@@ -1,0 +1,44 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: moment-dev-slack-alerts
+  namespace: monitoring
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+  labels:
+    app.kubernetes.io/name: moment-alertmanager-config
+    app.kubernetes.io/part-of: moment
+    app.kubernetes.io/managed-by: argocd
+    environment: dev
+spec:
+  route:
+    groupBy:
+      - alertname
+      - environment
+      - service
+      - severity
+    groupWait: 30s
+    groupInterval: 5m
+    repeatInterval: 2h
+    receiver: moment-dev-slack
+    matchers:
+      - name: environment
+        value: dev
+        matchType: =
+  receivers:
+    - name: moment-dev-slack
+      slackConfigs:
+        - apiURL:
+            name: moment-dev-slack-alert-webhook
+            key: url
+          channel: "#moment-alerts"
+          sendResolved: true
+          title: '[{{ .Status | toUpper }}][dev][{{ .CommonLabels.severity }}] {{ .CommonLabels.alertname }}'
+          text: |-
+            {{ range .Alerts }}
+            *Service:* {{ .Labels.service }}
+            *Category:* {{ .Labels.category }}
+            *Summary:* {{ .Annotations.summary }}
+            *Description:* {{ .Annotations.description }}
+            *Action:* {{ .Annotations.action_hint }}
+            {{ end }}

@@ -689,3 +689,28 @@ variable "enable_prod_workload_irsa" {
   type        = bool
   default     = false
 }
+
+
+variable "enable_prod_alerting_slack_notifier" {
+  description = "Whether to create Prod CloudWatch alert SNS topic and Slack notifier Lambda."
+  type        = bool
+  default     = true
+}
+
+variable "enable_prod_cloudwatch_alarms" {
+  description = "Whether to create Prod CloudWatch metric alarms for Terraform-managed AWS resources."
+  type        = bool
+  default     = true
+}
+
+variable "prod_alerting_slack_webhook_secret_name" {
+  description = "Secrets Manager secret name for Prod monitoring Slack webhook. Secret value is managed out-of-band."
+  type        = string
+  default     = "moment/prod/monitoring/slack-alert-webhook"
+}
+
+variable "prod_alerting_sns_topic_name" {
+  description = "Optional explicit Prod monitoring alert SNS topic name."
+  type        = string
+  default     = null
+}
