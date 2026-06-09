@@ -714,3 +714,37 @@ variable "prod_alerting_sns_topic_name" {
   type        = string
   default     = null
 }
+
+variable "prod_alerting_application_load_balancer_tag_selectors" {
+  description = "Prod AWS Load Balancer Controller managed ALB tag selectors for CloudWatch alarms."
+  type = map(object({
+    tags = map(string)
+  }))
+  default = {
+    backend_api = {
+      tags = {
+        "ingress.k8s.aws/resource" = "LoadBalancer"
+        "ingress.k8s.aws/stack"    = "moment-prod/backend-api"
+        "elbv2.k8s.aws/cluster"    = "moment-prod-eks-cluster"
+      }
+    }
+  }
+}
+
+variable "prod_alerting_target_group_tag_selectors" {
+  description = "Prod AWS Load Balancer Controller managed Target Group tag selectors for CloudWatch alarms."
+  type = map(object({
+    load_balancer_key = string
+    tags              = map(string)
+  }))
+  default = {
+    backend_api = {
+      load_balancer_key = "backend_api"
+      tags = {
+        "ingress.k8s.aws/resource" = "moment-prod/backend-api-backend-api:8080"
+        "ingress.k8s.aws/stack"    = "moment-prod/backend-api"
+        "elbv2.k8s.aws/cluster"    = "moment-prod-eks-cluster"
+      }
+    }
+  }
+}
