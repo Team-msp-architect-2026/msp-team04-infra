@@ -88,7 +88,8 @@ secretRefs:
     secretKey: public-data-data-go-kr-service-key
 
 readinessProbe:
-  tcpSocket:
+  httpGet:
+    path: /health
     port: 8080
   initialDelaySeconds: 30
   periodSeconds: 5
