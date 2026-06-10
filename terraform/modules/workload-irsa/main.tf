@@ -12,12 +12,12 @@ locals {
 
   policy_attachment_items = flatten([
     for role_key, policy_arns in var.policy_arns_by_service_account : [
-      for idx, policy_arn in policy_arns : {
-        key        = "${role_key}-${idx}"
+      for policy_key, policy_arn in policy_arns : {
+        key        = "${role_key}-${policy_key}"
         role_key   = role_key
         policy_arn = policy_arn
       }
-      if contains(keys(var.service_accounts), role_key) && policy_arn != null && policy_arn != ""
+      if contains(keys(var.service_accounts), role_key)
     ]
   ])
 

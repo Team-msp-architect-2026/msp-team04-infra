@@ -87,8 +87,22 @@ variable "bootstrap_cluster_creator_admin_permissions" {
 }
 
 variable "cluster_admin_principal_arn" {
-  description = "IAM principal ARN to grant EKS cluster admin access through EKS Access Entry."
+  description = "Primary IAM principal ARN to grant EKS cluster admin access through EKS Access Entry."
   type        = string
+}
+
+variable "cluster_admin_additional_principal_arns" {
+  description = "Additional IAM principal ARNs to grant EKS cluster admin access through EKS Access Entry."
+  type        = set(string)
+  default     = []
+
+  validation {
+    condition = alltrue([
+      for principal_arn in var.cluster_admin_additional_principal_arns :
+      length(trimspace(principal_arn)) > 0
+    ])
+    error_message = "cluster_admin_additional_principal_arns must not contain empty values."
+  }
 }
 
 variable "cluster_admin_access_policy_arn" {

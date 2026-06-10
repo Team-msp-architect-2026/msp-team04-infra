@@ -57,8 +57,16 @@ output "addon_versions" {
 }
 
 output "cluster_admin_access_entry_arn" {
-  description = "EKS access entry ARN for the configured cluster admin principal."
+  description = "EKS access entry ARN for the configured primary cluster admin principal."
   value       = aws_eks_access_entry.cluster_admin.access_entry_arn
+}
+
+output "cluster_admin_additional_access_entry_arns" {
+  description = "EKS access entry ARNs for configured additional cluster admin principals."
+  value = {
+    for principal_arn, access_entry in aws_eks_access_entry.cluster_admin_additional :
+    principal_arn => access_entry.access_entry_arn
+  }
 }
 
 output "ebs_csi_irsa_role_arn" {

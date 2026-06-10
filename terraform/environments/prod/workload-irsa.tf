@@ -19,22 +19,26 @@ locals {
   }
 
   prod_workload_irsa_policy_arns_by_service_account = {
-    aws_load_balancer_controller = compact([
-      try(module.prod_iam[0].policy_arns.aws_load_balancer_controller, null)
-    ])
+    aws_load_balancer_controller = {
+      aws_load_balancer_controller = module.prod_iam[0].policy_arns.aws_load_balancer_controller
+    }
 
-    backend = compact([
-      try(module.prod_iam[0].policy_arns.backend_pod, null)
-    ])
+    backend = {
+      backend_pod = module.prod_iam[0].policy_arns.backend_pod
+    }
 
-    ai_service = compact([
-      try(module.prod_iam[0].policy_arns.ai_service_pod, null)
-    ])
+    ai_service = {
+      ai_service_pod = module.prod_iam[0].policy_arns.ai_service_pod
+    }
 
-    batch = compact([
-      try(module.prod_iam[0].policy_arns.batch_pod, null),
-      try(module.prod_s3_raw_bucket[0].raw_bucket_access_policy_arn, null)
-    ])
+    batch = merge(
+      {
+        batch_pod = module.prod_iam[0].policy_arns.batch_pod
+      },
+      var.enable_prod_s3_raw_bucket ? {
+        raw_bucket = module.prod_s3_raw_bucket[0].raw_bucket_access_policy_arn
+      } : {}
+    )
   }
 }
 

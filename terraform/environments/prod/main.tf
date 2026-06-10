@@ -338,6 +338,7 @@ module "prod_eks" {
   authentication_mode                         = "API"
   bootstrap_cluster_creator_admin_permissions = false
   cluster_admin_principal_arn                 = var.prod_eks_cluster_admin_principal_arn
+  cluster_admin_additional_principal_arns     = var.prod_eks_cluster_admin_additional_principal_arns
 
   addons = {
     vpc-cni = {

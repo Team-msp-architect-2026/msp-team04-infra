@@ -253,9 +253,15 @@ variable "prod_eks_public_access_cidrs" {
 }
 
 variable "prod_eks_cluster_admin_principal_arn" {
-  description = "IAM principal ARN granted cluster-admin access through EKS Access Entry."
+  description = "Primary IAM principal ARN granted cluster-admin access through EKS Access Entry."
   type        = string
   default     = ""
+}
+
+variable "prod_eks_cluster_admin_additional_principal_arns" {
+  description = "Additional IAM principal ARNs granted cluster-admin access through EKS Access Entry."
+  type        = set(string)
+  default     = []
 }
 
 variable "prod_sqs_visibility_timeout_seconds" {
