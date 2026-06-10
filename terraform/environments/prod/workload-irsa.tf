@@ -57,9 +57,11 @@ module "prod_workload_irsa" {
 
   common_tags = local.prod_tags
 
-  depends_on = [
-    module.prod_iam,
-    module.prod_eks,
-    module.prod_s3_raw_bucket
-  ]
+  # Dependency ordering is handled by explicit input references above:
+  # - module.prod_eks[0].eks_oidc_provider_arn / eks_oidc_provider_url
+  # - module.prod_iam[0].policy_arns
+  # - module.prod_s3_raw_bucket[0].raw_bucket_access_policy_arn when enabled
+  #
+  # Avoid broad module-level depends_on here. It pulls unrelated pending Prod
+  # changes into controlled workload IRSA target plans.
 }
