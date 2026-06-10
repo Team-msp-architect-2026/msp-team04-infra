@@ -174,3 +174,27 @@ resource "aws_route_table_association" "tgw" {
   subnet_id      = aws_subnet.tgw[count.index].id
   route_table_id = aws_route_table.tgw.id
 }
+
+# NAT Gateway for EKS node internet access (image pull, external API)
+resource "aws_eip" "nat" {
+  domain = "vpc"
+  tags = merge(var.tags, {
+    Name        = "${var.project_name}-${var.env}-nat-eip"
+    Environment = var.env
+  })
+}
+resource "aws_nat_gateway" "this" {
+  allocation_id = aws_eip.nat.id
+  subnet_id     = aws_subnet.public[0].id
+  tags = merge(var.tags, {
+    Name        = "${var.project_name}-${var.env}-nat-gw"
+    Environment = var.env
+  })
+  depends_on = [aws_internet_gateway.this]
+}
+resource "aws_route" "private_app_to_nat" {
+  count = var.transit_gateway_id == null ? 1 : 0
+  route_table_id         = aws_route_table.private_app.id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.this.id
+}
