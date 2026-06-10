@@ -17,6 +17,8 @@ config:
   DB_PORT: "5432"
   DB_NAME: moment
   DB_URL: "jdbc:postgresql://moment-dev-postgres.c3qggqseuzcb.ap-northeast-3.rds.amazonaws.com:5432/moment"
+  SPRING_DATASOURCE_URL: "jdbc:postgresql://moment-dev-postgres.c3qggqseuzcb.ap-northeast-3.rds.amazonaws.com:5432/moment"
+  SPRING_FLYWAY_URL: "jdbc:postgresql://moment-dev-postgres.c3qggqseuzcb.ap-northeast-3.rds.amazonaws.com:5432/moment"
   REDIS_HOST: moment-dev-redis.o0zxzf.ng.0001.apn3.cache.amazonaws.com
   REDIS_PORT: "6379"
   OPENSEARCH_PORT: "443"
@@ -28,10 +30,8 @@ config:
   PROFILE_IMAGE_MAX_FILE_SIZE_BYTES: "5242880"
   PROFILE_IMAGE_KEY_PREFIX: uploads/profile
   SQS_QUEUE_NAME: moment-dev-public-data-queue
-  AI_SERVICE_BASE_URL: "http://ai-service:8000"
-  SPRING_DATASOURCE_URL: "jdbc:postgresql://moment-dev-postgres.c3qggqseuzcb.ap-northeast-3.rds.amazonaws.com:5432/moment"
-  SPRING_FLYWAY_URL: "jdbc:postgresql://moment-dev-postgres.c3qggqseuzcb.ap-northeast-3.rds.amazonaws.com:5432/moment"
   SQS_QUEUE_URL: https://sqs.ap-northeast-3.amazonaws.com/611058323802/moment-dev-public-data-queue
+  AI_SERVICE_BASE_URL: "http://ai-service:8000"
   NOTIFICATION_SNS_ENABLED: "false"
   NOTIFICATION_SNS_TOPIC_ARN: ""
   SPRING_BATCH_JDBC_INITIALIZE_SCHEMA: "always"
@@ -41,6 +41,18 @@ secretRefs:
     secretName: moment-dev-backend-api-secret
     secretKey: db-username
   - envName: DB_PASSWORD
+    secretName: moment-dev-backend-api-secret
+    secretKey: db-password
+  - envName: SPRING_DATASOURCE_USERNAME
+    secretName: moment-dev-backend-api-secret
+    secretKey: db-username
+  - envName: SPRING_DATASOURCE_PASSWORD
+    secretName: moment-dev-backend-api-secret
+    secretKey: db-password
+  - envName: SPRING_FLYWAY_USER
+    secretName: moment-dev-backend-api-secret
+    secretKey: db-username
+  - envName: SPRING_FLYWAY_PASSWORD
     secretName: moment-dev-backend-api-secret
     secretKey: db-password
   - envName: JWT_SECRET_KEY
@@ -67,18 +79,6 @@ secretRefs:
   - envName: PUBLIC_DATA_DATA_GO_KR_SERVICE_KEY
     secretName: moment-dev-backend-api-secret
     secretKey: public-data-data-go-kr-service-key
-  - envName: SPRING_DATASOURCE_USERNAME
-    secretName: moment-dev-backend-api-secret
-    secretKey: db-username
-  - envName: SPRING_DATASOURCE_PASSWORD
-    secretName: moment-dev-backend-api-secret
-    secretKey: db-password
-  - envName: SPRING_FLYWAY_USER
-    secretName: moment-dev-backend-api-secret
-    secretKey: db-username
-  - envName: SPRING_FLYWAY_PASSWORD
-    secretName: moment-dev-backend-api-secret
-    secretKey: db-password
 readinessProbe:
   tcpSocket:
     port: 8080
@@ -122,11 +122,33 @@ autoscaling:
           value: 1
           periodSeconds: 60
       selectPolicy: Max
+# HA: RollingUpdate - dev는 replica 1이라 maxUnavailable 1 허용
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 1
+# HA: PDB - dev는 replica 1이라 PDB 비활성
+pdb:
+  enabled: false
+  minAvailable: 1
 nodeSelector:
   workload: core
   capacity: on-demand
 tolerations: []
-affinity: {}
+# HA: topology - dev는 노드 1개라 soft 적용
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - backend-api
+          topologyKey: topology.kubernetes.io/zone
 ingress:
   enabled: true
   className: alb

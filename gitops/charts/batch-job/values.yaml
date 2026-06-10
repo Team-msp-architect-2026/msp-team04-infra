@@ -1,25 +1,43 @@
-mode: cronjob
-namespace: ""
+namespace: "moment"
+
 replicaCount: 1
+
 image:
   repository: ""
   tag: ""
   pullPolicy: IfNotPresent
+
 serviceAccount:
   create: true
   name: ""
   annotations: {}
+
+mode: cronjob
 schedule: "0 * * * *"
 suspend: false
 concurrencyPolicy: Forbid
 successfulJobsHistoryLimit: 3
-failedJobsHistoryLimit: 1
+failedJobsHistoryLimit: 3
+
+# CrashLoopBackOff 대응: 재시도 3회, 실패 시 기록 보존
 backoffLimit: 3
 restartPolicy: OnFailure
+
 args: []
 config: {}
 secretRefs: []
-resources: {}
-nodeSelector: {}
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "256Mi"
+  limits:
+    cpu: "500m"
+    memory: "512Mi"
+
+# batch On-Demand 노드에 배치
+nodeSelector:
+  workload: batch
+
 tolerations: []
 affinity: {}

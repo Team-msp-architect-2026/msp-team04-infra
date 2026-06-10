@@ -18,22 +18,17 @@ config:
   SPRING_BATCH_JOB_ENABLED: "false"
   AWS_REGION: ap-northeast-3
   ENVIRONMENT: prod
-
-
   DB_HOST: moment-prod-postgres.c3qggqseuzcb.ap-northeast-3.rds.amazonaws.com
   DB_PORT: "5432"
   DB_NAME: moment
   DB_URL: "jdbc:postgresql://moment-prod-postgres.c3qggqseuzcb.ap-northeast-3.rds.amazonaws.com:5432/moment"
   SPRING_DATASOURCE_URL: "jdbc:postgresql://moment-prod-postgres.c3qggqseuzcb.ap-northeast-3.rds.amazonaws.com:5432/moment"
   SPRING_FLYWAY_URL: "jdbc:postgresql://moment-prod-postgres.c3qggqseuzcb.ap-northeast-3.rds.amazonaws.com:5432/moment"
-
   REDIS_HOST: moment-prod-redis.o0zxzf.ng.0001.apn3.cache.amazonaws.com
   REDIS_PORT: "6379"
-
   OPENSEARCH_PORT: "443"
   OPENSEARCH_SCHEME: https
   OPENSEARCH_HOST: vpc-moment-prod-opensearch-2trht5bolkacngjunc6lsbibuq.ap-northeast-3.es.amazonaws.com
-
   PROFILE_IMAGE_BUCKET_NAME: moment-prod-profile-image-611058323802-ap-northeast-3
   PROFILE_IMAGE_PUBLIC_URL_BASE: https://moment-prod-profile-image-611058323802-ap-northeast-3.s3.ap-northeast-3.amazonaws.com
   PROFILE_IMAGE_PRESIGNED_URL_EXPIRATION_SECONDS: "600"
@@ -49,7 +44,6 @@ secretRefs:
   - envName: DB_USERNAME
     secretName: moment-prod-backend-api-secret
     secretKey: db-username
-
   - envName: DB_PASSWORD
     secretName: moment-prod-backend-api-secret
     secretKey: db-password
@@ -65,11 +59,9 @@ secretRefs:
   - envName: SPRING_FLYWAY_PASSWORD
     secretName: moment-prod-backend-api-secret
     secretKey: db-password
-
   - envName: JWT_SECRET_KEY
     secretName: moment-prod-backend-api-secret
     secretKey: jwt-secret
-
   - envName: TOSS_SECRET_KEY
     secretName: moment-prod-backend-api-secret
     secretKey: toss-secret-key
@@ -121,13 +113,43 @@ resources:
     cpu: 1000m
     memory: 2Gi
 
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 4
+  targetCPUUtilizationPercentage: 70
+
+# HA: RollingUpdate - prod는 무중단 배포 (maxUnavailable: 0)
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+
+# HA: PDB - prod replica 2이므로 minAvailable 1 적용
+pdb:
+  enabled: true
+  minAvailable: 1
+
 nodeSelector:
   workload: core
   capacity: on-demand
 
 tolerations: []
 
-affinity: {}
+# HA: topology - prod core 노드 2개 (3a, 3c) 멀티AZ 분산
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - backend-api
+          topologyKey: topology.kubernetes.io/zone
 
 ingress:
   enabled: true
