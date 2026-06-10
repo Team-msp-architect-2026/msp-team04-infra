@@ -1,1 +1,9 @@
-# No configurable values — all policies are static manifests
+dataTierCidrs: []
+
+dataTierEgress:
+  enabled: false
+  workloads: []
+
+serviceEgress:
+  enabled: false
+  rules: []
