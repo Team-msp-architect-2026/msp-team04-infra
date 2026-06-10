@@ -27,8 +27,8 @@ variable "service_accounts" {
 }
 
 variable "policy_arns_by_service_account" {
-  description = "IAM policy ARNs attached to each workload IRSA role."
-  type        = map(list(string))
+  description = "IAM policy ARNs attached to each workload IRSA role. Map keys must be statically known at plan time."
+  type        = map(map(string))
   default     = {}
 }
 

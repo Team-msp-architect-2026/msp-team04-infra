@@ -61,6 +61,7 @@ prod_transit_gateway_id = null
 prod_eks_cluster_role_arn            = ""
 prod_eks_node_role_arn               = ""
 prod_eks_cluster_admin_principal_arn = ""
+prod_eks_cluster_admin_additional_principal_arns = []
 prod_eks_public_access_cidrs         = []
 
 # Prod data pipeline should stay disabled outside final demo/rehearsal.
