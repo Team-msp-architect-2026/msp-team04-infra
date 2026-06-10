@@ -1,481 +1,518 @@
-# [M5-REL-01] Kubernetes 배포 전략 / RollingUpdate / Rollback 정합성 검증
+# [M5-REL-01] Kubernetes Deployment RollingUpdate / Rollback 정합성 검증 결과
 
-## 1. 목적
+## 1. 작업 개요
 
-MoMent의 Backend API, AI Service, Batch Worker가 Kubernetes / Helm / GitOps / ArgoCD 기준으로 어떤 배포 전략을 사용하는지 검증하고, RollingUpdate 및 rollback 정합성을 보완한다.
+본 문서는 `[M5-REL-01] Kubernetes 배포 전략 / RollingUpdate / Rollback 정합성 검증 #685` 수행 결과를 정리한다.
 
-이번 검증은 단순 문서화가 아니라 실제 repository, Helm rendered manifest, live Kubernetes Deployment 상태를 기준으로 수행한다.
-
-검증 및 보완 대상은 다음과 같다.
-
-- 현재 배포 전략이 RollingUpdate인지 확인
-- Blue/Green 또는 Canary 구성이 존재하는지 확인
-- Dev / Prod ArgoCD sync policy 차이 확인
-- Helm values와 rendered manifest의 정합성 확인
-- live Deployment rollout 상태 확인
-- Backend API readinessProbe 정확도 보완
-- AI Service Pod 분산 유도 정책 보완
-- Batch Worker Deployment strategy 렌더링 정합성 보완
-- rollback 기준을 GitOps 관점에서 정리
-- old/new Pod 공존 시 API, DB migration, mobile app, SQS worker 호환성 리스크 정리
-
-## 2. 검증 기준
-
-검증 기준 브랜치와 커밋은 다음과 같다.
-
-- branch: feature/kubernetes-deployment-strategy-rollback
-- base develop HEAD: 3ddeedb [#339] External Secrets / Secrets Manager 운영 정합성 강화
-- evidence directory: tmp/m5-rel-01-initial-20260610-231024
-
-검증 대상 workload는 다음과 같다.
+검증 대상은 MoMent Kubernetes workload 중 GitOps로 배포되는 주요 Deployment이다.
 
 - backend-api
 - ai-service
 - batch-job
 
-검증 대상 환경은 다음과 같다.
+이번 검증의 목적은 다음과 같다.
 
-- dev
-- prod
+- Kubernetes Deployment 전략이 명시적으로 RollingUpdate로 관리되는지 확인
+- Dev / Prod 환경의 replica 수, maxSurge, maxUnavailable 값이 환경 특성에 맞게 구성되어 있는지 확인
+- readinessProbe / livenessProbe가 배포 안정성 관점에서 적절한지 확인
+- GitOps 기반 rollback 기준을 문서화
+- 실제 Dev / Prod live 환경에서 rollout, readiness, health check가 정상인지 확인
+- 검증 중 발견된 NetworkPolicy egress 차단 문제를 우회 없이 GitOps 원본에서 근본 수정
 
-## 3. 최종 결론
+## 2. 최종 결론
 
-현재 MoMent의 Kubernetes 배포 전략은 Blue/Green 또는 Canary가 아니다.
+M5-REL-01은 최종적으로 완료 판정한다.
 
-현재 구조는 다음 방식이다.
+Dev와 Prod 모두 RollingUpdate 전략이 live Deployment에 정상 반영되었고, backend-api / ai-service / batch-job의 rollout 상태가 정상임을 확인했다.
 
-1. GitOps values에서 image tag 또는 배포 설정을 변경한다.
-2. ArgoCD Application이 Helm Chart를 렌더링한다.
-3. Kubernetes Deployment가 RollingUpdate 방식으로 ReplicaSet을 전환한다.
-4. readinessProbe를 통과한 Pod만 Service endpoint에 편입된다.
-5. rollback은 Git revert 또는 이전 정상 image tag로 GitOps values를 되돌린 뒤 ArgoCD sync하는 방식이 원칙이다.
+또한 Dev 검증 중 backend-api가 CrashLoopBackOff에 빠지는 문제가 확인되었으나, 원인은 M5-REL-01의 RollingUpdate 변경 자체가 아니라 `network-policy-dev`의 default-deny egress 정책으로 인해 backend-api가 RDS PostgreSQL 5432에 접근하지 못한 것이었다.
 
-kubectl rollout undo는 Git desired state와 live state를 어긋나게 만들 수 있으므로 최종 운영 rollback 절차가 아니다. 긴급 containment 후보로만 분리한다.
+해당 문제는 임시 kubectl patch가 아니라 `gitops/charts/network-policy` 및 Dev/Prod values를 수정하여 근본 해결했다.
 
-이번 검증에서 다음 보완을 같은 PR 범위에 포함했다.
+최종 상태는 다음과 같다.
 
-- batch-job Deployment template에 `.Values.strategy` 렌더링 추가
-- backend-api dev/prod readinessProbe를 `tcpSocket`에서 `httpGet /health`로 변경
-- ai-service dev/prod에 preferred podAntiAffinity 추가
+### Dev 최종 상태
 
-## 4. ArgoCD sync policy 검증 결과
+- backend-api-dev: Synced
+- ai-service-dev: Synced / Healthy
+- batch-job-dev: Synced / Healthy
+- network-policy-dev: Synced / Healthy
+- backend-api Deployment: 1/1 Ready
+- ai-service Deployment: 1/1 Ready
+- batch-job Deployment: 1/1 Ready
+- backend-api /health: HTTP 200
+- backend-api Endpoint: 정상 생성
+- backend-api RDS 연결: 정상
+- Flyway migration: 정상
+- HikariPool DB connection: 정상
 
-### 4.1 Dev
+### Prod 최종 상태
 
-Dev workload Application은 automated sync가 활성화되어 있다.
+- backend-api-prod: Synced
+- ai-service-prod: Synced / Healthy
+- batch-job-prod: Synced / Healthy
+- backend-api Deployment: 2/2 Ready
+- ai-service Deployment: 2/2 Ready
+- batch-job Deployment: 1/1 Ready
+- backend-api rollout: successfully rolled out
+- ai-service rollout: successfully rolled out
+- batch-job rollout: successfully rolled out
+- backend-api /health: HTTP 200
 
-- backend-api-dev: automated sync, prune false, selfHeal true
-- ai-service-dev: automated sync, prune false, selfHeal true
-- batch-job-dev: automated sync, prune true, selfHeal true
+단, backend-api-prod ArgoCD Health는 Progressing으로 표시되었다. 이는 Deployment가 아니라 Ingress health 상태 영향으로 판단되며, Kubernetes Deployment RollingUpdate 정합성 범위에서는 blocker가 아니다. 별도 Edge / ALB / Ingress 상태 이슈로 분리 추적한다.
 
-Dev는 develop 변경을 빠르게 반영하여 검증하는 환경이다.
+## 3. Git 변경 이력
 
-### 4.2 Prod
+최종 develop 기준 주요 커밋은 다음과 같다.
 
-Prod workload Application은 automated sync가 없다.
+- `48ee999` `[ #685 ] Kubernetes RollingUpdate 배포 전략 및 rollback 정합성 보완`
+- `2ab0ad5` `[ #685 ] NetworkPolicy data tier egress 정합성 보완`
 
-- backend-api-prod: manual sync
-- ai-service-prod: manual sync
-- batch-job-prod: manual sync, PruneLast true
+작업 브랜치 및 후속 브랜치:
 
-Prod는 GitOps desired state 변경 후에도 운영자가 ArgoCD sync를 명시적으로 수행해야 반영되는 구조다.
+- `feature/kubernetes-deployment-strategy-rollback`
+- `fix/networkpolicy-backend-data-egress`
 
-이 구조는 Prod 배포 통제 관점에서 타당하다.
+## 4. 변경 파일
 
-## 5. Blue/Green / Canary 검증 결과
+### RollingUpdate / Readiness / Scheduling 정합성 보완
 
-repository static scan 및 runtime read-only check 기준으로 다음 구성이 발견되지 않았다.
+- `docs/M5-REL-01-kubernetes-deployment-strategy-rollback-validation.md`
+- `gitops/charts/batch-job/templates/deployment.yaml`
+- `gitops/values/dev/backend-api-values.yaml`
+- `gitops/values/prod/backend-api-values.yaml`
+- `gitops/values/dev/ai-service-values.yaml`
+- `gitops/values/prod/ai-service-values.yaml`
 
-- Argo Rollouts Rollout kind
-- blueGreen strategy
-- canary strategy
-- setWeight
-- previewService
-- activeService
-- trafficRouting
-- weighted traffic shifting
+### NetworkPolicy egress 근본 보완
 
-따라서 현재 MoMent의 Kubernetes 배포 전략은 Blue/Green / Canary가 아니라 RollingUpdate다.
+- `gitops/charts/network-policy/values.yaml`
+- `gitops/charts/network-policy/templates/allow-data-tier-egress.yaml`
+- `gitops/charts/network-policy/templates/allow-service-egress.yaml`
+- `gitops/values/dev/network-policy-values.yaml`
+- `gitops/values/prod/network-policy-values.yaml`
 
-## 6. Helm lint / template 검증 결과
+## 5. RollingUpdate 전략 최종 상태
 
-최종 검증에서 다음 6개 조합의 Helm lint 및 Helm template이 모두 성공했다.
+### Dev
 
-- backend-api-dev
-- backend-api-prod
-- ai-service-dev
-- ai-service-prod
-- batch-job-dev
-- batch-job-prod
+Dev는 비용과 최소 리소스 기준으로 replica 1 기반 검증 환경이다.
 
-최종 결과는 다음과 같다.
+| Workload | Replicas | Strategy | maxSurge | maxUnavailable |
+|---|---:|---|---:|---:|
+| backend-api | 1 | RollingUpdate | 1 | 1 |
+| ai-service | 1 | RollingUpdate | 1 | 1 |
+| batch-job | 1 | RollingUpdate | 1 | 1 |
 
-- backend-api-dev HELM_LINT_EXIT=0
-- backend-api-dev HELM_TEMPLATE_EXIT=0
-- backend-api-prod HELM_LINT_EXIT=0
-- backend-api-prod HELM_TEMPLATE_EXIT=0
-- ai-service-dev HELM_LINT_EXIT=0
-- ai-service-dev HELM_TEMPLATE_EXIT=0
-- ai-service-prod HELM_LINT_EXIT=0
-- ai-service-prod HELM_TEMPLATE_EXIT=0
-- batch-job-dev HELM_LINT_EXIT=0
-- batch-job-dev HELM_TEMPLATE_EXIT=0
-- batch-job-prod HELM_LINT_EXIT=0
-- batch-job-prod HELM_TEMPLATE_EXIT=0
+Dev live 확인 결과:
 
-## 7. Workload별 배포 전략
+- backend-api: replicas=1, ready=1, updated=1, available=1
+- ai-service: replicas=1, ready=1, updated=1, available=1
+- batch-job: replicas=1, ready=1, updated=1, available=1
 
-### 7.1 backend-api
+### Prod
 
-#### Dev
+Prod는 사용자 트래픽 영향 최소화를 위해 API 계열은 무중단 기준으로 설정했다.
 
-- HPA enabled
-- minReplicas: 1
-- maxReplicas: 2
-- strategy: RollingUpdate
-- maxSurge: 1
-- maxUnavailable: 1
-- readinessProbe: HTTP GET /health
-- livenessProbe: tcpSocket 8080
-- PDB disabled
+| Workload | Replicas | Strategy | maxSurge | maxUnavailable |
+|---|---:|---|---:|---:|
+| backend-api | 2 | RollingUpdate | 1 | 0 |
+| ai-service | 2 | RollingUpdate | 1 | 0 |
+| batch-job | 1 | RollingUpdate | 1 | 1 |
 
-Dev는 replica 1 기반 환경이므로 rollout 중 일시 중단 가능성을 허용한다.
+Prod live 확인 결과:
 
-#### Prod
+- backend-api: replicas=2, ready=2, updated=2, available=2
+- ai-service: replicas=2, ready=2, updated=2, available=2
+- batch-job: replicas=1, ready=1, updated=1, available=1
 
-- HPA enabled
-- minReplicas: 2
-- maxReplicas: 4
-- strategy: RollingUpdate
-- maxSurge: 1
-- maxUnavailable: 0
-- readinessProbe: HTTP GET /health
-- livenessProbe: tcpSocket 8080
-- PDB enabled
-- PDB minAvailable: 1
+## 6. Probe 정합성
 
-Prod backend-api는 maxUnavailable 0으로 무중단 배포를 지향한다. 새 Pod가 준비되기 전 기존 Pod를 줄이지 않는 방향이다.
+### backend-api
 
-기존 backend-api readinessProbe는 tcpSocket 8080이었다. tcpSocket은 포트 open 여부만 확인하므로 HTTP handler가 정상 응답하는지 확인하지 못한다. live read-only check에서 `/health` endpoint가 dev/prod 모두 200으로 확인되어 readinessProbe를 HTTP GET `/health`로 보완했다.
+기존 backend-api readinessProbe는 tcpSocket 기반으로 포트 오픈만 확인하는 구조였다.
 
-`/actuator/health/readiness`는 dev/prod 모두 401이므로 readinessProbe로 사용하지 않았다. `/actuator/health`는 prod에서는 200이지만 dev에서는 timeout이 발생했으므로 dev/prod 공통 readinessProbe로 사용하지 않았다.
+하지만 실무적으로 backend-api는 DB 연결, Flyway, JPA 초기화 등 주요 의존성이 정상이어야 실제 요청을 받을 수 있다. 단순 TCP 포트 확인은 애플리케이션 준비 상태를 충분히 검증하지 못한다.
 
-### 7.2 ai-service
+따라서 readinessProbe를 HTTP `/health` 기반으로 보완했다.
 
-#### Dev
+최종 live 상태:
 
-- replicaCount: 1
-- strategy: RollingUpdate
-- maxSurge: 1
-- maxUnavailable: 1
-- startupProbe: HTTP GET /health
-- readinessProbe: HTTP GET /health
-- livenessProbe: HTTP GET /health
-- PDB disabled
-- preferred podAntiAffinity enabled
+- readinessProbe: `/health:8080`
+- livenessProbe: `tcp:8080`
 
-#### Prod
+Dev와 Prod 모두 `/health`가 HTTP 200을 반환함을 확인했다.
 
-- replicaCount: 2
-- strategy: RollingUpdate
-- maxSurge: 1
-- maxUnavailable: 0
-- startupProbe: HTTP GET /health
-- readinessProbe: HTTP GET /health
-- livenessProbe: HTTP GET /health
-- PDB enabled
-- PDB minAvailable: 1
-- preferred podAntiAffinity enabled
+## 7. batch-job RollingUpdate 렌더링 누락 보완
 
-Prod ai-service는 maxUnavailable 0과 PDB를 통해 중단 위험을 줄인다.
+검증 과정에서 batch-job chart의 values에는 strategy가 정의되어 있었으나, Deployment template에서 `.Values.strategy`를 렌더링하지 않는 문제가 확인되었다.
 
-runtime check에서 Prod ai-service Pod 2개가 같은 node에 스케줄된 상태가 확인되었다. 다만 현재 Prod에서 `workload=ai`, `capacity=spot` 조건을 만족하는 node는 1개뿐이다. 따라서 required podAntiAffinity를 적용하면 replica 2 중 하나가 Pending 될 수 있다.
+그 결과 live batch-job Deployment는 Kubernetes 기본값인 `maxSurge=25%`, `maxUnavailable=25%`로 동작하고 있었다.
 
-이 PR에서는 required anti-affinity를 적용하지 않고 preferred podAntiAffinity를 적용한다. 이 방식은 현재 capacity 부족 상황에서 Pending을 유발하지 않으며, 향후 AI node가 2개 이상으로 확장되면 hostname 및 zone 기준 분산을 유도한다.
+수정 내용:
 
-### 7.3 batch-job
+- `gitops/charts/batch-job/templates/deployment.yaml`에 `.Values.strategy` 렌더링 추가
 
-batch-job은 현재 CronJob이 아니라 SQS polling worker Deployment mode로 동작한다.
+수정 후 결과:
 
-#### Dev
+- Dev batch-job: `maxSurge=1`, `maxUnavailable=1`
+- Prod batch-job: `maxSurge=1`, `maxUnavailable=1`
 
-- mode: worker
-- replicaCount: 1
-- strategy: RollingUpdate
-- maxSurge: 1
-- maxUnavailable: 1
-- PDB disabled
+## 8. ai-service anti-affinity 보완
 
-#### Prod
+Prod ai-service는 replica 2로 운영되지만, 검증 당시 두 Pod가 같은 노드에 배치될 수 있는 구조였다.
 
-- mode: worker
-- replicaCount: 1
-- strategy: RollingUpdate
-- maxSurge: 1
-- maxUnavailable: 1
-- PDB disabled
+다만 현재 Prod에서 ai node pool이 제한적인 상태이므로 required anti-affinity를 적용하면 Pending 위험이 있다.
 
-batch-job은 replica 1이고 SQS message 재처리 가능성을 전제로 한다. 따라서 backend-api / ai-service처럼 무중단 serving을 보장하는 것이 아니라 worker replacement와 message retry / idempotency가 핵심이다.
+따라서 required가 아닌 preferred anti-affinity를 적용했다.
 
-replica 1 worker에 PDB minAvailable 1을 적용하면 node drain이 막힐 수 있으므로 현재 PDB disabled 정책은 타당하다.
+적용 기준:
 
-## 8. 발견한 정합성 문제 및 보완
+- hostname 기준 preferred anti-affinity weight 100
+- zone 기준 preferred anti-affinity weight 50
 
-### 8.1 batch-job strategy 렌더링 누락
+이 방식은 가용성 힌트를 제공하면서도, 노드 수가 부족할 때 스케줄링 실패를 만들지 않는다.
 
-batch-job values에는 strategy 설정이 존재했다.
+## 9. Rollback 기준
 
-- gitops/values/dev/batch-job-values.yaml
-- gitops/values/prod/batch-job-values.yaml
+본 프로젝트는 ArgoCD GitOps 기반 운영을 전제로 한다.
 
-두 values 모두 다음 의도를 가진다.
+따라서 rollback의 원칙은 Kubernetes live object를 직접 되돌리는 것이 아니라 Git desired state를 되돌리는 것이다.
 
-- type: RollingUpdate
-- maxSurge: 1
-- maxUnavailable: 1
+### 정식 rollback 방식
 
-하지만 기존 batch-job Deployment template에는 `.Values.strategy`를 렌더링하는 블록이 없었다.
+- Git revert
+- image tag rollback
+- Helm values rollback
+- ArgoCD sync
 
-그 결과 수정 전 rendered manifest의 batch-job Deployment에는 strategy가 명시되지 않았다.
+### 비권장 방식
 
-Kubernetes Deployment는 strategy가 생략되면 기본 RollingUpdate 값을 사용한다. runtime read-only check에서도 live batch-job은 maxSurge 25%, maxUnavailable 25%로 확인되었다.
+- `kubectl rollout undo`
+- live Deployment 직접 patch
+- kubectl edit
+- 임시 manifest apply
 
-즉 values의 의도와 rendered/live manifest가 불일치했다.
+`kubectl rollout undo`는 긴급 상황에서 containment 용도로만 사용할 수 있으며, 최종 상태는 반드시 GitOps desired state와 일치시켜야 한다.
 
-보완 내용은 다음과 같다.
+## 10. NetworkPolicy egress blocker
 
-- gitops/charts/batch-job/templates/deployment.yaml에 `.Values.strategy` 렌더링 추가
+### 10.1 현상
 
-수정 후 Helm template 결과에서 batch-job dev/prod 모두 strategy가 명시적으로 렌더링됨을 확인했다.
+M5-REL-01 post-merge Dev live 검증 중 backend-api가 `0/1` 상태로 유지되었고, Pod는 CrashLoopBackOff 상태였다.
 
-- batch-job-dev: RollingUpdate, maxSurge 1, maxUnavailable 1
-- batch-job-prod: RollingUpdate, maxSurge 1, maxUnavailable 1
+backend-api 로그에서는 다음 흐름이 확인되었다.
 
-### 8.2 backend-api readinessProbe 정확도 보완
+- Spring Boot 기동
+- Tomcat 8080 초기화
+- Flyway 초기화 진입
+- RDS PostgreSQL connection timeout
+- ApplicationContext 초기화 실패
+- 컨테이너 종료
+- CrashLoopBackOff
 
-기존 backend-api readinessProbe는 tcpSocket 8080이었다.
+### 10.2 최초 오해 가능성
 
-검증 결과는 다음과 같다.
+초기에는 다음 가능성을 확인했다.
 
-- dev `/actuator/health/readiness`: 401
-- prod `/actuator/health/readiness`: 401
-- dev `/actuator/health`: timeout
-- prod `/actuator/health`: 200
-- dev `/health`: 200
-- prod `/health`: 200
+- ALB / Ingress 문제
+- RDS 상태 문제
+- RDS Security Group 문제
+- Node Security Group 문제
+- DNS 문제
+- Route Table / NACL 문제
 
-따라서 dev/prod 공통으로 사용 가능한 HTTP readiness endpoint는 `/health`다.
+검증 결과:
 
-보완 내용은 다음과 같다.
+- RDS는 available 상태
+- RDS endpoint DNS resolve 정상
+- RDS SG는 EKS node SG를 허용
+- Node SG egress 허용
+- NACL은 allow-all 성격
+- DNS 조회 정상
 
-- gitops/values/dev/backend-api-values.yaml readinessProbe를 HTTP GET /health로 변경
-- gitops/values/prod/backend-api-values.yaml readinessProbe를 HTTP GET /health로 변경
+하지만 Pod에서 RDS 5432 TCP 연결은 timeout 되었다.
 
-livenessProbe는 기존 tcpSocket 8080을 유지한다. liveness는 과도하게 application dependency에 민감하게 잡으면 불필요한 restart를 유발할 수 있으므로 이번 범위에서는 readiness만 보완한다.
+### 10.3 근본 원인
 
-### 8.3 ai-service preferred podAntiAffinity 보완
+근본 원인은 `network-policy-dev`였다.
 
-기존 ai-service dev/prod affinity는 `{}`였다.
+기존 Dev namespace에는 `default-deny-all` NetworkPolicy가 존재했다.
 
-runtime check에서 prod ai-service Pod 2개가 동일 node에 배치되어 있었다. 하지만 현재 prod eligible AI node는 1개뿐이었다.
+정책 내용:
 
-따라서 required podAntiAffinity는 적용하지 않는다. required로 강제하면 replica 2 중 하나가 Pending 될 수 있다.
+- podSelector: {}
+- policyTypes:
+  - Ingress
+  - Egress
 
-보완 내용은 다음과 같다.
+즉 namespace 전체 Pod의 Ingress / Egress를 기본 차단하는 정책이다.
 
-- gitops/values/dev/ai-service-values.yaml에 preferred podAntiAffinity 추가
-- gitops/values/prod/ai-service-values.yaml에 preferred podAntiAffinity 추가
-- hostname 기준 weight 100
-- zone 기준 weight 50
+기존 허용 정책 중 egress는 DNS만 열려 있었다.
 
-이 설정은 현재 capacity에서 Pending을 유발하지 않고, 향후 AI node가 2개 이상이 되면 같은 node / 같은 zone 집중을 줄이도록 스케줄링을 유도한다.
+- allow-dns-egress: TCP/UDP 53
 
-## 9. Runtime read-only 검증 결과
+반면 backend-api가 RDS PostgreSQL 5432로 나갈 수 있는 egress 정책은 없었다.
 
-### 9.1 EKS Cluster
+따라서 backend-api는 DNS resolve는 가능했지만, RDS 5432 TCP 연결은 timeout 되었다.
 
-Dev / Prod EKS cluster 모두 ACTIVE 상태로 확인했다.
+### 10.4 근본 해결
 
-- moment-dev-eks-cluster: ACTIVE, Kubernetes 1.35
-- moment-prod-eks-cluster: ACTIVE, Kubernetes 1.35
+임시 kubectl patch를 사용하지 않고, GitOps 원본을 수정했다.
 
-### 9.2 Dev workload live state
+network-policy chart를 values-driven 구조로 변경하고 다음 egress policy를 추가했다.
 
-moment-dev namespace에서 다음 상태를 확인했다.
+- allow-backend-api-data-tier-egress
+- allow-batch-job-data-tier-egress
+- allow-ai-service-data-tier-egress
+- allow-backend-api-to-ai-service-egress
+- allow-ai-service-to-backend-api-egress
 
-- ai-service: 1/1 Ready
-- backend-api: 1/1 Ready
-- batch-job: 1/1 Ready
-- backend-api HPA: min 1, max 2, cpu target 70%
+Dev data tier CIDR:
 
-rollout status는 다음 workload 모두 successfully rolled out 상태다.
+- 10.20.20.0/24
+- 10.20.21.0/24
 
-- backend-api
-- ai-service
-- batch-job
+Prod data tier CIDR:
 
-live strategy는 다음과 같다.
+- 10.10.20.0/24
+- 10.10.21.0/24
 
-- backend-api: RollingUpdate, maxSurge 1, maxUnavailable 1
-- ai-service: RollingUpdate, maxSurge 1, maxUnavailable 1
-- batch-job: RollingUpdate, maxSurge 25%, maxUnavailable 25%
+Workload별 허용:
 
-Dev batch-job의 25% / 25% 값은 PR merge / ArgoCD sync 전 기존 live state다.
+### backend-api
 
-### 9.3 Prod workload live state
+- data tier TCP 5432
+- data tier TCP 6379
+- data tier TCP 443
+- ai-service TCP 8000
 
-moment-prod namespace에서 다음 상태를 확인했다.
+### batch-job
 
-- ai-service: 2/2 Ready
-- backend-api: 2/2 Ready
-- batch-job: 1/1 Ready
-- backend-api HPA: min 2, max 4, cpu target 70%
-- backend-api PDB: minAvailable 1
-- ai-service PDB: minAvailable 1
+- data tier TCP 5432
+- data tier TCP 443
 
-rollout status는 다음 workload 모두 successfully rolled out 상태다.
+### ai-service
 
-- backend-api
-- ai-service
-- batch-job
+- data tier TCP 443
+- backend-api TCP 8080
 
-live strategy는 다음과 같다.
+### 10.5 NetworkPolicy 검증 방식
 
-- backend-api: RollingUpdate, maxSurge 1, maxUnavailable 0
-- ai-service: RollingUpdate, maxSurge 1, maxUnavailable 0
-- batch-job: RollingUpdate, maxSurge 25%, maxUnavailable 25%
+기존 netshoot Pod는 라벨이 `run=netshoot`였기 때문에 backend-api용 egress policy 대상이 아니었다.
 
-Prod batch-job의 25% / 25% 값도 PR merge / ArgoCD sync 전 기존 live state다.
+따라서 기존 netshoot에서 RDS 5432 연결이 timeout 되는 것은 정상이다.
 
-### 9.4 Live와 rendered manifest 차이
+정확한 검증을 위해 backend-api와 동일한 label을 가진 검증용 Pod를 생성했다.
 
-이번 PR 변경 사항은 아직 live cluster에 반영되지 않았다.
+검증용 Pod label:
 
-따라서 PR merge 및 ArgoCD sync 전까지 live cluster에서는 다음 차이가 남는다.
+- `app.kubernetes.io/name=backend-api`
+- `app.kubernetes.io/instance=backend-api-dev`
+- `environment=dev`
 
-- backend-api live readinessProbe는 기존 tcpSocket일 수 있다.
-- ai-service live affinity는 기존 `{}`일 수 있다.
-- batch-job live strategy는 Kubernetes 기본값 25% / 25%일 수 있다.
+검증 결과:
 
-Post-merge 검증에서 이 차이가 해소되어야 한다.
+- DNS resolve 정상
+- RDS PostgreSQL 5432 TCP 연결 성공
 
-## 10. Rollback 운영 원칙
+이후 기존 CrashLoopBackOff backend-api Pod를 삭제하여 ReplicaSet이 새 Pod를 생성하게 했고, 새 Pod는 정상 기동했다.
 
-### 10.1 권장 방식
+최종 확인:
 
-Prod rollback은 GitOps 기준으로 수행한다.
+- Flyway DB 연결 성공
+- Flyway migration validation 성공
+- HikariPool DB connection 생성 성공
+- Spring Boot started
+- `/health` HTTP 200
+- backend-api Deployment 1/1 Ready
+- backend-api Pod 1/1 Running
+- Restart Count 0
 
-1. 장애가 발생한 배포 commit 또는 image tag를 확인한다.
-2. 마지막 정상 image tag를 확인한다.
-3. GitOps values의 image tag를 마지막 정상 tag로 되돌린다.
-4. PR을 생성하고 리뷰한다.
-5. Prod ArgoCD Application을 manual sync한다.
-6. rollout status, Pod, endpoint, application smoke를 확인한다.
-7. Grafana / CloudWatch / ArgoCD 상태로 회복 여부를 확인한다.
+## 11. Dev 최종 검증 결과
 
-### 10.2 제한 방식
+### ArgoCD App
 
-다음 방식은 최종 운영 rollback 절차로 사용하지 않는다.
+| App | Sync | Health | Revision |
+|---|---|---|---|
+| backend-api-dev | Synced | Progressing | 2ab0ad5 |
+| ai-service-dev | Synced | Healthy | 2ab0ad5 |
+| batch-job-dev | Synced | Healthy | 2ab0ad5 |
+| network-policy-dev | Synced | Healthy | 2ab0ad5 |
 
-- kubectl patch
-- kubectl set image
-- kubectl rollout undo
+backend-api-dev의 App Health는 Progressing으로 표시되었으나, Deployment와 Pod는 정상 상태이고 `/health`가 200을 반환했다.
 
-위 방식은 Git desired state와 live state를 어긋나게 만들 수 있다.
+### Deployment
 
-단, 심각 장애 상황에서 긴급 containment로 사용할 수는 있다. 이 경우에도 반드시 GitOps desired state를 같은 상태로 맞춰야 한다.
+| Deployment | Ready | Image |
+|---|---|---|
+| backend-api | 1/1 | moment-dev-backend-api:dev-4592913 |
+| ai-service | 1/1 | moment-dev-ai-service:dev-62e003b |
+| batch-job | 1/1 | moment-dev-batch-job:dev-4592913 |
 
-## 11. Old/New Pod 공존 리스크
+### Rollout
 
-RollingUpdate는 old Pod와 new Pod가 일정 시간 공존할 수 있다. 따라서 다음 호환성 원칙이 필요하다.
+- backend-api: successfully rolled out
+- ai-service: successfully rolled out
+- batch-job: successfully rolled out
 
-### 11.1 API compatibility
+### Health Check
 
-- 기존 mobile app이 호출하는 API request / response contract를 깨지 않는다.
-- response field 삭제 또는 rename을 한 번에 배포하지 않는다.
-- 신규 field는 optional하게 추가한다.
-- 인증 / 인가 정책 변경은 mobile app 배포 지연을 고려한다.
+- backend-api `/health`: HTTP 200
+- Body: `MoMent backend is running`
 
-### 11.2 React Native / Expo Mobile App compatibility
+## 12. Prod 수동 sync 검증 결과
 
-MoMent client는 S3 / CloudFront 정적 웹 호스팅 대상이 아니라 React Native / Expo mobile app이다.
+Dev에서 정상화가 확인된 후 Prod는 자동 sync가 아니라 수동 sync로 통제하여 반영했다.
 
-따라서 backend rolling deployment 중 다음 상황을 고려해야 한다.
+반영 순서:
 
-- 사용자는 구버전 앱을 계속 사용할 수 있다.
-- App Store / Google Play 심사 및 배포 지연이 있을 수 있다.
-- Expo update channel 사용 여부에 따라 client update 속도가 달라질 수 있다.
-- backend는 구버전 app request와 일정 기간 호환되어야 한다.
+1. ai-service-prod
+2. batch-job-prod
+3. backend-api-prod
 
-### 11.3 DB migration compatibility
+### Sync 전 Diff
 
-RollingUpdate 중 old backend와 new backend가 같은 DB를 바라볼 수 있다.
+ai-service-prod:
 
-따라서 DB migration은 다음 원칙을 지킨다.
+- preferred podAntiAffinity 추가
 
-- 컬럼 추가는 nullable 또는 default 기반으로 먼저 배포한다.
-- rename / drop / type change는 한 번에 수행하지 않는다.
-- destructive migration은 app 배포와 분리하고 단계적으로 수행한다.
-- old app이 읽는 field / table을 new migration에서 즉시 제거하지 않는다.
-- Flyway migration은 backward compatible하게 작성한다.
+batch-job-prod:
 
-### 11.4 SQS worker compatibility
+- maxSurge: 25% -> 1
+- maxUnavailable: 25% -> 1
 
-batch-job은 SQS polling worker 구조다.
+backend-api-prod:
 
-따라서 다음 원칙을 지킨다.
+- readinessProbe에 HTTP GET `/health:8080` 추가
 
-- message schema 변경은 backward compatible해야 한다.
-- worker는 동일 message 재처리에 대해 idempotent해야 한다.
-- visibility timeout과 processing time을 고려한다.
-- maxUnavailable 1로 worker가 일시 중단되어도 메시지 재처리 가능해야 한다.
-- rollout 후 DLQ 증가 여부를 확인한다.
+### ArgoCD App 최종 상태
 
-### 11.5 HPA / Node capacity compatibility
+| App | Sync | Health | Revision |
+|---|---|---|---|
+| ai-service-prod | Synced | Healthy | 2ab0ad5 |
+| batch-job-prod | Synced | Healthy | 2ab0ad5 |
+| backend-api-prod | Synced | Progressing | 2ab0ad5 |
 
-RollingUpdate maxSurge는 일시적으로 추가 Pod를 만들 수 있다.
+backend-api-prod Health가 Progressing인 이유는 Ingress 리소스가 Progressing 상태이기 때문으로 판단된다. Deployment / Service / HPA / PDB는 정상이다.
 
-따라서 다음 항목을 함께 확인해야 한다.
+### Deployment 최종 상태
 
-- node capacity가 maxSurge 추가 Pod를 수용할 수 있는지
-- HPA scale-up과 rollout surge가 동시에 발생해도 Pending이 발생하지 않는지
-- Spot node workload는 interruption 가능성을 고려하는지
-- Prod maxUnavailable 0 workload는 추가 capacity가 없으면 rollout이 지연될 수 있음을 인지한다
+| Deployment | Ready | Image |
+|---|---|---|
+| backend-api | 2/2 | moment-prod-backend-api:prod-4592913 |
+| ai-service | 2/2 | moment-prod-ai-service:prod-62e003b |
+| batch-job | 1/1 | moment-prod-batch-job:prod-22d7c4e |
 
-## 12. Post-merge 검증 항목
+### Rollout
 
-PR merge 후 다음 read-only 검증을 수행한다.
+- backend-api: successfully rolled out
+- ai-service: successfully rolled out
+- batch-job: successfully rolled out
 
-1. ArgoCD Application sync 상태 확인
-2. backend-api dev/prod live readinessProbe가 HTTP GET /health인지 확인
-3. ai-service dev/prod live preferred podAntiAffinity가 반영되었는지 확인
-4. batch-job dev/prod live Deployment strategy 확인
-5. live batch-job에서 maxSurge 1, maxUnavailable 1 확인
-6. backend-api / ai-service 기존 RollingUpdate 전략이 변하지 않았는지 확인
-7. rollout status successfully rolled out 확인
-8. Pod Ready / Endpoint 정상 확인
-9. Blue/Green / Canary 리소스가 여전히 없는지 확인
+### Endpoint
 
-Post-merge 기대 상태는 다음과 같다.
+backend-api endpoint:
 
-- dev backend-api: readinessProbe HTTP GET /health
-- prod backend-api: readinessProbe HTTP GET /health
-- dev ai-service: preferred podAntiAffinity rendered/live 반영
-- prod ai-service: preferred podAntiAffinity rendered/live 반영
-- dev batch-job: RollingUpdate, maxSurge 1, maxUnavailable 1
-- prod batch-job: RollingUpdate, maxSurge 1, maxUnavailable 1
+- 10.10.11.204:8080
+- 10.10.11.97:8080
 
-## 13. 최종 판단
+### Health Check
 
-이번 검증에서 다음을 확인했다.
+- backend-api `/health`: HTTP 200
+- Body: `MoMent backend is running`
 
-- backend-api와 ai-service는 Helm values, rendered manifest, live Deployment 기준으로 RollingUpdate 전략이 정합하다.
-- Prod backend-api와 ai-service는 maxUnavailable 0 및 PDB 기반으로 운영 중단 위험을 줄인다.
-- batch-job은 values.strategy가 존재했으나 기존 chart template이 이를 렌더링하지 않아 values와 rendered/live manifest가 불일치했다.
-- 이번 작업에서 batch-job Deployment template에 strategy 렌더링을 추가하여 Helm rendered manifest 정합성을 보완했다.
-- backend-api readinessProbe는 tcpSocket에서 HTTP GET /health로 보완했다.
-- ai-service는 required anti-affinity가 아니라 preferred anti-affinity로 분산 유도 정책을 보완했다.
-- 현재 배포 전략은 Blue/Green 또는 Canary가 아니라 RollingUpdate다.
-- 운영 rollback은 kubectl 수동 조작이 아니라 GitOps values rollback 및 ArgoCD sync를 원칙으로 한다.
+## 13. Prod 주의 사항
 
-이 이슈는 PR merge 및 post-merge ArgoCD/live 확인 전까지 최종 완료로 보지 않는다.
+### 13.1 backend-api-prod App Health Progressing
+
+backend-api-prod는 App Health가 Progressing으로 표시된다.
+
+다만 다음은 정상이다.
+
+- Deployment 2/2 Ready
+- Pod 2개 Running
+- Service Healthy
+- HPA Healthy
+- PDB Healthy
+- `/health` HTTP 200
+- Endpoint 정상 생성
+
+따라서 이는 Deployment RollingUpdate 문제라기보다 Ingress / ALB / Edge 경로 상태 문제로 분리한다.
+
+### 13.2 과거 Error Pod 잔존
+
+Prod Pod 목록에 과거 backend-api Error Pod가 남아 있었다.
+
+하지만 현재 Deployment는 2/2 Ready이고, Endpoint는 새 Running Pod 2개만 포함하고 있다.
+
+따라서 서비스 트래픽에는 영향이 없다.
+
+필요 시 별도 housekeeping으로 정리할 수 있으나, M5-REL-01의 배포 전략 정합성 blocker는 아니다.
+
+### 13.3 network-policy-prod Application 부재
+
+Prod에는 현재 `network-policy-prod` Application이 존재하지 않는다.
+
+이번 #685 후속에서는 network-policy chart와 prod values까지 정합성을 보완했지만, Prod live에 network-policy-prod 앱을 신규 생성하지는 않았다.
+
+이는 의도적으로 범위를 제한한 것이다.
+
+Prod NetworkPolicy를 실제로 운영할지는 별도 이슈에서 다음 항목을 검토해야 한다.
+
+- Prod namespace default-deny 적용 여부
+- backend-api / batch-job / ai-service data-tier egress 허용
+- ALB / monitoring / external service egress
+- rollout 순서
+- 장애 복구 계획
+
+## 14. 최종 판정
+
+M5-REL-01의 핵심 검증 항목은 완료되었다.
+
+### 완료된 항목
+
+- Dev RollingUpdate 전략 확인
+- Prod RollingUpdate 전략 확인
+- batch-job strategy 렌더링 누락 수정
+- backend-api readinessProbe `/health` 전환
+- ai-service preferred anti-affinity 적용
+- GitOps 기반 rollback 원칙 문서화
+- Dev backend NetworkPolicy egress blocker 근본 해결
+- Dev live rollout 및 health check 성공
+- Prod 수동 sync 및 rollout 성공
+- Prod backend `/health` 200 확인
+
+### 별도 추적 항목
+
+- backend-api-prod ArgoCD Health Progressing 원인인 Ingress / ALB 상태
+- Prod network-policy-prod Application 도입 여부
+- 과거 Error Pod housekeeping
+
+## 15. 운영 기준
+
+향후 유사한 배포 전략 검증 시 다음 기준을 따른다.
+
+- default-deny NetworkPolicy 적용 시 workload별 egress를 반드시 함께 정의한다.
+- netshoot 등 검증용 Pod는 실제 NetworkPolicy podSelector와 동일한 label을 사용해 검증한다.
+- readinessProbe는 단순 port open보다 애플리케이션 실제 준비 상태를 반영해야 한다.
+- Prod sync는 자동보다 수동 sync로 단계별 반영하고, 앱별 rollout 및 health를 확인한다.
+- rollback은 GitOps desired state 기준으로 수행한다.
+- kubectl patch / kubectl edit / rollout undo는 최종 해결 방식으로 사용하지 않는다.
+
+## 16. Evidence 경로
+
+### Dev
+
+- `tmp/m5-rel-01-final-dev-evidence-after-networkpolicy-20260611-002614/M5-REL-01-final-dev-evidence-after-networkpolicy.txt`
+
+### Prod
+
+- `tmp/m5-rel-01-prod-manual-sync-20260611-002745/M5-REL-01-prod-manual-sync.txt`
+
+### NetworkPolicy root fix
+
+- `tmp/m5-rel-01-networkpolicy-root-fix-20260611-001535/step-02-networkpolicy-root-fix.txt`
+- `tmp/m5-rel-01-networkpolicy-root-fix-verify-20260611-001619/step-03-networkpolicy-root-fix-verify.txt`
+- `tmp/m5-rel-01-networkpolicy-backend-label-test-20260611-002203/step-06-backend-label-egress-test.txt`
+- `tmp/m5-rel-01-backend-recovery-after-networkpolicy-20260611-002339/step-07-backend-recovery-after-networkpolicy.txt`
