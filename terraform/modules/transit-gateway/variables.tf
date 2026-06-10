@@ -103,3 +103,9 @@ variable "enable_dev_private_app_default_to_tgw" {
   type        = bool
   default     = true
 }
+
+variable "enable_prod_private_app_default_to_tgw" {
+  description = "Whether the Transit Gateway module manages Prod private app 0.0.0.0/0 route. Disable during Network/TGW bootstrap when Prod still owns default egress through its legacy NAT Gateway."
+  type        = bool
+  default     = true
+}

@@ -97,11 +97,12 @@ module "transit_gateway" {
   openvpn_vpn_cidr             = var.openvpn_vpn_cidr
   enable_openvpn_client_routes = local.openvpn_client_routes_enabled
 
-  prod_vpc_id                      = var.prod_vpc_id
-  prod_vpc_cidr                    = var.prod_vpc_cidr
-  prod_tgw_subnet_ids              = var.prod_tgw_subnet_ids
-  prod_private_app_route_table_id  = var.prod_private_app_route_table_id
-  prod_private_data_route_table_id = var.prod_private_data_route_table_id
+  prod_vpc_id                            = var.prod_vpc_id
+  prod_vpc_cidr                          = var.prod_vpc_cidr
+  prod_tgw_subnet_ids                    = var.prod_tgw_subnet_ids
+  prod_private_app_route_table_id        = var.prod_private_app_route_table_id
+  prod_private_data_route_table_id       = var.prod_private_data_route_table_id
+  enable_prod_private_app_default_to_tgw = var.enable_prod_private_app_default_to_tgw
 
   dev_vpc_id                            = var.dev_vpc_id
   dev_vpc_cidr                          = var.dev_vpc_cidr

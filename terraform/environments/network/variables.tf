@@ -196,3 +196,9 @@ variable "enable_dev_private_app_default_to_tgw" {
   type        = bool
   default     = false
 }
+
+variable "enable_prod_private_app_default_to_tgw" {
+  description = "Whether Network environment should manage Prod private app default route to TGW. Keep false during Network/TGW bootstrap while Prod still owns 0.0.0.0/0 through legacy Prod NAT."
+  type        = bool
+  default     = false
+}
