@@ -44,6 +44,12 @@ variable "transit_gateway_id" {
   default     = null
 }
 
+variable "enable_private_app_to_network_vpc_route" {
+  description = "Whether this module manages the Prod private app route to the Network VPC CIDR. Keep false when the Network environment already owns this route."
+  type        = bool
+  default     = true
+}
+
 variable "tags" {
   description = "Common tags."
   type        = map(string)

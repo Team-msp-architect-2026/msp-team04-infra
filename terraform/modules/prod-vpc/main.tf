@@ -127,7 +127,7 @@ resource "aws_route" "private_app_default_to_tgw" {
 }
 
 resource "aws_route" "private_app_to_network_vpc" {
-  count = var.transit_gateway_id != null ? 1 : 0
+  count = var.transit_gateway_id != null && var.enable_private_app_to_network_vpc_route ? 1 : 0
 
   route_table_id         = aws_route_table.private_app.id
   destination_cidr_block = "10.0.0.0/16"
