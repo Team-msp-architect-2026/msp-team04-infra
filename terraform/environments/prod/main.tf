@@ -446,7 +446,7 @@ module "prod_external_secrets_irsa" {
     ] : []
   )
 
-  allow_rds_managed_secrets = true
+  allow_rds_managed_secrets = false
 
   common_tags = local.prod_tags
 }
