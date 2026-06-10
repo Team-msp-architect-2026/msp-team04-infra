@@ -73,7 +73,8 @@ module "prod_vpc" {
     "10.10.100.16/28"
   ]
 
-  transit_gateway_id = var.prod_transit_gateway_id
+  transit_gateway_id                      = var.prod_transit_gateway_id
+  enable_private_app_to_network_vpc_route = false
 
   tags = local.prod_tags
 }
