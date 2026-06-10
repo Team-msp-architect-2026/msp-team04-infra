@@ -8,6 +8,10 @@ metadata:
     {{- include "batch-job.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount | default 1 }}
+  {{- with .Values.strategy }}
+  strategy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   selector:
     matchLabels:
       {{- include "batch-job.selectorLabels" . | nindent 6 }}

@@ -63,4 +63,20 @@ nodeSelector:
   workload: core
   capacity: on-demand
 tolerations: []
-affinity: {}
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: ai-service
+              app.kubernetes.io/instance: ai-service-dev
+          topologyKey: kubernetes.io/hostname
+      - weight: 50
+        podAffinityTerm:
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: ai-service
+              app.kubernetes.io/instance: ai-service-dev
+          topologyKey: topology.kubernetes.io/zone
