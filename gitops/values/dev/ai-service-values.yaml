@@ -24,6 +24,24 @@ secretRefs:
   - envName: OPENAI_API_KEY
     secretName: moment-dev-ai-service-secret
     secretKey: openai-api-key
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 8000
+  initialDelaySeconds: 20
+  periodSeconds: 10
+  timeoutSeconds: 2
+  failureThreshold: 6
+  successThreshold: 1
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 8000
+  initialDelaySeconds: 40
+  periodSeconds: 15
+  timeoutSeconds: 2
+  failureThreshold: 5
+  successThreshold: 1
 resources:
   requests:
     cpu: 250m
@@ -31,6 +49,16 @@ resources:
   limits:
     cpu: 500m
     memory: 1Gi
+# HA: RollingUpdate - dev replica 1, maxUnavailable 1 허용
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 1
+# HA: PDB - dev replica 1이라 비활성
+pdb:
+  enabled: false
+  minAvailable: 1
 nodeSelector:
   workload: core
   capacity: on-demand

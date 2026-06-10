@@ -78,6 +78,16 @@ resources:
   limits:
     cpu: 500m
     memory: 1Gi
+# HA: RollingUpdate - SQS worker, 중단 시 메시지 재처리 가능
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 1
+# HA: PDB - dev replica 1, 비활성
+pdb:
+  enabled: false
+  minAvailable: 1
 nodeSelector:
   workload: batch
   capacity: spot

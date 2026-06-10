@@ -28,6 +28,26 @@ secretRefs:
     secretName: moment-prod-ai-service-secret
     secretKey: openai-api-key
 
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 8000
+  initialDelaySeconds: 20
+  periodSeconds: 10
+  timeoutSeconds: 2
+  failureThreshold: 6
+  successThreshold: 1
+
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 8000
+  initialDelaySeconds: 40
+  periodSeconds: 15
+  timeoutSeconds: 2
+  failureThreshold: 5
+  successThreshold: 1
+
 resources:
   requests:
     cpu: 500m
@@ -35,6 +55,18 @@ resources:
   limits:
     cpu: 1000m
     memory: 2Gi
+
+# HA: RollingUpdate - Spot 노드 중단 고려, maxUnavailable 0
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+
+# HA: PDB - prod replica 2, Spot이라 중단 보호 필요
+pdb:
+  enabled: true
+  minAvailable: 1
 
 nodeSelector:
   workload: ai
