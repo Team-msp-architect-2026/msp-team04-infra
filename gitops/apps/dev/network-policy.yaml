@@ -11,7 +11,7 @@ spec:
     path: gitops/charts/network-policy
     helm:
       valueFiles:
-        - ../../../values/dev/network-policy-values.yaml
+        - ../../values/dev/network-policy-values.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: moment-dev
