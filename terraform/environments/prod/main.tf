@@ -343,8 +343,11 @@ module "prod_eks" {
 
   addons = {
     vpc-cni = {
-      addon_version = "v1.21.1-eksbuild.1"
-    }
+  addon_version        = "v1.21.1-eksbuild.1"
+  configuration_values = jsonencode({
+    enableNetworkPolicy = "true"
+  })
+}
 
     coredns = {
       addon_version = "v1.13.2-eksbuild.4"
