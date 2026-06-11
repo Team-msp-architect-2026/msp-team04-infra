@@ -121,10 +121,10 @@ resource "aws_eks_access_entry" "cluster_admin_additional" {
 }
 
 resource "aws_eks_access_policy_association" "cluster_admin_additional" {
-  for_each = aws_eks_access_entry.cluster_admin_additional
+  for_each = toset([for principal_arn in var.cluster_admin_additional_principal_arns : principal_arn if principal_arn != var.cluster_admin_principal_arn])
 
   cluster_name  = aws_eks_cluster.this.name
-  principal_arn = each.value.principal_arn
+  principal_arn = each.value
   policy_arn    = var.cluster_admin_access_policy_arn
 
   access_scope {
