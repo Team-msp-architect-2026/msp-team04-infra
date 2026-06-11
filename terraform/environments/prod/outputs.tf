@@ -246,3 +246,14 @@ output "prod_cloudwatch_alert_alarm_names" {
   description = "Prod CloudWatch monitoring alert alarm names."
   value       = try(module.prod_alerting_slack_notifier[0].cloudwatch_alarm_names, [])
 }
+
+output "prod_opensearch_recovery_strategy" {
+  description = "Prod OpenSearch recovery strategy. OpenSearch is treated as a derived index and rebuilt from source-of-truth data."
+  value       = var.prod_opensearch_recovery_strategy
+}
+
+output "prod_opensearch_source_of_truth" {
+  description = "Authoritative source used to rebuild Prod OpenSearch indexes."
+  value       = var.prod_opensearch_source_of_truth
+}
+
