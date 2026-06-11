@@ -85,9 +85,9 @@ prod_rds_skip_final_snapshot     = false
 
 # Prod Redis defaults. HA tuning is finalized in M2-REDIS-02.
 prod_redis_node_type                  = "cache.t3.micro"
-prod_redis_automatic_failover_enabled = false
-prod_redis_multi_az_enabled           = false
-prod_redis_snapshot_retention_limit   = 0
+prod_redis_automatic_failover_enabled = true
+prod_redis_multi_az_enabled           = true
+prod_redis_snapshot_retention_limit   = 3
 
 # Prod OpenSearch defaults.
 prod_opensearch_instance_type                  = "t3.medium.search"

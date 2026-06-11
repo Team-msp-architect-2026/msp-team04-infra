@@ -390,21 +390,36 @@ variable "prod_redis_num_cache_clusters" {
 }
 
 variable "prod_redis_multi_az_enabled" {
-  description = "Whether Prod Redis Multi-AZ is enabled."
+  description = "Enable Multi-AZ for the Prod Redis replication group. Prod backup/restore and HA baseline requires this to be true."
   type        = bool
-  default     = true # false → true
+  default     = true
+
+  validation {
+    condition     = var.prod_redis_multi_az_enabled == true
+    error_message = "prod_redis_multi_az_enabled must be true for Prod data-tier HA and recovery readiness."
+  }
 }
 
 variable "prod_redis_snapshot_retention_limit" {
-  description = "Number of days to retain Prod Redis snapshots."
+  description = "Number of days to retain automatic Redis snapshots in Prod. Must be at least 3 for the MoMent Prod backup baseline."
   type        = number
-  default     = 3 # 0 → 3
+  default     = 3
+
+  validation {
+    condition     = var.prod_redis_snapshot_retention_limit >= 3
+    error_message = "prod_redis_snapshot_retention_limit must be greater than or equal to 3 for Prod backup readiness."
+  }
 }
 
 variable "prod_redis_automatic_failover_enabled" {
-  description = "Whether Prod Redis automatic failover is enabled."
+  description = "Enable automatic failover for the Prod Redis replication group. Prod HA baseline requires this to be true."
   type        = bool
   default     = true
+
+  validation {
+    condition     = var.prod_redis_automatic_failover_enabled == true
+    error_message = "prod_redis_automatic_failover_enabled must be true for Prod Redis HA and recovery readiness."
+  }
 }
 
 variable "rds_engine_version" {
@@ -474,15 +489,25 @@ variable "prod_rds_maintenance_window" {
 }
 
 variable "prod_rds_deletion_protection" {
-  description = "Whether deletion protection is enabled for Prod RDS PostgreSQL."
+  description = "Enable deletion protection for the Prod RDS instance. Prod backup/restore baseline requires this to be true."
   type        = bool
   default     = true
+
+  validation {
+    condition     = var.prod_rds_deletion_protection == true
+    error_message = "prod_rds_deletion_protection must be true for Prod RDS protection."
+  }
 }
 
 variable "prod_rds_skip_final_snapshot" {
-  description = "Whether to skip final snapshot on Prod RDS destroy."
+  description = "Whether to skip final snapshot on Prod RDS deletion. Prod backup/restore baseline requires this to be false."
   type        = bool
   default     = false
+
+  validation {
+    condition     = var.prod_rds_skip_final_snapshot == false
+    error_message = "prod_rds_skip_final_snapshot must be false so Prod RDS keeps a final snapshot before deletion."
+  }
 }
 
 variable "prod_rds_final_snapshot_identifier" {
@@ -754,3 +779,26 @@ variable "prod_alerting_target_group_tag_selectors" {
     }
   }
 }
+
+variable "prod_opensearch_recovery_strategy" {
+  description = "Recovery strategy for Prod OpenSearch. MoMent treats OpenSearch as a derived search index and restores it by reindexing from RDS and S3 Raw."
+  type        = string
+  default     = "reindex_from_rds_s3_raw"
+
+  validation {
+    condition     = contains(["reindex_from_rds_s3_raw"], var.prod_opensearch_recovery_strategy)
+    error_message = "Only reindex_from_rds_s3_raw is currently supported for Prod OpenSearch recovery."
+  }
+}
+
+variable "prod_opensearch_source_of_truth" {
+  description = "Authoritative source used to rebuild Prod OpenSearch indexes."
+  type        = string
+  default     = "rds_and_s3_raw"
+
+  validation {
+    condition     = contains(["rds_and_s3_raw"], var.prod_opensearch_source_of_truth)
+    error_message = "prod_opensearch_source_of_truth must be rds_and_s3_raw for the current MoMent data-tier recovery design."
+  }
+}
+
