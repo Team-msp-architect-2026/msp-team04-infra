@@ -28,9 +28,9 @@ resources:
     memory: "1Gi"
 
 autoscaling:
-  enabled: false
+  enabled: true
   minReplicas: 2
-  maxReplicas: 4
+  maxReplicas: 10
   targetCPUUtilizationPercentage: 70
   targetMemoryUtilizationPercentage: null
   behavior: {}
@@ -56,7 +56,7 @@ affinity:
           topologyKey: topology.kubernetes.io/zone
 
 ingress:
-  enabled: false
+  enabled: true
   className: alb
   annotations: {}
   hosts:
