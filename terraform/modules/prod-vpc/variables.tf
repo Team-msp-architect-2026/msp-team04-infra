@@ -44,6 +44,17 @@ variable "transit_gateway_id" {
   default     = null
 }
 
+variable "private_app_default_route_target" {
+  description = "Default egress target for Prod private app subnets. Use nat for local NAT Gateway egress or tgw for centralized TGW egress."
+  type        = string
+  default     = "nat"
+
+  validation {
+    condition     = contains(["nat", "tgw"], var.private_app_default_route_target)
+    error_message = "private_app_default_route_target must be either nat or tgw."
+  }
+}
+
 variable "enable_private_app_to_network_vpc_route" {
   description = "Whether this module manages the Prod private app route to the Network VPC CIDR. Keep false when the Network environment already owns this route."
   type        = bool

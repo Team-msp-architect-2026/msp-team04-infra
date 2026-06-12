@@ -74,6 +74,7 @@ module "prod_vpc" {
   ]
 
   transit_gateway_id                      = var.prod_transit_gateway_id
+  private_app_default_route_target        = var.prod_private_app_default_route_target
   enable_private_app_to_network_vpc_route = false
 
   tags = local.prod_tags
