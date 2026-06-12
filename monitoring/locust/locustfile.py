@@ -53,7 +53,7 @@ class MomentLoadTestUser(HttpUser):
     include_recommendation = env_bool("MOMENT_INCLUDE_RECOMMENDATION", False)
     recommendation_path = os.getenv("MOMENT_RECOMMENDATION_PATH", "/recommendations")
 
-    program_ids = env_list("MOMENT_PROGRAM_IDS", "88,133,278,170,404")
+    program_ids = env_list("MOMENT_PROGRAM_IDS", "44,40,45,5,36")
     search_keywords = env_list("MOMENT_SEARCH_KEYWORDS", "교육,박물관,양천구")
 
     def on_start(self):
