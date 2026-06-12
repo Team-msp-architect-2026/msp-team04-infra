@@ -107,3 +107,11 @@ prod_alb_dns_name      = ""
 prod_alb_https_enabled = false
 enable_waf             = true
 cloudfront_price_class = "PriceClass_All"
+
+# Prod ExternalDNS / Stable CloudFront origin
+enable_prod_external_dns               = false
+prod_external_dns_namespace            = "external-dns"
+prod_external_dns_service_account_name = "external-dns"
+prod_external_dns_hosted_zone_name     = "moment-team04.click"
+prod_external_dns_hosted_zone_id       = ""
+prod_api_origin_domain_name            = "origin-prod-api.moment-team04.click"

@@ -708,7 +708,7 @@ module "edge" {
   subject_alternative_names  = var.edge_subject_alternative_names
   create_route53_hosted_zone = var.create_route53_hosted_zone
 
-  alb_dns_name      = var.prod_alb_dns_name
+  alb_dns_name      = local.prod_edge_origin_domain_name
   alb_https_enabled = var.prod_alb_https_enabled
 
   price_class                    = var.cloudfront_price_class
