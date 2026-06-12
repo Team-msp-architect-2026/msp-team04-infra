@@ -257,3 +257,12 @@ output "prod_opensearch_source_of_truth" {
   value       = var.prod_opensearch_source_of_truth
 }
 
+output "prod_external_dns_irsa_role_arn" {
+  description = "Prod ExternalDNS IRSA role ARN."
+  value       = try(aws_iam_role.prod_external_dns[0].arn, null)
+}
+
+output "prod_api_origin_domain_name" {
+  description = "Stable Prod API origin domain used by CloudFront."
+  value       = local.prod_edge_origin_domain_name
+}

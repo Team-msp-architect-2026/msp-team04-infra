@@ -813,3 +813,38 @@ variable "prod_opensearch_source_of_truth" {
   }
 }
 
+variable "enable_prod_external_dns" {
+  description = "Whether to create Prod ExternalDNS IRSA resources for Route53 record automation."
+  type        = bool
+  default     = false
+}
+
+variable "prod_external_dns_namespace" {
+  description = "Kubernetes namespace for Prod ExternalDNS."
+  type        = string
+  default     = "external-dns"
+}
+
+variable "prod_external_dns_service_account_name" {
+  description = "Kubernetes service account name for Prod ExternalDNS."
+  type        = string
+  default     = "external-dns"
+}
+
+variable "prod_external_dns_hosted_zone_name" {
+  description = "Route53 public hosted zone name managed by Prod ExternalDNS."
+  type        = string
+  default     = "moment-team04.click"
+}
+
+variable "prod_external_dns_hosted_zone_id" {
+  description = "Route53 public hosted zone ID managed by Prod ExternalDNS. If empty, it is looked up by name."
+  type        = string
+  default     = ""
+}
+
+variable "prod_api_origin_domain_name" {
+  description = "Stable Prod API origin domain used by CloudFront. Example: origin-prod-api.moment-team04.click"
+  type        = string
+  default     = ""
+}
