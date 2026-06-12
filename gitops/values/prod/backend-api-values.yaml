@@ -4,7 +4,7 @@ replicaCount: 2
 
 image:
   repository: 611058323802.dkr.ecr.ap-northeast-3.amazonaws.com/moment-prod-backend-api
-  tag: prod-4592913
+  tag: prod-5df1ea2
   pullPolicy: IfNotPresent
 
 serviceAccount:
