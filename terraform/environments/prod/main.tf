@@ -74,6 +74,7 @@ module "prod_vpc" {
   ]
 
   transit_gateway_id                      = var.prod_transit_gateway_id
+  private_app_default_route_target        = var.prod_private_app_default_route_target
   enable_private_app_to_network_vpc_route = false
 
   tags = local.prod_tags
@@ -343,11 +344,11 @@ module "prod_eks" {
 
   addons = {
     vpc-cni = {
-  addon_version        = "v1.21.1-eksbuild.1"
-  configuration_values = jsonencode({
-    enableNetworkPolicy = "true"
-  })
-}
+      addon_version = "v1.21.1-eksbuild.1"
+      configuration_values = jsonencode({
+        enableNetworkPolicy = "true"
+      })
+    }
 
     coredns = {
       addon_version = "v1.13.2-eksbuild.4"
@@ -476,6 +477,15 @@ module "prod_redis" {
   common_tags = local.prod_tags
 }
 
+
+resource "random_id" "prod_rds_final_snapshot_suffix" {
+  byte_length = 4
+
+  keepers = {
+    db_instance_identifier = "moment-prod-postgres"
+  }
+}
+
 module "prod_rds" {
   count  = var.enable_prod_vpc && var.enable_prod_data_tier && var.enable_prod_rds ? 1 : 0
   source = "../../modules/rds"
@@ -506,7 +516,7 @@ module "prod_rds" {
 
   deletion_protection       = var.prod_rds_deletion_protection
   skip_final_snapshot       = var.prod_rds_skip_final_snapshot
-  final_snapshot_identifier = coalesce(var.prod_rds_final_snapshot_identifier, "${var.project_name}-prod-postgres-final-snapshot")
+  final_snapshot_identifier = coalesce(var.prod_rds_final_snapshot_identifier, "${var.project_name}-prod-postgres-final-snapshot-${random_id.prod_rds_final_snapshot_suffix.hex}")
 
   common_tags = local.prod_tags
 }

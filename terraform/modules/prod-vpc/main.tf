@@ -119,7 +119,7 @@ resource "aws_route_table" "private_app" {
 }
 
 resource "aws_route" "private_app_default_to_tgw" {
-  count = var.transit_gateway_id != null ? 1 : 0
+  count = var.transit_gateway_id != null && var.private_app_default_route_target == "tgw" ? 1 : 0
 
   route_table_id         = aws_route_table.private_app.id
   destination_cidr_block = "0.0.0.0/0"
@@ -194,7 +194,7 @@ resource "aws_nat_gateway" "this" {
 }
 
 resource "aws_route" "private_app_to_nat" {
-  count = var.transit_gateway_id == null ? 1 : 0
+  count = var.private_app_default_route_target == "nat" ? 1 : 0
 
   route_table_id         = aws_route_table.private_app.id
   destination_cidr_block = "0.0.0.0/0"
