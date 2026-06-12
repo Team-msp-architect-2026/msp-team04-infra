@@ -152,7 +152,7 @@ jobs:
             fi
 
             # Secret 평문 노출 확인 (secretKeyRef/valueFrom 참조는 제외)
-            if echo "$RENDERED" | grep -v "secretKeyRef\|configMapKeyRef\|valueFrom\|name:\|key:\|toss-\|kakao-\|public-data-\|jwt-\|db-" | grep -qiE "(password|secret|token|key)\s*:\s*['\"]?[A-Za-z0-9+/=]{8,}"; then
+            if echo "$RENDERED" | grep -v "secretKeyRef\|configMapKeyRef\|valueFrom\|name:\|key:\|topologyKey:\|toss-\|kakao-\|public-data-\|jwt-\|db-" | grep -qiE "(password|secret|token|key)\s*:\s*['\"]?[A-Za-z0-9+/=]{8,}"; then
               echo "❌ $SERVICE: possible secret value exposed in rendered output"
               exit 1
             else
