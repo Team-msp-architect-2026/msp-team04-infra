@@ -56,6 +56,7 @@ shared_lambda_collector_role_arn = ""
 
 # Network/TGW is still shared. Keep null until state handoff or remote-state strategy is approved.
 prod_transit_gateway_id = null
+prod_private_app_default_route_target = "nat"
 
 # Prod EKS requires shared IAM role ARNs when enabled.
 prod_eks_cluster_role_arn            = ""

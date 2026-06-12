@@ -58,6 +58,17 @@ variable "prod_transit_gateway_id" {
   default     = null
 }
 
+variable "prod_private_app_default_route_target" {
+  description = "Default egress target for Prod private app subnets. Keep nat unless centralized TGW egress has been explicitly validated."
+  type        = string
+  default     = "nat"
+
+  validation {
+    condition     = contains(["nat", "tgw"], var.prod_private_app_default_route_target)
+    error_message = "prod_private_app_default_route_target must be either nat or tgw."
+  }
+}
+
 variable "enable_prod_ecr" {
   description = "Whether to create Prod ECR repositories. Disabled by default for cost saving and migration safety."
   type        = bool
