@@ -48,6 +48,14 @@ output "cloudwatch_alarm_names" {
     [for alarm in aws_cloudwatch_metric_alarm.alb_elb_5xx_count : alarm.alarm_name],
     [for alarm in aws_cloudwatch_metric_alarm.alb_target_response_time_high : alarm.alarm_name],
     [for alarm in aws_cloudwatch_metric_alarm.target_group_unhealthy_hosts : alarm.alarm_name],
-    [for alarm in aws_cloudwatch_metric_alarm.target_group_5xx_count : alarm.alarm_name]
+    [for alarm in aws_cloudwatch_metric_alarm.target_group_5xx_count : alarm.alarm_name],
+    [for alarm in aws_cloudwatch_metric_alarm.rds_connection_high : alarm.alarm_name],
+    [for alarm in aws_cloudwatch_metric_alarm.redis_memory_high : alarm.alarm_name],
+    [for alarm in aws_cloudwatch_metric_alarm.lambda_throttles : alarm.alarm_name],
+    [for alarm in aws_cloudwatch_metric_alarm.sqs_oldest_message_high : alarm.alarm_name],
+    [for alarm in aws_cloudwatch_metric_alarm.opensearch_cpu_high : alarm.alarm_name],
+    [for alarm in aws_cloudwatch_metric_alarm.opensearch_jvm_memory_pressure_high : alarm.alarm_name],
+    [for alarm in aws_cloudwatch_metric_alarm.opensearch_free_storage_low : alarm.alarm_name],
+    [for alarm in aws_cloudwatch_metric_alarm.target_group_healthy_host_zero : alarm.alarm_name]
   )
 }

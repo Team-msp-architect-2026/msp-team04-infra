@@ -203,3 +203,53 @@ variable "target_group_5xx_count_threshold" {
   type        = number
   default     = 1
 }
+
+# Full alert catalog extension thresholds.
+
+variable "rds_connection_high_threshold" {
+  description = "RDS DatabaseConnections high threshold."
+  type        = number
+  default     = 80
+}
+
+variable "redis_memory_high_threshold_percent" {
+  description = "Redis DatabaseMemoryUsagePercentage high threshold percent."
+  type        = number
+  default     = 85
+}
+
+variable "lambda_throttles_threshold" {
+  description = "Lambda Throttles threshold."
+  type        = number
+  default     = 0
+}
+
+variable "sqs_oldest_message_high_threshold_seconds" {
+  description = "SQS ApproximateAgeOfOldestMessage high threshold in seconds."
+  type        = number
+  default     = 900
+}
+
+variable "opensearch_cpu_high_threshold" {
+  description = "OpenSearch CPUUtilization high threshold percent."
+  type        = number
+  default     = 85
+}
+
+variable "opensearch_jvm_memory_pressure_high_threshold" {
+  description = "OpenSearch JVMMemoryPressure high threshold percent."
+  type        = number
+  default     = 85
+}
+
+variable "opensearch_free_storage_low_threshold_mb" {
+  description = "OpenSearch FreeStorageSpace low threshold in MiB."
+  type        = number
+  default     = 5120
+}
+
+variable "target_group_healthy_host_zero_threshold" {
+  description = "Target Group HealthyHostCount low threshold."
+  type        = number
+  default     = 1
+}

@@ -241,3 +241,85 @@ spec:
             threshold_text: failed recommendation count > 5 within 10m
             action_hint: Check child profile, preference data, recommendation rules, program data, and backend logs.
             runbook_url: docs/runbooks/recommendation-failure-spike.md
+
+    - name: moment-dev-full-catalog
+      rules:
+        - alert: MomentBackendHpaMaxedOut
+          expr: |
+            kube_horizontalpodautoscaler_status_current_replicas{namespace="moment-dev", horizontalpodautoscaler="backend-api"}
+            >=
+            kube_horizontalpodautoscaler_spec_max_replicas{namespace="moment-dev", horizontalpodautoscaler="backend-api"}
+          for: 10m
+          labels:
+            environment: dev
+            severity: medium
+            service: backend-api
+            category: capacity
+            owner: Infra
+          annotations:
+            summary: Backend API HPA reached max replicas in Dev.
+            description: Backend API HPA current replicas reached configured max replicas.
+            reason: Current traffic or CPU demand may exceed the configured scaling ceiling.
+            threshold_text: current replicas >= max replicas for 10m
+            action_hint: Check backend CPU, request rate, latency, HPA events, node capacity, and whether maxReplicas should be increased.
+            runbook_url: docs/runbooks/hpa-maxed-out.md
+
+        - alert: MomentBatchWorkerUnavailable
+          expr: |
+            (
+              kube_deployment_spec_replicas{namespace="moment-dev", deployment="batch-job"} > 0
+            )
+            and on (namespace, deployment)
+            (
+              kube_deployment_status_replicas_available{namespace="moment-dev", deployment="batch-job"} < 1
+            )
+          for: 5m
+          labels:
+            environment: dev
+            severity: high
+            service: batch-job
+            category: data-pipeline
+            owner: Data/Infra
+          annotations:
+            summary: Batch worker is unavailable in Dev.
+            description: Batch worker Deployment has no available replica.
+            reason: Public data SQS processing can stop due to image pull, Secret, scheduling, readiness, or runtime failure.
+            threshold_text: batch-job available replicas < 1 for 5m
+            action_hint: Check batch-job rollout, pods, events, logs, SQS backlog, ExternalSecret, and RDS/OpenSearch connectivity.
+            runbook_url: docs/runbooks/batch-worker-unavailable.md
+
+        - alert: MomentNodeNotReady
+          expr: |
+            kube_node_status_condition{condition="Ready", status="true"} == 0
+          for: 5m
+          labels:
+            environment: dev
+            severity: high
+            service: kubernetes
+            category: infrastructure
+            owner: Infra
+          annotations:
+            summary: Kubernetes node is NotReady in Dev.
+            description: One or more Kubernetes nodes are not Ready.
+            reason: Node pressure, kubelet issue, network issue, EC2 interruption, or EKS node group problem may be occurring.
+            threshold_text: node Ready condition == false for 5m
+            action_hint: Check kubectl get nodes, node describe, node events, EC2 instance state, CNI, kubelet, and node group health.
+            runbook_url: docs/runbooks/node-not-ready.md
+
+        - alert: MomentPendingPodsHigh
+          expr: |
+            sum(kube_pod_status_phase{namespace="moment-dev", phase="Pending"}) > 0
+          for: 10m
+          labels:
+            environment: dev
+            severity: medium
+            service: kubernetes
+            category: scheduling
+            owner: Infra
+          annotations:
+            summary: Pending pods detected in Dev.
+            description: One or more MoMent pods stayed Pending for more than 10 minutes.
+            reason: Node capacity, taint/toleration mismatch, image pull, PVC, or scheduling constraints may block pod scheduling.
+            threshold_text: Pending pod count > 0 for 10m
+            action_hint: Check pending pods, events, node capacity, taints, tolerations, resource requests, and image pull errors.
+            runbook_url: docs/runbooks/pending-pods-high.md
