@@ -774,3 +774,319 @@ resource "aws_cloudwatch_metric_alarm" "target_group_5xx_count" {
     Role = "cloudwatch-alarm"
   })
 }
+
+resource "aws_cloudwatch_metric_alarm" "rds_connection_high" {
+  for_each = var.enable_cloudwatch_alarms ? var.rds_instance_identifiers : {}
+
+  alarm_name = "${local.name_prefix}-rds-${each.key}-connection-high"
+  alarm_description = jsonencode({
+    display_name   = "RDSConnectionHigh"
+    severity       = "high"
+    service        = "rds-postgres"
+    category       = "database"
+    owner          = "Backend/Data"
+    reason         = "RDS database connections are close to the configured threshold. Application connection pool pressure or leaked connections may be occurring."
+    threshold_text = "DatabaseConnections > ${var.rds_connection_high_threshold} for 10m"
+    action_hint    = "Check backend connection pool, active sessions, slow queries, and RDS Performance Insights."
+    runbook_url    = "docs/runbooks/rds-connection-high.md"
+  })
+
+  namespace           = "AWS/RDS"
+  metric_name         = "DatabaseConnections"
+  statistic           = "Average"
+  period              = 300
+  evaluation_periods  = 2
+  datapoints_to_alarm = 2
+  threshold           = var.rds_connection_high_threshold
+  comparison_operator = "GreaterThanThreshold"
+  treat_missing_data  = "notBreaching"
+
+  dimensions = {
+    DBInstanceIdentifier = each.value
+  }
+
+  alarm_actions = local.alarm_actions
+  ok_actions    = local.ok_actions
+
+  tags = merge(local.tags, {
+    Name = "${local.name_prefix}-rds-${each.key}-connection-high"
+    Role = "cloudwatch-alarm"
+  })
+}
+
+resource "aws_cloudwatch_metric_alarm" "redis_memory_high" {
+  for_each = var.enable_cloudwatch_alarms ? var.redis_replication_group_ids : {}
+
+  alarm_name = "${local.name_prefix}-redis-${each.key}-memory-high"
+  alarm_description = jsonencode({
+    display_name   = "RedisMemoryHigh"
+    severity       = "high"
+    service        = "redis"
+    category       = "cache"
+    owner          = "Backend/Infra"
+    reason         = "Redis memory usage is high and can lead to evictions or degraded cache and lock behavior."
+    threshold_text = "DatabaseMemoryUsagePercentage > ${var.redis_memory_high_threshold_percent}% for 10m"
+    action_hint    = "Check Redis memory usage, evictions, key cardinality, TTL policy, and application cache behavior."
+    runbook_url    = "docs/runbooks/redis-memory-high.md"
+  })
+
+  namespace           = "AWS/ElastiCache"
+  metric_name         = "DatabaseMemoryUsagePercentage"
+  statistic           = "Average"
+  period              = 300
+  evaluation_periods  = 2
+  datapoints_to_alarm = 2
+  threshold           = var.redis_memory_high_threshold_percent
+  comparison_operator = "GreaterThanThreshold"
+  treat_missing_data  = "notBreaching"
+
+  dimensions = {
+    ReplicationGroupId = each.value
+  }
+
+  alarm_actions = local.alarm_actions
+  ok_actions    = local.ok_actions
+
+  tags = merge(local.tags, {
+    Name = "${local.name_prefix}-redis-${each.key}-memory-high"
+    Role = "cloudwatch-alarm"
+  })
+}
+
+resource "aws_cloudwatch_metric_alarm" "lambda_throttles" {
+  for_each = var.enable_cloudwatch_alarms ? var.lambda_function_names : {}
+
+  alarm_name = "${local.name_prefix}-lambda-${each.key}-throttles"
+  alarm_description = jsonencode({
+    display_name   = "LambdaThrottleDetected"
+    severity       = "medium"
+    service        = "lambda"
+    category       = "data-pipeline"
+    owner          = "Data/Infra"
+    reason         = "Lambda throttling was detected. Data collection can be delayed or retried."
+    threshold_text = "Throttles > ${var.lambda_throttles_threshold} for 5m"
+    action_hint    = "Check Lambda concurrency, retry behavior, scheduler frequency, and recent collector executions."
+    runbook_url    = "docs/runbooks/lambda-throttles-detected.md"
+  })
+
+  namespace           = "AWS/Lambda"
+  metric_name         = "Throttles"
+  statistic           = "Sum"
+  period              = 300
+  evaluation_periods  = 1
+  datapoints_to_alarm = 1
+  threshold           = var.lambda_throttles_threshold
+  comparison_operator = "GreaterThanThreshold"
+  treat_missing_data  = "notBreaching"
+
+  dimensions = {
+    FunctionName = each.value
+  }
+
+  alarm_actions = local.alarm_actions
+  ok_actions    = local.ok_actions
+
+  tags = merge(local.tags, {
+    Name = "${local.name_prefix}-lambda-${each.key}-throttles"
+    Role = "cloudwatch-alarm"
+  })
+}
+
+resource "aws_cloudwatch_metric_alarm" "sqs_oldest_message_high" {
+  for_each = var.enable_cloudwatch_alarms ? var.sqs_queue_names : {}
+
+  alarm_name = "${local.name_prefix}-sqs-${each.key}-oldest-message-high"
+  alarm_description = jsonencode({
+    display_name   = "SqsOldMessageHigh"
+    severity       = "high"
+    service        = "sqs"
+    category       = "data-pipeline"
+    owner          = "Data/Infra"
+    reason         = "Old SQS messages indicate worker processing delay or consumer failure."
+    threshold_text = "ApproximateAgeOfOldestMessage > ${var.sqs_oldest_message_high_threshold_seconds}s for 10m"
+    action_hint    = "Check batch worker availability, SQS consumer logs, DLQ movement, and downstream RDS/OpenSearch latency."
+    runbook_url    = "docs/runbooks/sqs-old-message-high.md"
+  })
+
+  namespace           = "AWS/SQS"
+  metric_name         = "ApproximateAgeOfOldestMessage"
+  statistic           = "Maximum"
+  period              = 300
+  evaluation_periods  = 2
+  datapoints_to_alarm = 2
+  threshold           = var.sqs_oldest_message_high_threshold_seconds
+  comparison_operator = "GreaterThanThreshold"
+  treat_missing_data  = "notBreaching"
+
+  dimensions = {
+    QueueName = each.value
+  }
+
+  alarm_actions = local.alarm_actions
+  ok_actions    = local.ok_actions
+
+  tags = merge(local.tags, {
+    Name = "${local.name_prefix}-sqs-${each.key}-oldest-message-high"
+    Role = "cloudwatch-alarm"
+  })
+}
+
+resource "aws_cloudwatch_metric_alarm" "opensearch_cpu_high" {
+  for_each = var.enable_cloudwatch_alarms ? var.opensearch_domain_names : {}
+
+  alarm_name = "${local.name_prefix}-opensearch-${each.key}-cpu-high"
+  alarm_description = jsonencode({
+    display_name   = "OpenSearchCPUHigh"
+    severity       = "high"
+    service        = "opensearch"
+    category       = "search"
+    owner          = "Search/Infra"
+    reason         = "OpenSearch CPU utilization is high and can affect search latency or indexing throughput."
+    threshold_text = "CPUUtilization > ${var.opensearch_cpu_high_threshold}% for 10m"
+    action_hint    = "Check OpenSearch CPU, JVM pressure, slow queries, indexing load, shard health, and backend search traffic."
+    runbook_url    = "docs/runbooks/opensearch-cpu-high.md"
+  })
+
+  namespace           = "AWS/ES"
+  metric_name         = "CPUUtilization"
+  statistic           = "Average"
+  period              = 300
+  evaluation_periods  = 2
+  datapoints_to_alarm = 2
+  threshold           = var.opensearch_cpu_high_threshold
+  comparison_operator = "GreaterThanThreshold"
+  treat_missing_data  = "notBreaching"
+
+  dimensions = {
+    DomainName = each.value
+    ClientId   = data.aws_caller_identity.current.account_id
+  }
+
+  alarm_actions = local.alarm_actions
+  ok_actions    = local.ok_actions
+
+  tags = merge(local.tags, {
+    Name = "${local.name_prefix}-opensearch-${each.key}-cpu-high"
+    Role = "cloudwatch-alarm"
+  })
+}
+
+resource "aws_cloudwatch_metric_alarm" "opensearch_jvm_memory_pressure_high" {
+  for_each = var.enable_cloudwatch_alarms ? var.opensearch_domain_names : {}
+
+  alarm_name = "${local.name_prefix}-opensearch-${each.key}-jvm-memory-pressure-high"
+  alarm_description = jsonencode({
+    display_name   = "OpenSearchJVMMemoryPressureHigh"
+    severity       = "high"
+    service        = "opensearch"
+    category       = "search"
+    owner          = "Search/Infra"
+    reason         = "OpenSearch JVM memory pressure is high and can cause search latency, GC pressure, or cluster instability."
+    threshold_text = "JVMMemoryPressure > ${var.opensearch_jvm_memory_pressure_high_threshold}% for 10m"
+    action_hint    = "Check JVM memory pressure, shard count, heap pressure, query volume, indexing load, and OpenSearch cluster health."
+    runbook_url    = "docs/runbooks/opensearch-jvm-memory-pressure-high.md"
+  })
+
+  namespace           = "AWS/ES"
+  metric_name         = "JVMMemoryPressure"
+  statistic           = "Average"
+  period              = 300
+  evaluation_periods  = 2
+  datapoints_to_alarm = 2
+  threshold           = var.opensearch_jvm_memory_pressure_high_threshold
+  comparison_operator = "GreaterThanThreshold"
+  treat_missing_data  = "notBreaching"
+
+  dimensions = {
+    DomainName = each.value
+    ClientId   = data.aws_caller_identity.current.account_id
+  }
+
+  alarm_actions = local.alarm_actions
+  ok_actions    = local.ok_actions
+
+  tags = merge(local.tags, {
+    Name = "${local.name_prefix}-opensearch-${each.key}-jvm-memory-pressure-high"
+    Role = "cloudwatch-alarm"
+  })
+}
+
+resource "aws_cloudwatch_metric_alarm" "opensearch_free_storage_low" {
+  for_each = var.enable_cloudwatch_alarms ? var.opensearch_domain_names : {}
+
+  alarm_name = "${local.name_prefix}-opensearch-${each.key}-free-storage-low"
+  alarm_description = jsonencode({
+    display_name   = "OpenSearchFreeStorageLow"
+    severity       = "high"
+    service        = "opensearch"
+    category       = "search"
+    owner          = "Search/Infra"
+    reason         = "OpenSearch free storage is low and can affect indexing, search stability, or cluster health."
+    threshold_text = "FreeStorageSpace < ${var.opensearch_free_storage_low_threshold_mb} MiB for 10m"
+    action_hint    = "Check OpenSearch free storage, index size, shard allocation, old indices, and data retention policy."
+    runbook_url    = "docs/runbooks/opensearch-free-storage-low.md"
+  })
+
+  namespace           = "AWS/ES"
+  metric_name         = "FreeStorageSpace"
+  statistic           = "Minimum"
+  period              = 300
+  evaluation_periods  = 2
+  datapoints_to_alarm = 2
+  threshold           = var.opensearch_free_storage_low_threshold_mb
+  comparison_operator = "LessThanThreshold"
+  treat_missing_data  = "notBreaching"
+
+  dimensions = {
+    DomainName = each.value
+    ClientId   = data.aws_caller_identity.current.account_id
+  }
+
+  alarm_actions = local.alarm_actions
+  ok_actions    = local.ok_actions
+
+  tags = merge(local.tags, {
+    Name = "${local.name_prefix}-opensearch-${each.key}-free-storage-low"
+    Role = "cloudwatch-alarm"
+  })
+}
+
+resource "aws_cloudwatch_metric_alarm" "target_group_healthy_host_zero" {
+  for_each = var.enable_cloudwatch_alarms ? local.target_group_alarm_dimensions : {}
+
+  alarm_name = "${local.name_prefix}-tg-${each.key}-healthy-host-zero"
+  alarm_description = jsonencode({
+    display_name   = "ALBHealthyHostZero"
+    severity       = "critical"
+    service        = "alb-target-group"
+    category       = "edge"
+    owner          = "Infra"
+    reason         = "Target Group has zero healthy hosts. External API traffic can fail."
+    threshold_text = "HealthyHostCount < ${var.target_group_healthy_host_zero_threshold} within 2m"
+    action_hint    = "Check Ingress, TargetGroupBinding, Service endpoints, Pod readiness, ALB controller events, and backend health endpoint."
+    runbook_url    = "docs/runbooks/alb-healthy-host-zero.md"
+  })
+
+  namespace           = "AWS/ApplicationELB"
+  metric_name         = "HealthyHostCount"
+  statistic           = "Minimum"
+  period              = 60
+  evaluation_periods  = 2
+  datapoints_to_alarm = 2
+  threshold           = var.target_group_healthy_host_zero_threshold
+  comparison_operator = "LessThanThreshold"
+  treat_missing_data  = "notBreaching"
+
+  dimensions = {
+    LoadBalancer = each.value.load_balancer
+    TargetGroup  = each.value.target_group
+  }
+
+  alarm_actions = local.alarm_actions
+  ok_actions    = local.ok_actions
+
+  tags = merge(local.tags, {
+    Name = "${local.name_prefix}-tg-${each.key}-healthy-host-zero"
+    Role = "cloudwatch-alarm"
+  })
+}

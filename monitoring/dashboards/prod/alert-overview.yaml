@@ -1,0 +1,216 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: moment-alert-overview-prod
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+    app.kubernetes.io/name: moment-alert-overview
+    app.kubernetes.io/part-of: moment
+    app.kubernetes.io/managed-by: argocd
+    environment: prod
+data:
+  alert-overview.json: |-
+    {
+      "annotations": {
+        "list": []
+      },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 0,
+      "id": null,
+      "links": [],
+      "liveNow": false,
+      "panels": [
+        {
+          "type": "stat",
+          "title": "Active Critical Alerts",
+          "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 0,
+            "y": 0
+          },
+          "targets": [
+            {
+              "expr": "count(ALERTS{environment=\"prod\", severity=\"critical\", alertstate=\"firing\"})",
+              "refId": "A"
+            }
+          ],
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          }
+        },
+        {
+          "type": "stat",
+          "title": "Active High Alerts",
+          "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 6,
+            "y": 0
+          },
+          "targets": [
+            {
+              "expr": "count(ALERTS{environment=\"prod\", severity=\"high\", alertstate=\"firing\"})",
+              "refId": "A"
+            }
+          ],
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          }
+        },
+        {
+          "type": "stat",
+          "title": "Active Medium Alerts",
+          "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 12,
+            "y": 0
+          },
+          "targets": [
+            {
+              "expr": "count(ALERTS{environment=\"prod\", severity=\"medium\", alertstate=\"firing\"})",
+              "refId": "A"
+            }
+          ],
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          }
+        },
+        {
+          "type": "stat",
+          "title": "Backend HPA Maxed",
+          "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 18,
+            "y": 0
+          },
+          "targets": [
+            {
+              "expr": "kube_horizontalpodautoscaler_status_current_replicas{namespace=\"moment-prod\", horizontalpodautoscaler=\"backend-api\"} >= kube_horizontalpodautoscaler_spec_max_replicas{namespace=\"moment-prod\", horizontalpodautoscaler=\"backend-api\"}",
+              "refId": "A"
+            }
+          ],
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          }
+        },
+        {
+          "type": "timeseries",
+          "title": "Firing Alerts by Service",
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 4
+          },
+          "targets": [
+            {
+              "expr": "sum by (service, severity) (ALERTS{environment=\"prod\", alertstate=\"firing\"})",
+              "refId": "A"
+            }
+          ],
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          }
+        },
+        {
+          "type": "timeseries",
+          "title": "Deployment Unavailable Replicas",
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 4
+          },
+          "targets": [
+            {
+              "expr": "kube_deployment_status_replicas_unavailable{namespace=\"moment-prod\", deployment=~\"backend-api|ai-service|batch-job\"}",
+              "refId": "A"
+            }
+          ],
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          }
+        },
+        {
+          "type": "timeseries",
+          "title": "Pending Pods",
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 12
+          },
+          "targets": [
+            {
+              "expr": "sum by (phase) (kube_pod_status_phase{namespace=\"moment-prod\", phase=\"Pending\"})",
+              "refId": "A"
+            }
+          ],
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          }
+        },
+        {
+          "type": "timeseries",
+          "title": "Pod Restarts 15m",
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 12
+          },
+          "targets": [
+            {
+              "expr": "sum by (pod, container) (increase(kube_pod_container_status_restarts_total{namespace=\"moment-prod\", pod=~\"(backend-api|ai-service|batch-job).*\"}[15m]))",
+              "refId": "A"
+            }
+          ],
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          }
+        }
+      ],
+      "refresh": "30s",
+      "schemaVersion": 39,
+      "style": "dark",
+      "tags": [
+        "moment",
+        "prod",
+        "alerts"
+      ],
+      "templating": {
+        "list": [
+          {
+            "name": "DS_PROMETHEUS",
+            "type": "datasource",
+            "query": "prometheus",
+            "current": {
+              "text": "Prometheus",
+              "value": "Prometheus"
+            }
+          }
+        ]
+      },
+      "time": {
+        "from": "now-6h",
+        "to": "now"
+      },
+      "timezone": "browser",
+      "title": "MoMent Prod Alert Overview",
+      "uid": "moment-prod-alert-overview",
+      "version": 1,
+      "weekStart": ""
+    }

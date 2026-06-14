@@ -35,3 +35,31 @@
 - Do not create fake alerts for metrics that are not actually scraped.
 - Do not use manual Grafana UI-only configuration as the source of truth.
 - CloudWatch alarms and Prometheus alerts must use the same severity and owner taxonomy.
+
+## Full Alert Catalog Extension
+
+### Added CloudWatch alarms
+
+| Alarm | Severity | Service | Category | Owner | Runbook |
+| --- | --- | --- | --- | --- | --- |
+| RDSConnectionHigh | High | rds-postgres | database | Backend/Data | docs/runbooks/rds-connection-high.md |
+| RedisMemoryHigh | High | redis | cache | Backend/Infra | docs/runbooks/redis-memory-high.md |
+| LambdaThrottleDetected | Medium | lambda | data-pipeline | Data/Infra | docs/runbooks/lambda-throttles-detected.md |
+| SqsOldMessageHigh | High | sqs | data-pipeline | Data/Infra | docs/runbooks/sqs-old-message-high.md |
+| OpenSearchCPUHigh | High | opensearch | search | Search/Infra | docs/runbooks/opensearch-cpu-high.md |
+| OpenSearchJVMMemoryPressureHigh | High | opensearch | search | Search/Infra | docs/runbooks/opensearch-jvm-memory-pressure-high.md |
+| OpenSearchFreeStorageLow | High | opensearch | search | Search/Infra | docs/runbooks/opensearch-free-storage-low.md |
+| ALBHealthyHostZero | Critical | alb-target-group | edge | Infra | docs/runbooks/alb-healthy-host-zero.md |
+
+### Added Prometheus alerts
+
+| Alarm | Severity | Service | Category | Owner | Runbook |
+| --- | --- | --- | --- | --- | --- |
+| MomentBackendHpaMaxedOut | Medium | backend-api | capacity | Infra | docs/runbooks/hpa-maxed-out.md |
+| MomentBatchWorkerUnavailable | High | batch-job | data-pipeline | Data/Infra | docs/runbooks/batch-worker-unavailable.md |
+| MomentNodeNotReady | High | kubernetes | infrastructure | Infra | docs/runbooks/node-not-ready.md |
+| MomentPendingPodsHigh | Medium | kubernetes | scheduling | Infra | docs/runbooks/pending-pods-high.md |
+
+### Deferred event-based alerts
+
+RDS failover and Redis failover are event-based alarms and must be implemented through verified EventBridge event patterns before routing to SNS/Lambda/Slack. They must not be faked with metric alarms.
