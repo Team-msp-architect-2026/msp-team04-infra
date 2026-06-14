@@ -17,6 +17,7 @@ spec:
       - environment
       - service
       - severity
+      - category
     groupWait: 30s
     groupInterval: 5m
     repeatInterval: 2h
@@ -33,12 +34,23 @@ spec:
             key: url
           channel: "#moment-alerts"
           sendResolved: true
-          title: '[{{ .Status | toUpper }}][dev][{{ .CommonLabels.severity }}] {{ .CommonLabels.alertname }}'
+          title: '[{{ if eq .Status "resolved" }}RESOLVED{{ else }}{{ .CommonLabels.severity | toUpper }}{{ end }}] [dev] {{ .CommonLabels.alertname }}'
           text: |-
             {{ range .Alerts }}
-            *Service:* {{ .Labels.service }}
-            *Category:* {{ .Labels.category }}
-            *Summary:* {{ .Annotations.summary }}
-            *Description:* {{ .Annotations.description }}
-            *Action:* {{ .Annotations.action_hint }}
+            *알람명:* {{ .Labels.alertname }}
+            *설명:* {{ .Annotations.description }}
+            *심각도:* {{ .Labels.severity | toUpper }}
+            *환경:* {{ .Labels.environment }}
+            *서비스:* {{ .Labels.service }}
+            *영역:* {{ .Labels.category }}
+            *사유:* {{ .Annotations.reason }}
+            *현재값:* Prometheus expression matched
+            *기준값:* {{ .Annotations.threshold_text }}
+            *담당자:* {{ .Labels.owner }}
+            *조치:* {{ .Annotations.action_hint }}
+            *Runbook:* {{ .Annotations.runbook_url }}
+            *StartedAt:* {{ .StartsAt }}
+            {{ if eq .Status "resolved" }}*ResolvedAt:* {{ .EndsAt }}{{ end }}
+            *Source:* prometheus
+            ---
             {{ end }}

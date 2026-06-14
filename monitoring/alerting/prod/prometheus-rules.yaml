@@ -25,11 +25,15 @@ spec:
             environment: prod
             severity: critical
             service: backend-api
-            category: target
+            category: application
+            owner: App/Infra
           annotations:
             summary: Backend API Prometheus target is down in Prod.
             description: Prometheus cannot scrape Backend API metrics from the Prod backend-api Service.
-            action_hint: Check backend-api pods, Service labels, ServiceMonitor labels, and /actuator/prometheus endpoint.
+            reason: Backend API Pod, Service, Endpoint, ServiceMonitor, or /actuator/prometheus endpoint may be unavailable.
+            threshold_text: up == 0 for 2m
+            action_hint: Check backend-api pods, Service labels, ServiceMonitor labels, endpoints, and /actuator/prometheus endpoint.
+            runbook_url: docs/runbooks/backend-target-down.md
 
         - alert: MomentAiServiceTargetDown
           expr: |
@@ -39,13 +43,17 @@ spec:
           for: 2m
           labels:
             environment: prod
-            severity: critical
+            severity: high
             service: ai-service
-            category: target
+            category: application
+            owner: AI/Infra
           annotations:
             summary: AI Service Prometheus target is down in Prod.
             description: Prometheus cannot scrape AI Service metrics from the Prod ai-service Service.
-            action_hint: Check ai-service pods, Service labels, ServiceMonitor labels, and /metrics endpoint.
+            reason: AI Service Pod, Service, Endpoint, ServiceMonitor, or /metrics endpoint may be unavailable.
+            threshold_text: up == 0 for 2m
+            action_hint: Check ai-service pods, Service labels, ServiceMonitor labels, endpoints, and /metrics endpoint.
+            runbook_url: docs/runbooks/ai-service-target-down.md
 
     - name: moment-prod-workloads
       rules:
@@ -65,10 +73,14 @@ spec:
             severity: critical
             service: kubernetes
             category: workload
+            owner: Infra
           annotations:
             summary: MoMent Prod Deployment has unavailable replicas.
             description: One or more MoMent Prod Deployments have fewer available replicas than desired replicas.
-            action_hint: Check Deployment rollout, ReplicaSet, Pod events, image pull, secrets, node scheduling, and readiness probes.
+            reason: Deployment rollout, image pull, secret resolution, node scheduling, or readiness probe may be failing.
+            threshold_text: available replicas < desired replicas for 5m
+            action_hint: Check Deployment rollout, ReplicaSet, Pod events, image pull, ExternalSecret, node scheduling, and readiness probes.
+            runbook_url: docs/runbooks/deployment-unavailable.md
 
         - alert: MomentPodRestartSpike
           expr: |
@@ -78,13 +90,17 @@ spec:
           for: 5m
           labels:
             environment: prod
-            severity: warning
+            severity: medium
             service: kubernetes
             category: workload
+            owner: Infra
           annotations:
             summary: MoMent Prod Pod restart spike detected.
             description: A MoMent Prod container restarted more than twice within 15 minutes.
-            action_hint: Check pod logs, previous container logs, liveness probe, memory limits, and application startup errors.
+            reason: Liveness probe failure, memory pressure, application startup error, or dependency connection failure may be occurring.
+            threshold_text: restart count increase > 2 within 15m
+            action_hint: Check pod logs, previous container logs, liveness probe, memory limits, application startup errors, and recent deployment.
+            runbook_url: docs/runbooks/pod-restart-spike.md
 
         - alert: MomentPodCrashLoopBackOff
           expr: |
@@ -94,13 +110,17 @@ spec:
           for: 5m
           labels:
             environment: prod
-            severity: critical
+            severity: high
             service: kubernetes
             category: workload
+            owner: Infra
           annotations:
             summary: MoMent Prod Pod is in CrashLoopBackOff.
             description: A MoMent Prod container is waiting with CrashLoopBackOff.
-            action_hint: Check container logs, environment variables, ExternalSecret status, database connectivity, and application configuration.
+            reason: Application startup failure, invalid environment variable, missing Secret, database connectivity, or application configuration issue may exist.
+            threshold_text: CrashLoopBackOff > 0 for 5m
+            action_hint: Check container logs, previous logs, environment variables, ExternalSecret status, database connectivity, and application configuration.
+            runbook_url: docs/runbooks/pod-crashloop-backoff.md
 
     - name: moment-prod-backend-http
       rules:
@@ -116,13 +136,17 @@ spec:
           for: 5m
           labels:
             environment: prod
-            severity: warning
+            severity: high
             service: backend-api
-            category: http
+            category: application
+            owner: Backend/Infra
           annotations:
             summary: Backend API 5xx rate is high in Prod.
             description: More than 5% of non-health Backend API requests returned 5xx during the last 5 minutes.
-            action_hint: Check backend logs, recent deployments, database connectivity, Redis/OpenSearch connectivity, and failing endpoints.
+            reason: Backend application error, DB/Redis/OpenSearch dependency failure, or downstream failure may be occurring.
+            threshold_text: 5xx rate > 5% with request rate > 0.1 rps for 5m
+            action_hint: Check backend logs, recent deployments, failing endpoints, database connectivity, Redis/OpenSearch connectivity, and ALB target 5xx.
+            runbook_url: docs/runbooks/backend-high-5xx-rate.md
 
         - alert: MomentBackendHighLatency
           expr: |
@@ -136,13 +160,17 @@ spec:
           for: 10m
           labels:
             environment: prod
-            severity: warning
+            severity: high
             service: backend-api
-            category: latency
+            category: application
+            owner: Backend/Infra
           annotations:
             summary: Backend API average latency is high in Prod.
             description: Average Backend API latency exceeded 1 second for non-health requests.
-            action_hint: Check slow endpoints, database query time, OpenSearch latency, JVM heap, CPU, and external API calls.
+            reason: Slow DB query, OpenSearch latency, Redis latency, external API latency, JVM heap pressure, or CPU pressure may be occurring.
+            threshold_text: average latency > 1s with request rate > 0.1 rps for 10m
+            action_hint: Check slow endpoints, database query time, OpenSearch latency, Redis latency, JVM heap, CPU, and external API calls.
+            runbook_url: docs/runbooks/backend-high-latency.md
 
     - name: moment-prod-business
       rules:
@@ -151,49 +179,65 @@ spec:
           for: 2m
           labels:
             environment: prod
-            severity: warning
+            severity: medium
             service: backend-api
             category: business
+            owner: Backend
           annotations:
             summary: Application failure spike detected in Prod.
             description: Application API failures increased during the last 10 minutes.
+            reason: Application validation, child/program ID mismatch, seat lock flow, or business rule error may be occurring.
+            threshold_text: failed application count > 5 within 10m
             action_hint: Check application validation errors, child/program IDs, seat lock flow, and backend logs.
+            runbook_url: docs/runbooks/application-failure-spike.md
 
         - alert: MomentPaymentFailureSpike
           expr: sum(increase(moment_business_payment_total{environment="prod", result="failed"}[10m])) > 5
           for: 2m
           labels:
             environment: prod
-            severity: warning
+            severity: medium
             service: backend-api
             category: business
+            owner: Backend
           annotations:
             summary: Payment failure spike detected in Prod.
             description: Payment API failures increased during the last 10 minutes.
+            reason: Toss configuration, payment state flow, application ID consistency, or external payment dependency may be failing.
+            threshold_text: failed payment count > 5 within 10m
             action_hint: Check Toss configuration, payment state flow, application IDs, and backend logs.
+            runbook_url: docs/runbooks/payment-failure-spike.md
 
         - alert: MomentSearchFailureSpike
           expr: sum(increase(moment_business_search_requests_total{environment="prod", result="failed"}[10m])) > 10
           for: 2m
           labels:
             environment: prod
-            severity: warning
+            severity: medium
             service: backend-api
             category: business
+            owner: Backend/Search
           annotations:
             summary: Search failure spike detected in Prod.
             description: Search API failures increased during the last 10 minutes.
+            reason: Search request parameter issue, OpenSearch connectivity issue, or AI rerank dependency issue may be occurring.
+            threshold_text: failed search count > 10 within 10m
             action_hint: Check search request parameters, OpenSearch connectivity, AI rerank dependency, and backend logs.
+            runbook_url: docs/runbooks/search-failure-spike.md
 
         - alert: MomentRecommendationFailureSpike
           expr: sum(increase(moment_business_recommendation_requests_total{environment="prod", result="failed"}[10m])) > 5
           for: 2m
           labels:
             environment: prod
-            severity: warning
+            severity: medium
             service: backend-api
             category: business
+            owner: Backend
           annotations:
             summary: Recommendation failure spike detected in Prod.
             description: Recommendation API failures increased during the last 10 minutes.
+            reason: Child profile, preference data, recommendation rules, or program data issue may be occurring.
+            threshold_text: failed recommendation count > 5 within 10m
             action_hint: Check child profile, preference data, recommendation rules, program data, and backend logs.
+            runbook_url: docs/runbooks/recommendation-failure-spike.md
