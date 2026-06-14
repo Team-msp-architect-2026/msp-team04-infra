@@ -93,3 +93,9 @@ variable "common_tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "notification_topic_arn" {
+  description = "SNS topic ARN for ElastiCache event notifications."
+  type        = string
+  default     = null
+}

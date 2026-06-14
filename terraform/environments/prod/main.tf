@@ -317,6 +317,12 @@ module "prod_alerting_slack_notifier" {
   target_group_tag_selectors              = var.prod_alerting_target_group_tag_selectors
 
   common_tags = local.prod_tags
+
+  event_catalog_name_prefix = "moment-prod"
+
+  rds_failover_event_source_ids = [
+    "moment-prod-postgres"
+  ]
 }
 
 module "prod_eks" {
@@ -475,6 +481,8 @@ module "prod_redis" {
   snapshot_retention_limit   = var.prod_redis_snapshot_retention_limit
 
   common_tags = local.prod_tags
+
+  notification_topic_arn = try(module.prod_alerting_slack_notifier[0].sns_topic_arn, null)
 }
 
 

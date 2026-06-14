@@ -377,6 +377,12 @@ module "dev_alerting_slack_notifier" {
   common_tags = merge(local.common_tags, {
     Environment = "dev"
   })
+
+  event_catalog_name_prefix = "moment-dev"
+
+  rds_failover_event_source_ids = [
+    "moment-dev-postgres"
+  ]
 }
 
 module "dev_eks" {
@@ -561,6 +567,8 @@ module "dev_redis" {
   multi_az_enabled           = false
 
   common_tags = local.common_tags
+
+  notification_topic_arn = try(module.dev_alerting_slack_notifier[0].sns_topic_arn, null)
 }
 
 module "dev_rds" {

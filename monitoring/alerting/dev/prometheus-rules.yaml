@@ -323,3 +323,69 @@ spec:
             threshold_text: Pending pod count > 0 for 10m
             action_hint: Check pending pods, events, node capacity, taints, tolerations, resource requests, and image pull errors.
             runbook_url: docs/runbooks/pending-pods-high.md
+
+    - name: moment-dev-runtime-failure-catalog
+      rules:
+      - alert: MomentBackendPodCrashLoop
+        expr: |
+          max by (namespace, pod, container) (
+            kube_pod_container_status_waiting_reason{
+              namespace="moment-dev",
+              reason="CrashLoopBackOff",
+              container="backend-api"
+            }
+          ) == 1
+        for: 2m
+        labels:
+          severity: high
+          service: backend-api
+          category: application
+          owner: Backend/Infra
+          environment: dev
+        annotations:
+          summary: "backend-api Pod CrashLoopBackOff"
+          description: "backend-api container is repeatedly crashing."
+          action_hint: "Check backend previous logs, DB auth, Flyway, secret keys, and configmap."
+          runbook_url: "docs/runbooks/pod-crashloop.md"
+
+      - alert: MomentBatchPodCrashLoop
+        expr: |
+          max by (namespace, pod, container) (
+            kube_pod_container_status_waiting_reason{
+              namespace="moment-dev",
+              reason="CrashLoopBackOff",
+              container="batch-job"
+            }
+          ) == 1
+        for: 2m
+        labels:
+          severity: high
+          service: batch-job
+          category: data
+          owner: Data/Infra
+          environment: dev
+        annotations:
+          summary: "batch-job Pod CrashLoopBackOff"
+          description: "batch-job container is repeatedly crashing."
+          action_hint: "Check batch previous logs, DB auth, SQS/S3/OpenSearch config, and worker profile."
+          runbook_url: "docs/runbooks/pod-crashloop.md"
+
+      - alert: MomentArgoCDAppDegraded
+        expr: |
+          max by (name, namespace, project) (
+            argocd_app_info{
+              health_status="Degraded"
+            }
+          ) == 1
+        for: 3m
+        labels:
+          severity: high
+          service: argocd
+          category: gitops
+          owner: Infra
+          environment: dev
+        annotations:
+          summary: "ArgoCD Application Degraded"
+          description: "An ArgoCD Application is degraded."
+          action_hint: "Run argocd --core app get <app>, inspect sync errors, events, and workload health."
+          runbook_url: "docs/runbooks/argocd-app-degraded.md"
