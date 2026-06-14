@@ -44,6 +44,8 @@ resource "aws_elasticache_replication_group" "this" {
 
   snapshot_retention_limit = var.snapshot_retention_limit
   apply_immediately        = true
+  notification_topic_arn   = var.notification_topic_arn
+
 
   tags = merge(local.tags, {
     Name = var.replication_group_id
