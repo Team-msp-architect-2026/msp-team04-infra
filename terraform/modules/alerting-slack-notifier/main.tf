@@ -189,8 +189,20 @@ resource "aws_sns_topic_subscription" "lambda" {
 resource "aws_cloudwatch_metric_alarm" "rds_cpu_high" {
   for_each = var.enable_cloudwatch_alarms ? var.rds_instance_identifiers : {}
 
-  alarm_name          = "${local.name_prefix}-rds-${each.key}-cpu-high"
-  alarm_description   = "RDS CPUUtilization is high for ${each.value}."
+  alarm_name = "${local.name_prefix}-rds-${each.key}-cpu-high"
+  alarm_description = jsonencode({
+    display_name   = "RDSCPUHigh"
+    summary        = "${var.environment} RDS CPUUtilization is high for ${each.value}."
+    description    = "RDS CPU 사용률이 기준치를 초과했습니다."
+    severity       = "high"
+    service        = "rds-postgres"
+    category       = "aws-data"
+    owner          = "Data/Infra"
+    reason         = "DB 부하 증가, 쿼리 지연, connection 증가 가능성이 있습니다."
+    threshold_text = "CPUUtilization > ${var.rds_cpu_high_threshold}% for 10m"
+    action_hint    = "RDS Performance Insights, DatabaseConnections, slow query, backend DB pool, recent deployment를 확인합니다."
+    runbook_url    = "docs/runbooks/rds-cpu-high.md"
+  })
   namespace           = "AWS/RDS"
   metric_name         = "CPUUtilization"
   statistic           = "Average"
@@ -217,8 +229,20 @@ resource "aws_cloudwatch_metric_alarm" "rds_cpu_high" {
 resource "aws_cloudwatch_metric_alarm" "rds_free_storage_low" {
   for_each = var.enable_cloudwatch_alarms ? var.rds_instance_identifiers : {}
 
-  alarm_name          = "${local.name_prefix}-rds-${each.key}-free-storage-low"
-  alarm_description   = "RDS FreeStorageSpace is low for ${each.value}."
+  alarm_name = "${local.name_prefix}-rds-${each.key}-free-storage-low"
+  alarm_description = jsonencode({
+    display_name   = "RDSFreeStorageLow"
+    summary        = "${var.environment} RDS FreeStorageSpace is low for ${each.value}."
+    description    = "RDS 남은 저장 공간이 기준치보다 낮습니다."
+    severity       = "high"
+    service        = "rds-postgres"
+    category       = "aws-data"
+    owner          = "Data/Infra"
+    reason         = "DB 저장공간 부족으로 쓰기 실패 또는 장애가 발생할 수 있습니다."
+    threshold_text = "FreeStorageSpace < ${var.rds_free_storage_low_threshold_bytes} bytes for 10m"
+    action_hint    = "RDS storage, auto storage scaling, 데이터 증가량, 오래된 데이터 정리 필요 여부를 확인합니다."
+    runbook_url    = "docs/runbooks/rds-free-storage-low.md"
+  })
   namespace           = "AWS/RDS"
   metric_name         = "FreeStorageSpace"
   statistic           = "Average"
@@ -245,8 +269,20 @@ resource "aws_cloudwatch_metric_alarm" "rds_free_storage_low" {
 resource "aws_cloudwatch_metric_alarm" "redis_cpu_high" {
   for_each = var.enable_cloudwatch_alarms ? var.redis_replication_group_ids : {}
 
-  alarm_name          = "${local.name_prefix}-redis-${each.key}-cpu-high"
-  alarm_description   = "Redis CPUUtilization is high for ${each.value}."
+  alarm_name = "${local.name_prefix}-redis-${each.key}-cpu-high"
+  alarm_description = jsonencode({
+    display_name   = "RedisCPUHigh"
+    summary        = "${var.environment} Redis CPUUtilization is high for ${each.value}."
+    description    = "Redis CPU 사용률이 기준치를 초과했습니다."
+    severity       = "high"
+    service        = "redis"
+    category       = "aws-data"
+    owner          = "Backend/Infra"
+    reason         = "캐시, 분산락, 세션성 요청 부하 증가 가능성이 있습니다."
+    threshold_text = "CPUUtilization > ${var.redis_cpu_high_threshold}% for 10m"
+    action_hint    = "Redis CPU, commands, connected clients, backend cache/lock 호출량을 확인합니다."
+    runbook_url    = "docs/runbooks/redis-cpu-high.md"
+  })
   namespace           = "AWS/ElastiCache"
   metric_name         = "CPUUtilization"
   statistic           = "Average"
@@ -273,8 +309,20 @@ resource "aws_cloudwatch_metric_alarm" "redis_cpu_high" {
 resource "aws_cloudwatch_metric_alarm" "redis_evictions" {
   for_each = var.enable_cloudwatch_alarms ? var.redis_replication_group_ids : {}
 
-  alarm_name          = "${local.name_prefix}-redis-${each.key}-evictions"
-  alarm_description   = "Redis Evictions detected for ${each.value}."
+  alarm_name = "${local.name_prefix}-redis-${each.key}-evictions"
+  alarm_description = jsonencode({
+    display_name   = "RedisEvictionsDetected"
+    summary        = "${var.environment} Redis evictions detected for ${each.value}."
+    description    = "Redis eviction이 발생했습니다."
+    severity       = "high"
+    service        = "redis"
+    category       = "aws-data"
+    owner          = "Backend/Infra"
+    reason         = "메모리 부족으로 캐시 데이터가 제거되고 있을 수 있습니다."
+    threshold_text = "Evictions > ${var.redis_evictions_threshold} for 5m"
+    action_hint    = "Redis memory usage, eviction policy, hot key, cache TTL, node type 증설 필요 여부를 확인합니다."
+    runbook_url    = "docs/runbooks/redis-evictions-detected.md"
+  })
   namespace           = "AWS/ElastiCache"
   metric_name         = "Evictions"
   statistic           = "Sum"
@@ -301,8 +349,20 @@ resource "aws_cloudwatch_metric_alarm" "redis_evictions" {
 resource "aws_cloudwatch_metric_alarm" "opensearch_cluster_red" {
   for_each = var.enable_cloudwatch_alarms ? var.opensearch_domain_names : {}
 
-  alarm_name          = "${local.name_prefix}-opensearch-${each.key}-cluster-red"
-  alarm_description   = "OpenSearch cluster status is red for ${each.value}."
+  alarm_name = "${local.name_prefix}-opensearch-${each.key}-cluster-red"
+  alarm_description = jsonencode({
+    display_name   = "OpenSearchRed"
+    summary        = "${var.environment} OpenSearch cluster status is red for ${each.value}."
+    description    = "OpenSearch cluster가 red 상태입니다."
+    severity       = "critical"
+    service        = "opensearch"
+    category       = "aws-data"
+    owner          = "Search/Infra"
+    reason         = "Primary shard 미할당 등으로 검색 기능 장애가 발생할 수 있습니다."
+    threshold_text = "ClusterStatus.red >= 1 for 5m"
+    action_hint    = "OpenSearch cluster health, shard allocation, node status, storage, JVM pressure를 확인합니다."
+    runbook_url    = "docs/runbooks/opensearch-red.md"
+  })
   namespace           = "AWS/ES"
   metric_name         = "ClusterStatus.red"
   statistic           = "Maximum"
@@ -330,8 +390,20 @@ resource "aws_cloudwatch_metric_alarm" "opensearch_cluster_red" {
 resource "aws_cloudwatch_metric_alarm" "opensearch_cluster_yellow" {
   for_each = var.enable_cloudwatch_alarms ? var.opensearch_domain_names : {}
 
-  alarm_name          = "${local.name_prefix}-opensearch-${each.key}-cluster-yellow"
-  alarm_description   = "OpenSearch cluster status is yellow for ${each.value}."
+  alarm_name = "${local.name_prefix}-opensearch-${each.key}-cluster-yellow"
+  alarm_description = jsonencode({
+    display_name   = "OpenSearchYellow"
+    summary        = "${var.environment} OpenSearch cluster status is yellow for ${each.value}."
+    description    = "OpenSearch cluster가 yellow 상태입니다."
+    severity       = "high"
+    service        = "opensearch"
+    category       = "aws-data"
+    owner          = "Search/Infra"
+    reason         = "Replica shard 미할당 또는 노드/스토리지 압박 가능성이 있습니다."
+    threshold_text = "ClusterStatus.yellow >= 1 for 10m"
+    action_hint    = "OpenSearch node count, shard allocation, storage, JVM pressure, recent index 변경을 확인합니다."
+    runbook_url    = "docs/runbooks/opensearch-yellow.md"
+  })
   namespace           = "AWS/ES"
   metric_name         = "ClusterStatus.yellow"
   statistic           = "Maximum"
@@ -359,8 +431,20 @@ resource "aws_cloudwatch_metric_alarm" "opensearch_cluster_yellow" {
 resource "aws_cloudwatch_metric_alarm" "sqs_visible_messages_high" {
   for_each = var.enable_cloudwatch_alarms ? var.sqs_queue_names : {}
 
-  alarm_name          = "${local.name_prefix}-sqs-${each.key}-visible-messages-high"
-  alarm_description   = "SQS visible message count is high for ${each.value}."
+  alarm_name = "${local.name_prefix}-sqs-${each.key}-visible-messages-high"
+  alarm_description = jsonencode({
+    display_name   = "SqsBacklogHigh"
+    summary        = "${var.environment} SQS visible message count is high for ${each.value}."
+    description    = "SQS backlog가 기준치 이상 증가했습니다."
+    severity       = "medium"
+    service        = "sqs"
+    category       = "data-pipeline"
+    owner          = "Data/Infra"
+    reason         = "Batch worker 처리 지연 또는 consumer 장애 가능성이 있습니다."
+    threshold_text = "ApproximateNumberOfMessagesVisible > ${var.sqs_visible_messages_high_threshold} for 10m"
+    action_hint    = "batch-job worker, SQS queue depth, DLQ, worker logs, processing latency를 확인합니다."
+    runbook_url    = "docs/runbooks/sqs-backlog-high.md"
+  })
   namespace           = "AWS/SQS"
   metric_name         = "ApproximateNumberOfMessagesVisible"
   statistic           = "Average"
@@ -387,8 +471,20 @@ resource "aws_cloudwatch_metric_alarm" "sqs_visible_messages_high" {
 resource "aws_cloudwatch_metric_alarm" "sqs_dlq_visible_messages" {
   for_each = var.enable_cloudwatch_alarms ? var.sqs_dlq_names : {}
 
-  alarm_name          = "${local.name_prefix}-sqs-${each.key}-dlq-visible-messages"
-  alarm_description   = "SQS DLQ has visible messages for ${each.value}."
+  alarm_name = "${local.name_prefix}-sqs-${each.key}-dlq-visible-messages"
+  alarm_description = jsonencode({
+    display_name   = "SqsDlqMessagesVisible"
+    summary        = "${var.environment} SQS DLQ has visible messages for ${each.value}."
+    description    = "SQS DLQ에 실패 메시지가 존재합니다."
+    severity       = "critical"
+    service        = "sqs-dlq"
+    category       = "data-pipeline"
+    owner          = "Data/Infra"
+    reason         = "처리 실패 데이터가 발생했으며 데이터 유실/누락 검토가 필요합니다."
+    threshold_text = "ApproximateNumberOfMessagesVisible > ${var.sqs_dlq_visible_messages_threshold} for 5m"
+    action_hint    = "DLQ message body, batch worker error, source payload schema, 재처리 가능 여부를 확인합니다."
+    runbook_url    = "docs/runbooks/sqs-dlq-messages-visible.md"
+  })
   namespace           = "AWS/SQS"
   metric_name         = "ApproximateNumberOfMessagesVisible"
   statistic           = "Average"
@@ -415,8 +511,20 @@ resource "aws_cloudwatch_metric_alarm" "sqs_dlq_visible_messages" {
 resource "aws_cloudwatch_metric_alarm" "lambda_errors" {
   for_each = var.enable_cloudwatch_alarms ? var.lambda_function_names : {}
 
-  alarm_name          = "${local.name_prefix}-lambda-${each.key}-errors"
-  alarm_description   = "Lambda Errors detected for ${each.value}."
+  alarm_name = "${local.name_prefix}-lambda-${each.key}-errors"
+  alarm_description = jsonencode({
+    display_name   = "LambdaErrorHigh"
+    summary        = "${var.environment} Lambda errors detected for ${each.value}."
+    description    = "Lambda error가 발생했습니다."
+    severity       = "high"
+    service        = "lambda"
+    category       = "data-pipeline"
+    owner          = "Data/Infra"
+    reason         = "공공데이터 수집 또는 Slack 알림 처리 실패 가능성이 있습니다."
+    threshold_text = "Errors > ${var.lambda_errors_threshold} for 5m"
+    action_hint    = "Lambda CloudWatch Logs, 최근 배포, 외부 API 응답, timeout, permission을 확인합니다."
+    runbook_url    = "docs/runbooks/lambda-error-high.md"
+  })
   namespace           = "AWS/Lambda"
   metric_name         = "Errors"
   statistic           = "Sum"
@@ -508,8 +616,20 @@ locals {
 resource "aws_cloudwatch_metric_alarm" "alb_elb_5xx_count" {
   for_each = var.enable_cloudwatch_alarms ? local.application_load_balancer_arn_suffixes : {}
 
-  alarm_name          = "${local.name_prefix}-alb-${each.key}-elb-5xx-count"
-  alarm_description   = "ALB generated HTTP 5XX responses for ${each.key}."
+  alarm_name = "${local.name_prefix}-alb-${each.key}-elb-5xx-count"
+  alarm_description = jsonencode({
+    display_name   = "ALB5xxHigh"
+    summary        = "${var.environment} ALB generated HTTP 5XX responses for ${each.key}."
+    description    = "ALB 5xx 응답이 발생했습니다."
+    severity       = "high"
+    service        = "alb"
+    category       = "aws-edge"
+    owner          = "Infra/Backend"
+    reason         = "ALB 자체 오류 또는 target 연결 문제가 발생했을 수 있습니다."
+    threshold_text = "HTTPCode_ELB_5XX_Count >= ${var.alb_elb_5xx_count_threshold} within 5m"
+    action_hint    = "ALB listener/rule, target group health, backend pod, ingress event, recent deployment를 확인합니다."
+    runbook_url    = "docs/runbooks/alb-5xx-high.md"
+  })
   namespace           = "AWS/ApplicationELB"
   metric_name         = "HTTPCode_ELB_5XX_Count"
   statistic           = "Sum"
@@ -536,8 +656,20 @@ resource "aws_cloudwatch_metric_alarm" "alb_elb_5xx_count" {
 resource "aws_cloudwatch_metric_alarm" "alb_target_response_time_high" {
   for_each = var.enable_cloudwatch_alarms ? local.application_load_balancer_arn_suffixes : {}
 
-  alarm_name          = "${local.name_prefix}-alb-${each.key}-target-response-time-high"
-  alarm_description   = "ALB TargetResponseTime is high for ${each.key}."
+  alarm_name = "${local.name_prefix}-alb-${each.key}-target-response-time-high"
+  alarm_description = jsonencode({
+    display_name   = "ALBLatencyHigh"
+    summary        = "${var.environment} ALB TargetResponseTime is high for ${each.key}."
+    description    = "ALB TargetResponseTime이 기준치를 초과했습니다."
+    severity       = "high"
+    service        = "alb"
+    category       = "aws-edge"
+    owner          = "Infra/Backend"
+    reason         = "Backend API 지연, DB/Redis/OpenSearch 지연, Pod 리소스 압박 가능성이 있습니다."
+    threshold_text = "TargetResponseTime > ${var.alb_target_response_time_high_threshold_seconds}s for 5m"
+    action_hint    = "Backend latency, pod CPU/memory, DB query, Redis/OpenSearch latency, ALB target health를 확인합니다."
+    runbook_url    = "docs/runbooks/alb-latency-high.md"
+  })
   namespace           = "AWS/ApplicationELB"
   metric_name         = "TargetResponseTime"
   statistic           = "Average"
@@ -564,8 +696,20 @@ resource "aws_cloudwatch_metric_alarm" "alb_target_response_time_high" {
 resource "aws_cloudwatch_metric_alarm" "target_group_unhealthy_hosts" {
   for_each = var.enable_cloudwatch_alarms ? local.target_group_alarm_dimensions : {}
 
-  alarm_name          = "${local.name_prefix}-tg-${each.key}-unhealthy-hosts"
-  alarm_description   = "Target Group has unhealthy targets for ${each.key}."
+  alarm_name = "${local.name_prefix}-tg-${each.key}-unhealthy-hosts"
+  alarm_description = jsonencode({
+    display_name   = "TargetGroupUnhealthyHosts"
+    summary        = "${var.environment} Target Group has unhealthy targets for ${each.key}."
+    description    = "TargetGroup에 unhealthy target이 존재합니다."
+    severity       = "high"
+    service        = "alb-target-group"
+    category       = "aws-edge"
+    owner          = "Infra/Backend"
+    reason         = "Pod readiness 실패, Service/Endpoint 문제, health check path 불일치 가능성이 있습니다."
+    threshold_text = "UnHealthyHostCount > ${var.target_group_unhealthy_host_count_threshold} within 5m"
+    action_hint    = "TargetGroup health reason, backend pod readiness, Service endpoint, Ingress annotation을 확인합니다."
+    runbook_url    = "docs/runbooks/target-group-unhealthy-hosts.md"
+  })
   namespace           = "AWS/ApplicationELB"
   metric_name         = "UnHealthyHostCount"
   statistic           = "Average"
@@ -593,8 +737,20 @@ resource "aws_cloudwatch_metric_alarm" "target_group_unhealthy_hosts" {
 resource "aws_cloudwatch_metric_alarm" "target_group_5xx_count" {
   for_each = var.enable_cloudwatch_alarms ? local.target_group_alarm_dimensions : {}
 
-  alarm_name          = "${local.name_prefix}-tg-${each.key}-target-5xx-count"
-  alarm_description   = "Target Group generated HTTP 5XX responses for ${each.key}."
+  alarm_name = "${local.name_prefix}-tg-${each.key}-target-5xx-count"
+  alarm_description = jsonencode({
+    display_name   = "TargetGroup5xxHigh"
+    summary        = "${var.environment} Target Group generated HTTP 5XX responses for ${each.key}."
+    description    = "TargetGroup backend target에서 5xx 응답이 발생했습니다."
+    severity       = "high"
+    service        = "backend-api"
+    category       = "aws-edge"
+    owner          = "Infra/Backend"
+    reason         = "Backend API 오류 또는 downstream dependency 장애 가능성이 있습니다."
+    threshold_text = "HTTPCode_Target_5XX_Count >= ${var.target_group_5xx_count_threshold} within 5m"
+    action_hint    = "Backend logs, failing endpoint, DB/Redis/OpenSearch connectivity, recent deployment를 확인합니다."
+    runbook_url    = "docs/runbooks/target-group-5xx-high.md"
+  })
   namespace           = "AWS/ApplicationELB"
   metric_name         = "HTTPCode_Target_5XX_Count"
   statistic           = "Sum"
