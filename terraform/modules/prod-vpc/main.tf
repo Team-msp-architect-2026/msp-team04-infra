@@ -1,3 +1,9 @@
+locals {
+  kubernetes_cluster_discovery_tags = var.eks_cluster_name == null ? {} : {
+    "kubernetes.io/cluster/${var.eks_cluster_name}" = "shared"
+  }
+}
+
 resource "aws_vpc" "this" {
   cidr_block           = var.vpc_cidr
   enable_dns_support   = true
@@ -27,7 +33,7 @@ resource "aws_subnet" "public" {
   availability_zone       = var.availability_zones[count.index]
   map_public_ip_on_launch = true
 
-  tags = merge(var.tags, {
+  tags = merge(var.tags, local.kubernetes_cluster_discovery_tags, {
     Name                     = "${var.project_name}-${var.env}-public-${count.index + 1}"
     Environment              = var.env
     Tier                     = "public"
@@ -44,7 +50,7 @@ resource "aws_subnet" "private_app" {
   availability_zone       = var.availability_zones[count.index]
   map_public_ip_on_launch = false
 
-  tags = merge(var.tags, {
+  tags = merge(var.tags, local.kubernetes_cluster_discovery_tags, {
     Name                              = "${var.project_name}-${var.env}-private-app-${count.index + 1}"
     Environment                       = var.env
     Tier                              = "private-app"

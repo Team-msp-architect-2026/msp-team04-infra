@@ -43,8 +43,9 @@ module "prod_vpc" {
   count  = var.enable_prod_vpc ? 1 : 0
   source = "../../modules/prod-vpc"
 
-  project_name = var.project_name
-  env          = "prod"
+  project_name     = var.project_name
+  env              = "prod"
+  eks_cluster_name = var.prod_eks_cluster_name
 
   vpc_cidr = var.prod_vpc_cidr
 
