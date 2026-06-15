@@ -33,6 +33,10 @@ resource "aws_subnet" "public" {
     Tier                     = "public"
     Role                     = "internet-facing-alb"
     "kubernetes.io/role/elb" = "1"
+
+    # Required for AWS Load Balancer Controller subnet discovery.
+    # Keep this tag managed by Terraform so plan does not remove the runtime tag.
+    "kubernetes.io/cluster/${var.eks_cluster_name}" = "shared"
   })
 }
 
@@ -193,7 +197,7 @@ resource "aws_nat_gateway" "this" {
   depends_on = [aws_internet_gateway.this]
 }
 resource "aws_route" "private_app_to_nat" {
-  count = var.transit_gateway_id == null ? 1 : 0
+  count                  = var.transit_gateway_id == null ? 1 : 0
   route_table_id         = aws_route_table.private_app.id
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id         = aws_nat_gateway.this.id
