@@ -4,7 +4,7 @@ replicaCount: 2
 
 image:
   repository: 611058323802.dkr.ecr.ap-northeast-3.amazonaws.com/moment-prod-ai-service
-  tag: "prod-ab565c5"
+  tag: "prod-ab565c5-promoted-20260615-154211"
   pullPolicy: IfNotPresent
 
 serviceAccount:
