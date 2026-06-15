@@ -38,8 +38,9 @@ module "dev_vpc" {
   count  = var.enable_dev_vpc ? 1 : 0
   source = "../../modules/dev-vpc"
 
-  project_name = var.project_name
-  env          = "dev"
+  project_name     = var.project_name
+  env              = "dev"
+  eks_cluster_name = var.dev_eks_cluster_name
 
   vpc_cidr = var.dev_vpc_cidr
 
