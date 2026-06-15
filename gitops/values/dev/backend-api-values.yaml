@@ -155,9 +155,9 @@ ingress:
   className: alb
   annotations:
     kubernetes.io/ingress.class: alb
-    alb.ingress.kubernetes.io/scheme: internal
+    alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/vpc-id: vpc-0e2f95e8df4caaefc
-    alb.ingress.kubernetes.io/subnets: subnet-09ebc124e3244e2c5,subnet-00f4f629a6ed552bf
+    alb.ingress.kubernetes.io/subnets: subnet-06e21cf7199f5608c,subnet-096652b0bda73859e
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/healthcheck-path: /health
     alb.ingress.kubernetes.io/success-codes: "200,401"
