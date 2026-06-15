@@ -162,13 +162,18 @@ def _format_cloudwatch_alarm(subject, payload, environment):
     }
 
 
+
 def _format_aws_service_event(subject, payload, environment):
     source = payload.get("Event Source", "aws-service-event")
     source_id = payload.get("Source ID", "")
-    message = payload.get("Event Message", payload.get("Message", json.dumps(payload, ensure_ascii=False)))
+    source_arn = payload.get("Source ARN", "")
+    event_time = payload.get("Event Time", "")
+    message = payload.get("Event Message", payload.get("Message", ""))
+    if not message:
+        message = subject
     event_id = payload.get("Event ID", payload.get("EventID", subject))
 
-    text_seed = f"{subject} {source} {source_id} {message}"
+    text_seed = f"{subject} {source} {source_id} {source_arn} {message}"
     return {
         "text": _format_plain_text(
             title=event_id or subject,
@@ -176,18 +181,19 @@ def _format_aws_service_event(subject, payload, environment):
             source=source,
             state="EVENT",
             summary=message,
-            detail=json.dumps(payload, ensure_ascii=False)[:1500],
+            detail=message,
             service=_service_from_text(text_seed),
             severity=_severity_from_text(text_seed),
             owner=_owner_from_text(text_seed),
             action=_action_from_text(text_seed),
             runbook=_runbook_from_text(text_seed),
             extra_lines=[
+                f"*Event Time:* {event_time}" if event_time else "",
                 f"*Source ID:* {source_id}" if source_id else "",
+                f"*Source ARN:* {source_arn}" if source_arn else "",
             ],
         )
     }
-
 
 def _format_eventbridge_event(subject, payload, environment):
     detail_type = payload.get("detail-type", subject)
@@ -269,18 +275,53 @@ def _service_from_text(text):
     return "unknown"
 
 
+
 def _severity_from_text(text, state=""):
     value = (text or "").lower()
+    key = value.replace("-", "").replace("_", "").replace("/", "").replace(" ", "")
+
     if state == "OK":
         return "INFO"
-    if any(token in value for token in ["critical", "healthyhostzero", "clusterred", "dlq", "failover"]):
-        return "CRITICAL"
-    if any(token in value for token in ["high", "5xx", "latency", "crashloop", "degraded", "yellow", "eviction", "error"]):
-        return "HIGH"
-    if any(token in value for token in ["medium", "backlog", "throttle", "restart", "hpa", "oldmessage"]):
-        return "MEDIUM"
-    return "INFO"
 
+    if any(
+        token in key
+        for token in [
+            "healthyhostzero",
+            "clusterred",
+            "opensearchred",
+            "dlq",
+            "failover",
+        ]
+    ):
+        return "CRITICAL"
+
+    if any(
+        token in key
+        for token in [
+            "unhealthyhosts",
+            "target5xx",
+            "elb5xx",
+            "5xx",
+            "targetresponsetime",
+            "latency",
+            "crashloop",
+            "degraded",
+            "yellow",
+            "eviction",
+            "error",
+            "freestorage",
+            "memoryhigh",
+            "jvmmemorypressure",
+            "cpuhigh",
+            "connectionhigh",
+        ]
+    ):
+        return "HIGH"
+
+    if any(token in key for token in ["medium", "backlog", "throttle", "restart", "hpa", "oldmessage"]):
+        return "MEDIUM"
+
+    return "INFO"
 
 def _owner_from_text(text):
     service = _service_from_text(text)
@@ -297,12 +338,17 @@ def _owner_from_text(text):
     return "Infra/Observability"
 
 
+
 def _action_from_text(text):
     value = (text or "").lower()
-    if "failover" in value and ("rds" in value or "database" in value):
-        return "Check RDS event timeline, writer endpoint, application reconnect behavior, and DB health."
+    key = value.replace("-", "").replace("_", "").replace("/", "").replace(" ", "")
+
     if "elasticache" in value or "redis" in value:
         return "Check ElastiCache events, primary endpoint, memory pressure, evictions, and application Redis errors."
+    if "failover" in value and ("rds" in value or "postgres" in value or "database" in value):
+        return "Check RDS event timeline, writer endpoint, application reconnect behavior, and DB health."
+    if any(token in key for token in ["healthyhostzero", "unhealthyhosts", "targetgroup", "target5xx"]):
+        return "Check Ingress, ALB target group health, backend endpoints, pod readiness, and recent deployments."
     if "crashloop" in value:
         return "Check current and previous pod logs, exit code, env vars, secrets, and dependency errors."
     if "argocd" in value or "degraded" in value:
@@ -315,40 +361,67 @@ def _action_from_text(text):
         return "Check OpenSearch cluster health, shards, nodes, JVM pressure, and storage."
     if "lambda" in value:
         return "Check Lambda logs, timeout, IAM permissions, external API response, and retry/DLQ state."
-    if "rds" in value or "database" in value:
+    if "rds" in value or "postgres" in value or "database" in value:
         return "Check Performance Insights, DB connections, slow queries, storage, and recent deployments."
     return "Check related metrics, logs, events, runbook, and recent deployments."
 
 
 def _runbook_from_text(text):
-    value = (text or "").lower().replace("-", "").replace("_", "")
+    value = (text or "").lower()
+    key = value.replace("-", "").replace("_", "").replace("/", "").replace(" ", "")
+
+    # Service-specific failover events must be matched before generic "failover".
+    if "elasticache" in value or "redis" in value:
+        if "eviction" in key:
+            return "docs/runbooks/redis-evictions-detected.md"
+        if "memory" in key:
+            return "docs/runbooks/redis-memory-high.md"
+        if "cpu" in key:
+            return "docs/runbooks/redis-cpu-high.md"
+        return "docs/runbooks/redis-failover-event.md"
+
+    if "rds" in value or "postgres" in value or "database" in value:
+        if "connection" in key:
+            return "docs/runbooks/rds-connection-high.md"
+        if "freestorage" in key:
+            return "docs/runbooks/rds-free-storage-low.md"
+        if "cpu" in key:
+            return "docs/runbooks/rds-cpu-high.md"
+        if "failover" in key or "event" in key:
+            return "docs/runbooks/rds-failover-event.md"
+
     mapping = [
-        ("rdsfailover", "docs/runbooks/rds-failover-event.md"),
-        ("failover", "docs/runbooks/rds-failover-event.md"),
-        ("elasticache", "docs/runbooks/redis-failover-event.md"),
-        ("redis", "docs/runbooks/redis-failover-event.md"),
+        ("healthyhostzero", "docs/runbooks/alb-healthy-host-zero.md"),
+        ("unhealthyhosts", "docs/runbooks/target-group-unhealthy-hosts.md"),
+        ("target5xx", "docs/runbooks/target-group-5xx-high.md"),
+        ("elb5xx", "docs/runbooks/alb-5xx-high.md"),
+        ("targetresponsetime", "docs/runbooks/alb-latency-high.md"),
+        ("latency", "docs/runbooks/alb-latency-high.md"),
+        ("backendtargetdown", "docs/runbooks/backend-target-down.md"),
+        ("aiservicetargetdown", "docs/runbooks/ai-service-target-down.md"),
+        ("crashloopbackoff", "docs/runbooks/pod-crashloop-backoff.md"),
         ("crashloop", "docs/runbooks/pod-crashloop.md"),
         ("argocd", "docs/runbooks/argocd-app-degraded.md"),
         ("degraded", "docs/runbooks/argocd-app-degraded.md"),
         ("restart", "docs/runbooks/pod-restart-spike.md"),
-        ("rdscpu", "docs/runbooks/rds-cpu-high.md"),
-        ("rdsfreestorage", "docs/runbooks/rds-free-storage-low.md"),
         ("dlq", "docs/runbooks/sqs-dlq-messages-visible.md"),
         ("backlog", "docs/runbooks/sqs-backlog-high.md"),
-        ("alb5xx", "docs/runbooks/alb-5xx-high.md"),
-        ("latency", "docs/runbooks/alb-latency-high.md"),
+        ("oldmessage", "docs/runbooks/sqs-old-message-high.md"),
         ("opensearchclusterred", "docs/runbooks/opensearch-cluster-red.md"),
+        ("opensearchred", "docs/runbooks/opensearch-cluster-red.md"),
+        ("clusterred", "docs/runbooks/opensearch-cluster-red.md"),
         ("opensearchclusteryellow", "docs/runbooks/opensearch-cluster-yellow.md"),
+        ("opensearchyellow", "docs/runbooks/opensearch-cluster-yellow.md"),
+        ("clusteryellow", "docs/runbooks/opensearch-cluster-yellow.md"),
         ("lambdaerror", "docs/runbooks/lambda-error-high.md"),
-        ("eviction", "docs/runbooks/redis-evictions-detected.md"),
+        ("lambdathrottle", "docs/runbooks/lambda-throttles-detected.md"),
     ]
 
     for token, runbook in mapping:
-        if token in value:
+        if token in key:
             return runbook
 
     return "docs/runbooks/"
-
 
 def _post_to_slack(webhook_url, message):
     body = json.dumps(message).encode("utf-8")
