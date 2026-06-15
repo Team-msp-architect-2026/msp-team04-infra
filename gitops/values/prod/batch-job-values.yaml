@@ -4,7 +4,7 @@ namespace: moment-prod
 
 image:
   repository: 611058323802.dkr.ecr.ap-northeast-3.amazonaws.com/moment-prod-batch-job
-  tag: prod-22d7c4e
+  tag: "prod-c6536a4"
   pullPolicy: IfNotPresent
 
 serviceAccount:
