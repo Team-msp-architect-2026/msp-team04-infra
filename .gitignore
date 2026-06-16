@@ -64,3 +64,18 @@ terraform/modules/data-pipeline/*.zip
 *.auto.tfvars
 *.bak
 *.fixbak
+
+# 임시 파일
+collect-wiki-evidence.sh
+locust-hpa-wiki-evidence.md
+terraform/destroy-plan.txt
+terraform/destroy.plan
+terraform/environments/dev/destroy-plan.txt
+terraform/environments/dev/destroy.plan
+terraform/environments/dev/infra_dump.txt
+terraform/environments/dev/response.json
+terraform/environments/network/cf*.txt
+terraform/environments/network/cf*.json
+terraform/environments/prod/egress.json
+terraform/environments/prod/ingress.json
+terraform/environments/prod/sgs.json
