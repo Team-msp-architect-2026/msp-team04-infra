@@ -14,7 +14,7 @@ spec:
   project: moment-dev
   source:
     repoURL: https://github.com/Team-msp-architect-2026/msp-team04-infra.git
-    targetRevision: develop
+    targetRevision: drill/ai-service-unavailable-20260616-173626
     path: gitops/charts/ai-service
     helm:
       valueFiles:

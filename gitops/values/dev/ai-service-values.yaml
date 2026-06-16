@@ -1,5 +1,5 @@
 namespace: moment-dev
-replicaCount: 1
+replicaCount: 0
 image:
   repository: 611058323802.dkr.ecr.ap-northeast-3.amazonaws.com/moment-dev-ai-service
   tag: dev-ab565c5
