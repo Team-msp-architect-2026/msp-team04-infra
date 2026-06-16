@@ -26,7 +26,7 @@ prometheus:
       selector:
         matchLabels:
           app.kubernetes.io/name: backend-api
-          app.kubernetes.io/instance: backend-api
+          app.kubernetes.io/instance: backend-api-dev
       namespaceSelector:
         matchNames:
           - moment-dev
