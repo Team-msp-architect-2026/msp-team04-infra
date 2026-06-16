@@ -2,7 +2,7 @@ namespace: moment-dev
 replicaCount: 1
 image:
   repository: 611058323802.dkr.ecr.ap-northeast-3.amazonaws.com/moment-dev-backend-api
-  tag: dev-fe83c97
+  tag: dev-6d62da0
   pullPolicy: IfNotPresent
 serviceAccount:
   create: true
