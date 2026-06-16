@@ -123,12 +123,6 @@ variable "enable_dev_vpc" {
   default     = true
 }
 
-variable "enable_dev_nat_gateway" {
-  description = "Whether to create Dev NAT Gateway for private app subnet egress."
-  type        = bool
-  default     = false
-}
-
 variable "enable_dev_vpc_endpoints" {
   description = "Whether to create Dev VPC Endpoints"
   type        = bool

@@ -75,6 +75,9 @@ def _load_slack_webhook_url():
 
 
 def _format_message(subject, raw_message):
+    # SUBJECT_NONE_SAFE_PATCH: SNS/EventBridge messages may omit Subject.
+    subject = subject or ""
+    raw_message = raw_message or ""
     environment = os.environ.get("ENVIRONMENT", "unknown")
 
     try:
@@ -114,11 +117,11 @@ def _format_message(subject, raw_message):
             state="EVENT",
             summary=subject,
             detail=text,
-            service=_service_from_text(subject + text),
-            severity=_severity_from_text(subject + text),
-            owner=_owner_from_text(subject + text),
-            action=_action_from_text(subject + text),
-            runbook=_runbook_from_text(subject + text),
+            service=_service_from_text((subject or "") + text),
+            severity=_severity_from_text((subject or "") + text),
+            owner=_owner_from_text((subject or "") + text),
+            action=_action_from_text((subject or "") + text),
+            runbook=_runbook_from_text((subject or "") + text),
         )
     }
 
