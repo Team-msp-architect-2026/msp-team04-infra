@@ -317,11 +317,13 @@ def _severity_from_text(text, state=""):
             "jvmmemorypressure",
             "cpuhigh",
             "connectionhigh",
+            "oldmessage",
+            "ageofoldestmessage",
         ]
     ):
         return "HIGH"
 
-    if any(token in key for token in ["medium", "backlog", "throttle", "restart", "hpa", "oldmessage"]):
+    if any(token in key for token in ["medium", "backlog", "throttle", "restart", "hpa"]):
         return "MEDIUM"
 
     return "INFO"
