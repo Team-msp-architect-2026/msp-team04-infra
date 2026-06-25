@@ -515,10 +515,6 @@ module "dev_eks_nodegroups" {
   }
 
   common_tags = local.common_tags
-
-  depends_on = [
-    module.dev_eks
-  ]
 }
 
 module "dev_redis" {
