@@ -48,7 +48,7 @@ resource "aws_subnet" "tgw" {
 }
 
 resource "aws_eip" "nat" {
-  count = length(var.public_subnet_cidrs)
+  count = var.enable_nat_gateway ? length(var.public_subnet_cidrs) : 0
 
   domain = "vpc"
 
@@ -58,7 +58,7 @@ resource "aws_eip" "nat" {
 }
 
 resource "aws_nat_gateway" "this" {
-  count = length(var.public_subnet_cidrs)
+  count = var.enable_nat_gateway ? length(var.public_subnet_cidrs) : 0
 
   allocation_id = aws_eip.nat[count.index].id
   subnet_id     = aws_subnet.public[count.index].id
@@ -102,7 +102,7 @@ resource "aws_route_table" "tgw" {
 }
 
 resource "aws_route" "tgw_to_nat" {
-  count = length(var.tgw_subnet_cidrs)
+  count = var.enable_nat_gateway ? length(var.tgw_subnet_cidrs) : 0
 
   route_table_id         = aws_route_table.tgw[count.index].id
   destination_cidr_block = "0.0.0.0/0"

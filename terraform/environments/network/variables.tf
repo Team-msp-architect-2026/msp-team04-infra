@@ -22,6 +22,13 @@ variable "enable_network_vpc" {
   default     = false
 }
 
+
+variable "enable_network_nat_gateway" {
+  description = "Whether to create Network VPC centralized NAT Gateways. Set false for NAT-only costdown while preserving Network VPC and TGW."
+  type        = bool
+  default     = true
+}
+
 variable "enable_transit_gateway" {
   description = "Whether to create Transit Gateway resources from this environment. Keep false until migration is approved."
   type        = bool

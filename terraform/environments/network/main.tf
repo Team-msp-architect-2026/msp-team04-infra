@@ -56,6 +56,7 @@ module "network_vpc" {
 
   public_subnet_cidrs = var.network_public_subnet_cidrs
   tgw_subnet_cidrs    = var.network_tgw_subnet_cidrs
+  enable_nat_gateway  = var.enable_network_nat_gateway
 
   tags = local.common_tags
 }

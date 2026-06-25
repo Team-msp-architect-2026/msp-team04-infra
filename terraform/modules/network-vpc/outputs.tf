@@ -20,7 +20,7 @@ output "tgw_subnet_ids" {
 
 output "nat_gateway_id" {
   description = "First NAT Gateway ID kept for backward compatibility. Prefer nat_gateway_ids or nat_gateway_id_map."
-  value       = aws_nat_gateway.this[0].id
+  value       = try(aws_nat_gateway.this[0].id, null)
 }
 
 output "nat_gateway_ids" {
@@ -30,15 +30,15 @@ output "nat_gateway_ids" {
 
 output "nat_gateway_id_map" {
   description = "NAT Gateway IDs keyed by Availability Zone."
-  value = {
+  value = var.enable_nat_gateway ? {
     for index, subnet in aws_subnet.public :
     subnet.availability_zone => aws_nat_gateway.this[index].id
-  }
+  } : {}
 }
 
 output "nat_eip_id" {
   description = "First NAT Gateway Elastic IP ID kept for backward compatibility. Prefer nat_eip_ids."
-  value       = aws_eip.nat[0].id
+  value       = try(aws_eip.nat[0].id, null)
 }
 
 output "nat_eip_ids" {

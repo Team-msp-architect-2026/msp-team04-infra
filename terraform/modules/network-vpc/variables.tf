@@ -8,6 +8,13 @@ variable "env" {
   type        = string
 }
 
+
+variable "enable_nat_gateway" {
+  description = "Whether to create Network VPC NAT Gateways and their EIPs/routes."
+  type        = bool
+  default     = true
+}
+
 variable "vpc_cidr" {
   description = "Network VPC CIDR block."
   type        = string
